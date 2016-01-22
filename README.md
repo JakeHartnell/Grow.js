@@ -1,7 +1,13 @@
 # grow.js
-An npm packagle of useful functions for the automated growing of plants, this package also connects IoT devices to the Common Garden Grow app.
+An npm packagle of useful functions for working with the [Common Garden Grow app](https://github.com/CommonGarden/Grow).
 
 Install with:
 
     npm install grow.js
+
+
+
+
+
+## Examples:
 

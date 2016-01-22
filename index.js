@@ -58,10 +58,10 @@ GROWJS.prototype.connect = function (callback) {
     if (error) return callback(error);
 
     if (wasReconnect) {
-      console.log("Reestablishment of a GROWJS connection.");
+      console.log("Reestablishment of a Grow server connection.");
     }
     else {
-      console.log("GROWJS connection established.");
+      console.log("Grow server connection established.");
     }
 
     if (self.uuid || self.token) {
@@ -186,11 +186,49 @@ GROWJS.prototype.pipeInstance = function () {
 
 // Takes a model and updates the state property.
 GROWJS.prototype.updateState = function (model, state, callback) {
-  model.properties[0].state = state;
+  var self = this;
+
+  var models = [];
+
+  // Find models
+  for (key in _.keys(self.growFile.thing)) {
+    console.log(key);
+    if (key === "model") {
+      // models.push(self.growFile.thing.model);
+      console.log(self.growFile.thing.model);
+    }
+
+    // Grow kits can also contain sensors and actuators, which have their own models.
+    // Here we check for there existence and append an models we find to the list.
+    if (key === "sensors") {
+      for (sensor in self.growFile.thing.sensors) {
+        console.log(sensor);
+      }
+    }
+
+    if (key === "actuators") {
+      for (actuator in self.growFile.thing.actuators) {
+        console.log(actuator);
+      }
+    }
+  }
+
+  for (thing in models) {
+    if (_.isEqual(thing, model)) {
+      console.log(model);
+
+    }
+  }
+
+  // console.log(self.growFile);
+  // console.log(models);
+
+  // model.properties[0].state = state;
   // writes to grow file?
   // Calls method on host?
 };
 
+// This will be similar to update state... maybe they could be based on an update property function?
 // Takes the model and updates the crons property
 GROWJS.prototype.updateCrons = function (model, newCrons) {
   model.properties[0].crons;
