@@ -7,16 +7,22 @@ var Duplex = require('stream').Duplex;
 var Readable = require('stream').Readable;
 var Writable = require('stream').Writable;
 var fs = require('fs');
-var cron = require('cron')
+var cron = require('cron');
+var growFile = require('./grow.json');
 
-function GROWJS(options) {
+function GROWJS() {
   var self = this;
 
   if (!(self instanceof GROWJS)) {
     return new GROWJS(options);
   }
 
-  self.options = _.clone(options || {});
+  // The grow file is needed to maintain state in case our IoT device looses power or resets.
+  if (!growFile) {
+    throw new Error("Grow.js requires a grow.json file.");
+  } else {
+    self.options = _.clone(growFile || {});
+  }
 
   if ((!self.options.uuid || !self.options.token) && (self.options.uuid || self.options.token)) {
     throw new Error("UUID and token are or both required or should be omitted and they will be generated.");
@@ -101,6 +107,33 @@ GROWJS.prototype._afterConnect = function (callback, result) {
         });
       }
 
+      /* Now check to see if we have a stored UUID.
+       * If no UUID is specified, store a new UUID. */
+      if (_.isUndefined(growFile.uuid) || _.isUndefined(growFile.token)) {
+          growFile.uuid = data.uuid;
+          growFile.token = data.token;
+          fs.writeFile('./grow.json', JSON.stringify(growFile, null, 4), function (error) {
+              if (error) return console.log("Error", error);
+
+              console.log("New configration was saved with a uuid of: " + data.uuid);
+          });  
+      }
+
+      // Make a new readable stream
+      var readableStream = new Readable({objectMode: true});
+
+      // Make a new writable stream
+      var writableStream = new Writable({objectMode: true});
+
+      // We are pushing data when sensor measures it so we do not do anything
+      // when we get a request for more data. We just ignore it.
+      readableStream._read = function () {};
+
+      // We catch any errors
+      readableStream.on('error', function (error) {
+        console.log("Error", error.message);
+      });
+
       callback(null, result);
     }
   );
@@ -137,53 +170,23 @@ GROWJS.prototype._read = function (size) {
   var self = this;
 };
 
+GROWJS.prototype.pipeInstance = function () {
+  // We pipe our readable and writable streams to the instance.
+  this.pipe(writableStream);
+  readableStream.pipe(instance);
+}
 
 // Takes a model and updates the state property.
 GROWJS.prototype.updateState = function (model, state, callback) {
   model.properties[0].state = state;
-  // writes to grow file.
+  // writes to grow file?
+  // Calls method on host?
 };
-
-  // May
-}
 
 // Takes the model and updates the crons property
 GROWJS.prototype.updateCrons = function (model, newCrons) {
   model.properties[0].crons;
 };
-
-
-// TODO should run the code currently at the begining of the config file.
-GROWJS.prototype.onConnect = function (error, data) {
-  if (error) return console.log("Error", error);
-
-  /* Now check to see if we have a stored UUID.
-   * If no UUID is specified, store a new UUID. */
-  if (_.isUndefined(config.uuid) || _.isUndefined(config.token)) {
-      config.uuid = data.uuid;
-      config.token = data.token;
-      fs.writeFile('./config.json', JSON.stringify(config, null, 4), function (error) {
-          if (error) return console.log("Error", error);
-
-          console.log("New configration was saved with a uuid of: " + data.uuid);
-      });  
-  }
-
-  // Make a new readable stream
-  var readableStream = new Readable({objectMode: true});
-
-  // Make a new writable stream
-  var writableStream = new Writable({objectMode: true});
-
-  // We are pushing data when sensor measures it so we do not do anything
-  // when we get a request for more data. We just ignore it.
-  readableStream._read = function () {};
-
-  // We catch any errors
-  readableStream.on('error', function (error) {
-    console.log("Error", error.message);
-  });
-}
 
 // This could be very useful in grow.js, as scheduling tasks will be important.
 // Stop crons
