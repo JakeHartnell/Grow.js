@@ -186,74 +186,85 @@ GROWJS.prototype.pipeInstance = function () {
   self.readableStream.pipe(this);
 }
 
-// Takes a model and updates the state property.
-GROWJS.prototype.updateState = function (model, state, callback) {
+GROWJS.prototype.writeChangesToGrowFile = function () {
   var self = this;
 
-  var models = [];
+  fs.writeFile('./grow.json', JSON.stringify(self.growFile, null, 4), function (error) {
+    if (error) return console.log("Error", error);
+  });
+}
+
+GROWJS.prototype.updateProperty = function (propertyName, propertyKey, value) {
+  var self = this;
 
   var thing = self.growFile.thing;
 
-  // Find models
+  // Find properties in thing object
   for (key in thing) {
-    // console.log(self.growFile[key]);
+    // The top level thing model.
     if (key === "model") {
-      // models.push(self.growFile.thing.model);
-      models.push(thing[key]);
+      if (thing[key].properties.name === propertyName) {
+        thing[key].properties[propertyKey] = value;
+      }
     }
 
     // Grow kits can also contain sensors and actuators, which have their own models.
-    // Here we check for there existence and append an models we find to the list.
     if (key === "sensors") {
       for (sensor in thing.sensors) {
-        models.push(thing.sensors[sensor]);
+        if (thing.sensors[sensor].model.properties.name === propertyName) {
+          thing.sensors[sensor].model.properties[propertyKey] = value;
+        }
       }
     }
 
     if (key === "actuators") {
       for (actuator in thing.actuators) {
-        models.push(thing.actuators[actuator]);
+        if (thing.actuators[actuator].model.properties.name === propertyName) {
+          thing.actuators[actuator].model.properties[propertyKey] = value;
+        }
       }
     }
   }
 
-  for (thing in models) {
-    if (_.isEqual(thing, model)) {
-      console.log(model);
+  self.writeChangesToGrowFile();
 
+  self.ddpclient.call(
+    'Device.udpateProperties',
+    [{uuid: self.uuid, token: self.token}, thing],
+    function (error, result) {
+      if (error) return callback(error);
     }
-  }
-
-  // writes to grow file?
-  // Calls method on host?
+  );
 };
+
+// TODO: Add update crons functionality.
 
 // This will be similar to update state... maybe they could be based on an update property function?
 // Takes the model and updates the crons property
-GROWJS.prototype.updateCrons = function (model, newCrons) {
-  model.properties[0].crons;
-};
+// GROWJS.prototype.updateCrons = function (model, newCrons) {
+//   model.properties[0].crons;
+// };
 
-// This could be very useful in grow.js, as scheduling tasks will be important.
-// Stop crons
-GROWJS.prototype.stopCrons = function (crons) {
-  for (var key in crons) {
-     if (crons.hasOwnProperty(key)) {
-        var obj = crons[key];
-        obj.stop();
-     }
-  }
-}
+// // This could be very useful in grow.js, as scheduling tasks will be important.
+// // Stop crons
+// GROWJS.prototype.stopCrons = function (crons) {
+//   for (var key in crons) {
+//      if (crons.hasOwnProperty(key)) {
+//         var obj = crons[key];
+//         obj.stop();
+//      }
+//   }
+// }
 
-// Start crons
-GROWJS.prototype.startCrons = function (crons) {
-  for (var key in crons) {
-     if (crons.hasOwnProperty(key)) {
-        var obj = crons[key];
-        obj.start();
-     }
-  }
-  console.log("Started crons");
-}
+// // Start crons
+// GROWJS.prototype.startCrons = function (crons) {
+//   for (var key in crons) {
+//      if (crons.hasOwnProperty(key)) {
+//         var obj = crons[key];
+//         obj.start();
+//      }
+//   }
+//   console.log("Started crons");
+// }
 
 module.exports = GROWJS;
