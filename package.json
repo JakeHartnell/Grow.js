@@ -1,6 +1,6 @@
 {
   "name": "grow.js",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "dependencies": {
     "ddp": ">=0.11.0",
     "underscore": ">=1.8.3",
@@ -12,6 +12,13 @@
   "scripts": {},
   "license": "BSD-3-Clause",
   "main": "./index.js",
+  "bugs": {
+    "url": "http://github.com/CommonGarden/grow.js/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/CommonGarden/grow.js.git"
+  },
   "maintainers": [
     {
       "name": "mitar",

@@ -176,6 +176,8 @@ GROWJS.prototype._read = function (size) {
   var self = this;
 };
 
+
+// Maybe this can be taken care of by a call back or somewhere else?
 GROWJS.prototype.pipeInstance = function () {
   var self = this;
 
