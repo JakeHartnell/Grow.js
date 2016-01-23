@@ -72,7 +72,7 @@ GROWJS.prototype.connect = function (callback) {
     }
 
     self.ddpclient.call(
-      'CommonGarden.registerDevice',
+      'Device.register',
       [self.thing],
       function (error, result) {
         if (error) return callback(error);
@@ -93,7 +93,7 @@ GROWJS.prototype._afterConnect = function (callback, result) {
   var self = this;
 
   self.ddpclient.subscribe(
-    'CommonGarden.messages',
+    'Device.messages',
     [{uuid: self.uuid, token: self.token}],
     function (error) {
       if (error) return callback(error);
@@ -104,7 +104,7 @@ GROWJS.prototype._afterConnect = function (callback, result) {
         self.ddpclient.on('message', function (data) {
           data = EJSON.parse(data);
 
-          if (data.msg !== 'added' || data.collection !== 'CommonGarden.messages') {
+          if (data.msg !== 'added' || data.collection !== 'Device.messages') {
             return;
           }
 
@@ -154,7 +154,7 @@ GROWJS.prototype.sendData = function (data, callback) {
   }
 
   self.ddpclient.call(
-    'CommonGarden.sendData',
+    'Device.sendData',
     [{uuid: self.uuid, token: self.token}, data],
     function (error, result) {
       if (error) return callback(error);
@@ -177,9 +177,9 @@ GROWJS.prototype._read = function (size) {
 };
 
 GROWJS.prototype.pipeInstance = function () {
-  // We pipe our readable and writable streams to the instance.
   var self = this;
 
+  // We pipe our readable and writable streams to the instance.
   this.pipe(self.writableStream);
   self.readableStream.pipe(this);
 }
@@ -190,25 +190,27 @@ GROWJS.prototype.updateState = function (model, state, callback) {
 
   var models = [];
 
+  var thing = self.growFile.thing;
+
   // Find models
-  for (key in _.keys(self.growFile.thing)) {
-    console.log(key);
+  for (key in thing) {
+    // console.log(self.growFile[key]);
     if (key === "model") {
       // models.push(self.growFile.thing.model);
-      console.log(self.growFile.thing.model);
+      models.push(thing[key]);
     }
 
     // Grow kits can also contain sensors and actuators, which have their own models.
     // Here we check for there existence and append an models we find to the list.
     if (key === "sensors") {
-      for (sensor in self.growFile.thing.sensors) {
-        console.log(sensor);
+      for (sensor in thing.sensors) {
+        models.push(thing.sensors[sensor]);
       }
     }
 
     if (key === "actuators") {
-      for (actuator in self.growFile.thing.actuators) {
-        console.log(actuator);
+      for (actuator in thing.actuators) {
+        models.push(thing.actuators[actuator]);
       }
     }
   }
@@ -220,10 +222,6 @@ GROWJS.prototype.updateState = function (model, state, callback) {
     }
   }
 
-  // console.log(self.growFile);
-  // console.log(models);
-
-  // model.properties[0].state = state;
   // writes to grow file?
   // Calls method on host?
 };
