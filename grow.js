@@ -237,6 +237,25 @@ GROWJS.prototype.updateProperty = function (propertyName, propertyKey, value) {
   );
 };
 
+GROWJS.prototype.emitEvent = function (eventMessage) {
+  var self = this;
+
+  event = {
+    event: eventMessage,
+    timestamp: new Date()
+  };
+
+  self.ddpclient.call(
+    'Device.emitEvent',
+    [{uuid: self.uuid, token: self.token}, event],
+    function (error, result) {
+      if (error) return callback(error);
+
+      callback(null, result);
+    }
+  );
+}
+
 // TODO: Add update crons functionality.
 
 // This will be similar to update state... maybe they could be based on an update property function?
