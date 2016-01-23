@@ -9,7 +9,7 @@ var Writable = require('stream').Writable;
 var fs = require('fs');
 var cron = require('cron');
 
-function GROWJS(pathToGrowFile) {
+function GROWJS(growFile) {
   var self = this;
 
   if (!(self instanceof GROWJS)) {
@@ -17,10 +17,11 @@ function GROWJS(pathToGrowFile) {
   }
 
   // The grow file is needed to maintain state in case our IoT device looses power or resets.
-  if (pathToGrowFile) {
-    self.growFile = require(pathToGrowFile);
+  // This part could be better...
+  if (growFile) {
+    self.growFile = require(growFile);
   } else {
-    self.growFile = require('./grow.json');
+    self.growFile = require('../../grow.json');
   }
 
   if (!self.growFile) {
