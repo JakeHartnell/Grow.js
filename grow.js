@@ -11,6 +11,8 @@ var cron = require('cron');
 
 function GROWJS(growFile) {
   var self = this;
+  
+  self.cron = cron;
 
   if (!(self instanceof GROWJS)) {
     return new GROWJS(pathToGrowFile);
@@ -257,34 +259,33 @@ GROWJS.prototype.emitEvent = function (eventMessage) {
   );
 }
 
-// TODO: Add update crons functionality.
+GROWJS.prototype.stopCrons = function (crons) {
+  for (var key in crons) {
+     if (crons.hasOwnProperty(key)) {
+        var obj = crons[key];
+        obj.stop();
+     }
+  }
+  console.log("Stopped crons");
+}
 
+    // Start crons
+GROWJS.prototype.startCrons = function (crons) {
+  for (var key in crons) {
+     if (crons.hasOwnProperty(key)) {
+        var obj = crons[key];
+        obj.start();
+     }
+  }
+  console.log("Started crons");
+}
+
+
+// TODO: Add update crons functionality.
 // This will be similar to update state... maybe they could be based on an update property function?
 // Takes the model and updates the crons property
 // GROWJS.prototype.updateCrons = function (model, newCrons) {
 //   model.properties[0].crons;
 // };
-
-// // This could be very useful in grow.js, as scheduling tasks will be important.
-// // Stop crons
-// GROWJS.prototype.stopCrons = function (crons) {
-//   for (var key in crons) {
-//      if (crons.hasOwnProperty(key)) {
-//         var obj = crons[key];
-//         obj.stop();
-//      }
-//   }
-// }
-
-// // Start crons
-// GROWJS.prototype.startCrons = function (crons) {
-//   for (var key in crons) {
-//      if (crons.hasOwnProperty(key)) {
-//         var obj = crons[key];
-//         obj.start();
-//      }
-//   }
-//   console.log("Started crons");
-// }
 
 module.exports = GROWJS;
