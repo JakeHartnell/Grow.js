@@ -11,7 +11,7 @@
   },
   "scripts": {},
   "license": "BSD-3-Clause",
-  "main": "./index.js",
+  "main": "./grow.js",
   "bugs": {
     "url": "http://github.com/CommonGarden/grow.js/issues"
   },
