@@ -54,6 +54,8 @@ function GROWJS(growFile) {
 
 util.inherits(GROWJS, Duplex);
 
+
+// Todo: break this code up into different files.
 GROWJS.prototype.connect = function (callback) {
   var self = this;
 
@@ -269,7 +271,6 @@ GROWJS.prototype.stopCrons = function (crons) {
   console.log("Stopped crons");
 }
 
-    // Start crons
 GROWJS.prototype.startCrons = function (crons) {
   for (var key in crons) {
      if (crons.hasOwnProperty(key)) {
@@ -281,11 +282,128 @@ GROWJS.prototype.startCrons = function (crons) {
 }
 
 
-// TODO: Add update crons functionality.
-// This will be similar to update state... maybe they could be based on an update property function?
-// Takes the model and updates the crons property
-// GROWJS.prototype.updateCrons = function (model, newCrons) {
-//   model.properties[0].crons;
-// };
+// http://stackoverflow.com/questions/359788/how-to-execute-a-javascript-function-when-i-have-its-name-as-a-string
+GROWJS.prototype.executeFunctionByName = function (functionName, context /*, args */) {
+  var args = [].slice.call(arguments).splice(2);
+  var namespaces = functionName.split(".");
+  var func = namespaces.pop();
+  for(var i = 0; i < namespaces.length; i++) {
+    context = context[namespaces[i]];
+  }
+  return context[func].apply(context, args);
+}
+
+
+GROWJS.prototype.callFunction = function(str) {
+  var arr = str.split(".");
+
+  var fn = this;
+  for (var i = 0, len = arr.length; i < len; i++) {
+    fn = fn[arr[i]];
+  }
+
+  if (typeof fn !== "function") {
+    throw new Error("function not found");
+  }
+
+  return  fn;
+};
+
+GROWJS.prototype.getActions = function () {
+  var self = this;
+  // TODO: get the actions so they can be registered!
+  // TODO: also add information about it's parent actuator.
+  // Find properties in thing object
+  for (key in thing) {
+    // The top level thing model.
+    if (key === "model") {
+
+    }
+
+    // Grow kits can also contain sensors and actuators, which have their own models.
+    if (key === "sensors") {
+      for (sensor in thing.sensors) {
+
+      }
+    }
+
+    if (key === "actuators") {
+      for (actuator in thing.actuators) {
+
+      }
+    }
+  }
+}
+
+GROWJS.prototype.writableStream._write = function (command, encoding, callback) {
+  var self = this;
+
+  // Get a list of action objects and calls
+  var actions = self.getActions();
+
+  // Make sure to support options too.
+  for (action in actions) {
+    // Support command.options
+    if (command.type === action.call) {
+      if (command.options) {
+        self.callFunction(action.call, command.options);
+      } else {
+        self.callFunction(action.call);
+      }
+      // Should the below be done in a call back.
+      self.updateProperty(action.actuator.name, "state", action.state)
+      // If command.options, this should be included in event.
+      self.emitEvent({
+        name: action.name
+      });
+    }
+  }
+}
+
+GROWJS.prototype.addRule = function (rule) {
+  return
+}
+
+GROWJS.prototype.removeRule = function (rule) {
+  return
+}
+
+      // TODO: clean this up and get it working.
+      // else if (command.type === 'update-crons' && command.options) {
+      //   if (!_.isUndefined(command.options.cron) || !_isUndefined(command.options.actuatorName)) {
+      //     // TODO: do better checks.
+      //     console.log("Crons updated");
+
+      //     // Update crons
+      //     actuatorName = command.options.actuatorName;
+      //     cronName = command.options.cronName;
+      //     cron = command.options.cron
+
+      //     newconfig = updateActuatorCrons(actuatorName, cronName, cron);
+      //     // Write them to file system and send crons updated event.
+      //     fs.writeFile('./config.json', JSON.stringify(newconfig, null, 4), function (error) {
+      //       if (error) return console.log("Error", error);
+
+      //       // TODO: do better checks.
+      //       console.log("Crons updated");
+
+      //       readableStream.push({
+      //         event: {
+      //           name: "Crons updated"
+      //         },
+      //         timestamp: new Date()
+      //       });
+
+      //       stopCrons();
+      //       startCrons();
+      //     });
+      //   }
+      // }
+
+      // else {
+      //   console.log("Unknown command", command);
+      // }
+
+
 
 module.exports = GROWJS;

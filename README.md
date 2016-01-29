@@ -1,3 +1,9 @@
+[![Slack Status](http://slack.commongarden.org/badge.svg)](http://slack.commongarden.org)
+
+[Feature Requests](http://forum.commongarden.org/c/feature-requests)
+
+[General Feedback](http://forum.commongarden.org/c/feedback)
+
 # Grow.js
 An npm packagle of useful functions for working with the [Common Garden Grow app](https://github.com/CommonGarden/Grow).
 
