@@ -7,12 +7,17 @@ var Duplex = require('stream').Duplex;
 var Readable = require('stream').Readable;
 var Writable = require('stream').Writable;
 var fs = require('fs');
-var cron = require('cron');
+var later = require('later');
 
 function GROWJS(growFile) {
   var self = this;
   
   self.cron = cron;
+
+  self.later = later;
+
+  // Use local time.
+  self.later.date.localTime();
 
   if (!(self instanceof GROWJS)) {
     return new GROWJS(pathToGrowFile);
@@ -199,33 +204,22 @@ GROWJS.prototype.writeChangesToGrowFile = function () {
   });
 }
 
-GROWJS.prototype.updateProperty = function (propertyName, propertyKey, value) {
+GROWJS.prototype.updateProperty = function (propertyName, propertyKey, value, callback) {
   var self = this;
 
   var thing = self.growFile.thing;
 
-  // Find properties in thing object
+  // Find properties in top level thing object
   for (key in thing) {
-    // The top level thing model.
-    if (key === "model") {
-      if (thing[key].properties.name === propertyName) {
-        thing[key].properties[propertyKey] = value;
-      }
+    if (key === propertyName) {
+      // thing[key][propertyKey] = value;
     }
 
-    // Grow kits can also contain sensors and actuators, which have their own models.
-    if (key === "sensors") {
-      for (sensor in thing.sensors) {
-        if (thing.sensors[sensor].model.properties.name === propertyName) {
-          thing.sensors[sensor].model.properties[propertyKey] = value;
-        }
-      }
-    }
-
-    if (key === "actuators") {
-      for (actuator in thing.actuators) {
-        if (thing.actuators[actuator].model.properties.name === propertyName) {
-          thing.actuators[actuator].model.properties[propertyKey] = value;
+    // Find properties in components 
+    if (key === "components") {
+      for (component in thing.components) {
+        if (thing.components[component].name === propertyName) {
+          thing.components[component][propertyKey] = value;
         }
       }
     }
@@ -237,12 +231,13 @@ GROWJS.prototype.updateProperty = function (propertyName, propertyKey, value) {
     'Device.udpateProperties',
     [{uuid: self.uuid, token: self.token}, thing],
     function (error, result) {
-      if (error) return callback(error);
+      // if (error) return callback(error);
+      callback(error, result);
     }
   );
 };
 
-GROWJS.prototype.emitEvent = function (eventMessage) {
+GROWJS.prototype.emitEvent = function (eventMessage, callback) {
   var self = this;
 
   event = {
@@ -254,31 +249,9 @@ GROWJS.prototype.emitEvent = function (eventMessage) {
     'Device.emitEvent',
     [{uuid: self.uuid, token: self.token}, event],
     function (error, result) {
-      if (error) return callback(error);
-
-      callback(null, result);
+      callback(error, result);
     }
   );
-}
-
-GROWJS.prototype.stopCrons = function (crons) {
-  for (var key in crons) {
-     if (crons.hasOwnProperty(key)) {
-        var obj = crons[key];
-        obj.stop();
-     }
-  }
-  console.log("Stopped crons");
-}
-
-GROWJS.prototype.startCrons = function (crons) {
-  for (var key in crons) {
-     if (crons.hasOwnProperty(key)) {
-        var obj = crons[key];
-        obj.start();
-     }
-  }
-  console.log("Started crons");
 }
 
 
@@ -294,6 +267,7 @@ GROWJS.prototype.executeFunctionByName = function (functionName, context /*, arg
 }
 
 
+// Modify this so that it is namespaced for grow.
 GROWJS.prototype.callFunction = function(str) {
   var arr = str.split(".");
 
@@ -309,30 +283,57 @@ GROWJS.prototype.callFunction = function(str) {
   return  fn;
 };
 
+
 GROWJS.prototype.getActions = function () {
   var self = this;
-  // TODO: get the actions so they can be registered!
-  // TODO: also add information about it's parent actuator.
-  // Find properties in thing object
+  var actions = [];
+
+
   for (key in thing) {
     // The top level thing model.
-    if (key === "model") {
-
+    if (key === "actions") {
+      console.log(typeof thing[key]);
     }
 
     // Grow kits can also contain sensors and actuators, which have their own models.
-    if (key === "sensors") {
-      for (sensor in thing.sensors) {
-
-      }
-    }
-
-    if (key === "actuators") {
-      for (actuator in thing.actuators) {
-
+    if (key === "components") {
+      for (component in thing.components) {
+        for (key in component) {
+          if (component[key] === "actions") {
+            actions.push(component[key]);
+          }
+        }
       }
     }
   }
+
+  console.log(actions);
+  return actions;
+}
+
+// Maybe this should just be a start function?
+GROWJS.prototype.linkActions = function (actionFunctions) {
+  var self = this,
+      actions = self.getActions()
+
+  for (key in actionFunctions) {
+    console.log(actionFunctions[key]);
+  }
+
+  // Basically we need to get it so that the call function 
+
+  // TODO: If action has an "every" atribute, we parse it with later and set the timeout
+  // // execute logTime one time on the next occurrence of the text schedule
+  // var timer = self.later.setTimeout(logTime, textSched);
+
+  // // execute logTime for each successive occurrence of the text schedule
+  // var timer2 = self.later.setInterval(logTime, textSched);
+
+
+  // When actions are registered pipe instance
+  self.pipeInstance();
+
+
 }
 
 GROWJS.prototype.writableStream._write = function (command, encoding, callback) {
@@ -368,42 +369,20 @@ GROWJS.prototype.removeRule = function (rule) {
   return
 }
 
-      // TODO: clean this up and get it working.
-      // else if (command.type === 'update-crons' && command.options) {
-      //   if (!_.isUndefined(command.options.cron) || !_isUndefined(command.options.actuatorName)) {
-      //     // TODO: do better checks.
-      //     console.log("Crons updated");
 
-      //     // Update crons
-      //     actuatorName = command.options.actuatorName;
-      //     cronName = command.options.cronName;
-      //     cron = command.options.cron
+// Todo support callibaration libraries for sensors.
+// These should accumlate data do some basic cleaning and store the data to 
+GROWJS.prototype.ph = function (value) {
+  var self = this;
+  return 0.0178 * value - 1.889;
+}
 
-      //     newconfig = updateActuatorCrons(actuatorName, cronName, cron);
-      //     // Write them to file system and send crons updated event.
-      //     fs.writeFile('./config.json', JSON.stringify(newconfig, null, 4), function (error) {
-      //       if (error) return console.log("Error", error);
+GROWJS.prototype.temperature = function (value) {
+  return (value * 3.3 / 1024 - 0.33) * 100;
+}
 
-      //       // TODO: do better checks.
-      //       console.log("Crons updated");
-
-      //       readableStream.push({
-      //         event: {
-      //           name: "Crons updated"
-      //         },
-      //         timestamp: new Date()
-      //       });
-
-      //       stopCrons();
-      //       startCrons();
-      //     });
-      //   }
-      // }
-
-      // else {
-      //   console.log("Unknown command", command);
-      // }
-
-
+GROWJS.prototype.registerEventListeners = function () {
+  var self = this;
+}
 
 module.exports = GROWJS;
