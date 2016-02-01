@@ -12,8 +12,6 @@ var later = require('later');
 function GROWJS(growFile) {
   var self = this;
   
-  self.cron = cron;
-
   self.later = later;
 
   // Use local time.
@@ -361,25 +359,56 @@ GROWJS.prototype.writableStream._write = function (command, encoding, callback) 
   }
 }
 
-GROWJS.prototype.addRule = function (rule) {
-  return
-}
-
-GROWJS.prototype.removeRule = function (rule) {
-  return
-}
 
 
 // Todo support callibaration libraries for sensors.
 // These should accumlate data do some basic cleaning and store the data to 
-GROWJS.prototype.ph = function (value) {
+GROWJS.prototype.phChange = function (value) {
   var self = this;
+
+  // Todo: add values to object, when logged, we will do some smoothing.
   return 0.0178 * value - 1.889;
 }
 
-GROWJS.prototype.temperature = function (value) {
+GROWJS.prototype.temperatureChange = function (value) {
+  var self = this;
+
   return (value * 3.3 / 1024 - 0.33) * 100;
 }
+
+
+
+
+GROWJS.prototype.log_light = function () {
+  var self = this;
+  self.readableStream.push({
+      name: "Light",
+      type: "light-sensor",
+      unit: "milivolts",
+      value: self.light
+  });
+}
+
+GROWJS.prototype.log_ph = function () {
+  var self = this;
+  self.readableStream.push({
+      name: "Ph",
+      type: "ph",
+      unit: "ph",
+      value: self.ph
+  });
+}
+
+GROWJS.prototype.log_temperature = function () {
+  var self = this;
+  self.readableStream.push({
+      name: "Temperture",
+      type: "temperature",
+      unit: "Celcius",
+      value: self.temperature
+  });
+}
+
 
 GROWJS.prototype.registerEventListeners = function () {
   var self = this;
