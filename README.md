@@ -11,6 +11,8 @@ Install with:
 
     npm install grow.js
 
+NOTE: This is a work in progress. If you want to help read the code and comments.
+
 ## grow.json
 Grow.js uses a `grow.json` file by default to describe itself and its api. It is also used for state, in case the device looses internet connnection or power.
 

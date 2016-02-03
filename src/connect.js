@@ -1,53 +1,3 @@
-function GROWJS(growFile) {
-  var self = this;
-  
-  self.later = later;
-
-  // Use local time.
-  self.later.date.localTime();
-
-  if (!(self instanceof GROWJS)) {
-    return new GROWJS(pathToGrowFile);
-  }
-
-  // The grow file is needed to maintain state in case our IoT device looses power or resets.
-  // This part could be better...
-  if (growFile) {
-    self.growFile = require(growFile);
-  } else {
-    self.growFile = require('../../grow.json');
-  }
-
-  if (!self.growFile) {
-    throw new Error("Grow.js requires a grow.json file.");
-  }
-
-  self.options = _.clone(self.growFile || {});
-
-  if ((!self.options.uuid || !self.options.token) && (self.options.uuid || self.options.token)) {
-    throw new Error("UUID and token are or both required or should be omitted and they will be generated.");
-  }
-
-  Duplex.call(self, _.defaults(self.options, {objectMode: true, readableObjectMode: true, writableObjectMode: true}));
-
-  self.uuid = self.options.uuid || null;
-  self.token = self.options.token || null;
-  self.thing = self.options.thing || null;
-
-  self._messageHandlerInstalled = false;
-
-  self.ddpclient = new DDPClient(_.defaults(self.options, {
-    host: 'localhost',
-    port: 3000,
-    ssl: false,
-    maintainCollections: false
-  }));
-}
-
-util.inherits(GROWJS, Duplex);
-
-
-// Todo: break this code up into different files.
 GROWJS.prototype.connect = function (callback) {
   var self = this;
 
@@ -141,3 +91,26 @@ GROWJS.prototype._afterConnect = function (callback, result) {
 
   callback(null, result);
 };
+
+GROWJS.prototype._write = function (chunk, encoding, callback) {
+  var self = this;
+
+  self.sendData(chunk, callback);
+};
+
+// We are pushing data to a stream as commands are arriving and are leaving
+// to the stream to buffer them. So we simply ignore requests for more data.
+GROWJS.prototype._read = function (size) {
+  var self = this;
+};
+
+
+// Maybe this can be taken care of by a call back or somewhere else?
+GROWJS.prototype.pipeInstance = function () {
+  var self = this;
+
+  // We pipe our readable and writable streams to the instance.
+  this.pipe(self.writableStream);
+  self.readableStream.pipe(this);
+}
+
