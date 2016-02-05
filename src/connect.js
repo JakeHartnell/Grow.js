@@ -1,3 +1,5 @@
+// Maybe we should add more options to connect... like where to for instance.
+
 GROWJS.prototype.connect = function (callback) {
   var self = this;
 
@@ -105,7 +107,6 @@ GROWJS.prototype._read = function (size) {
 };
 
 
-// Maybe this can be taken care of by a call back or somewhere else?
 GROWJS.prototype.pipeInstance = function () {
   var self = this;
 
@@ -114,3 +115,30 @@ GROWJS.prototype.pipeInstance = function () {
   self.readableStream.pipe(this);
 };
 
+// Sets up listening for actions on the write able stream.
+// Updates state and logs event.
+GROWJS.prototype.writableStream._write = function (command, encoding, callback) {
+  var self = this;
+
+  // Get a list of action objects and calls
+  var actions = self.Action.getActions();
+
+  // Make sure to support options too.
+  for (var action in actions) {
+    // Support command.options
+    if (command.type === action.call) {
+      if (command.options) {
+        self.Action.call(action.call, command.options);
+      } else {
+        self.Action.call(action.call);
+      }
+      // Should the below be done in a call back.
+      self.API.updateProperty(action.actuator.name, "state", action.state);
+      // If command.options, this should be included in event.
+      self.API.emitEvent({
+        name: action.name,
+        message: action.eventMessage
+      });
+    }
+  }
+};

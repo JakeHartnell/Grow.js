@@ -54,12 +54,8 @@ function GROWJS(growFile) {
     ssl: false,
     maintainCollections: false
   }));
+
+  self.connect();
 }
 
 util.inherits(GROWJS, Duplex);
-
-
-// TODO: add other files.
-require('./sensors');
-
-module.exports = GROWJS;

@@ -38,14 +38,13 @@ GROWJS.prototype.getActions = function () {
 // Maybe this should just be a start function?
 GROWJS.prototype.linkActions = function (actionFunctions) {
   var self = this,
-      actions = self.getActions();
+      actions = self.Action.getActions();
 
   for (var key in actionFunctions) {
     console.log(actionFunctions[key]);
   }
 
   // Basically we need to get it so that the call function 
-
   // TODO: If action has an "every" atribute, we parse it with later and set the timeout
   // // execute logTime one time on the next occurrence of the text schedule
   // var timer = self.later.setTimeout(logTime, textSched);

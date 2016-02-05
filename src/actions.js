@@ -8,9 +8,9 @@
 */
 
 // Maybe this should just be a start function?
-GROWJS.prototype.linkActions = function (actionFunctions) {
+GROWJS.prototype.registerActions = function (actionFunctions) {
   var self = this,
-      actions = self.getActions();
+      actions = self.Actions.get();
 
   for (var key in actionFunctions) {
     console.log(actionFunctions[key]);
@@ -29,10 +29,13 @@ GROWJS.prototype.linkActions = function (actionFunctions) {
   // When actions are registered pipe instance
   self.pipeInstance();
 
-
 };
 
-GROWJS.prototype.parseActions = function () {
+GROWJS.Actions = function () {
+  this.actions = [];
+};
+
+GROWJS.Actions.prototype.parse = function () {
   var self = this;
   var actions = [];
 
@@ -60,16 +63,12 @@ GROWJS.prototype.parseActions = function () {
 
 };
 
-GROWJS.Action = function () {
-  this.actions = [];
-};
-
-GROWJS.Action.prototype.getActions = function () {
+GROWJS.Actions.prototype.get = function () {
   return this.actions;
 };
 
 
-GROWJS.Action.prototype.register = function() {
+GROWJS.Actions.prototype.register = function() {
   for(var i = 0; i < arguments.length; ++i) {
     if (typeof arguments[i]  === "function") {
       this.actions.push(arguments[i]);
@@ -82,72 +81,13 @@ GROWJS.Action.prototype.register = function() {
   }
 };
 
-GROWJS.prototype.writableStream._write = function (command, encoding, callback) {
-  var self = this;
-
-  // Get a list of action objects and calls
-  var actions = self.getActions();
-
-  // Make sure to support options too.
-  for (var action in actions) {
-    // Support command.options
-    if (command.type === action.call) {
-      if (command.options) {
-        self.callFunction(action.call, command.options);
-      } else {
-        self.callFunction(action.call);
-      }
-      // Should the below be done in a call back.
-      self.updateProperty(action.actuator.name, "state", action.state);
-      // If command.options, this should be included in event.
-      self.emitEvent({
-        name: action.name
-      });
-    }
-  }
-};
-
-GROWJS.prototype.registerEventListeners = function () {
-  var self = this;
-};
-
-
-
-GROWJS.prototype.writeChangesToGrowFile = function () {
-  var self = this;
-
-  fs.writeFile('./grow.json', JSON.stringify(self.growFile, null, 4), function (error) {
-    if (error) return console.log("Error", error);
-  });
-};
-
-
 // http://stackoverflow.com/questions/359788/how-to-execute-a-javascript-function-when-i-have-its-name-as-a-string
-GROWJS.prototype.executeFunctionByName = function (functionName, context /*, args */) {
+GROWJS.Actions.prototype.call = function (functionName, context /*, args */) {
   var args = [].slice.call(arguments).splice(2);
   var namespaces = functionName.split(".");
   var func = namespaces.pop();
   for(var i = 0; i < namespaces.length; i++) {
-    context = context[namespaces[i]];
+    context = this.actions[namespaces[i]];
   }
   return context[func].apply(context, args);
 };
-
-
-// Modify this so that it is namespaced for grow.
-GROWJS.Actions.prototype.call = function(str) {
-  var arr = str.split(".");
-
-  var fn = this;
-  for (var i = 0, len = arr.length; i < len; i++) {
-    fn = fn[arr[i]];
-  }
-
-  if (typeof fn !== "function") {
-    throw new Error("function not found");
-  }
-
-  return  fn;
-};
-
-// module.exports = GROWJS

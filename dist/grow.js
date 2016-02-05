@@ -1,82 +1,3 @@
-/*
-  This file contains methods for interacting with the Grow-IoT api.
-*/
-
-GROWJS.prototype.sendData = function (data, callback) {
-  var self = this;
-
-  if (!self.ddpclient || !self.uuid || !self.token) {
-    callback("Invalid connection state.");
-    return;
-  }
-
-  self.ddpclient.call(
-    'Device.sendData',
-    [{uuid: self.uuid, token: self.token}, data],
-    function (error, result) {
-      if (error) return callback(error);
-
-      callback(null, result);
-    }
-  );
-};
-
-
-// TODO: fix.
-GROWJS.prototype.emitEvent = function (eventMessage, callback) {
-  var self = this;
-
-  event = {
-    event: eventMessage,
-    timestamp: new Date()
-  };
-
-  self.ddpclient.call(
-    'Device.emitEvent',
-    [{uuid: self.uuid, token: self.token}, event],
-    function (error, result) {
-      callback(error, result);
-    }
-  );
-};
-
-
-// Maybe this function needs to be split up?
-GROWJS.prototype.updateProperty = function (propertyName, propertyKey, value, callback) {
-  var self = this;
-
-  var thing = self.growFile.thing;
-
-  // Find properties in top level thing object
-  for (var key in thing) {
-    if (key === propertyName) {
-      // thing[key][propertyKey] = value;
-    }
-
-    // Find properties in components 
-    if (key === "components") {
-      for (var component in thing.components) {
-        if (thing.components[component].name === propertyName) {
-          thing.components[component][propertyKey] = value;
-        }
-      }
-    }
-  }
-
-  self.writeChangesToGrowFile();
-
-  self.ddpclient.call(
-    'Device.udpateProperties',
-    [{uuid: self.uuid, token: self.token}, thing],
-    function (error, result) {
-      // if (error) return callback(error);
-      callback(error, result);
-    }
-  );
-};
-
-
-
 var _ = require('underscore');
 var assert = require('assert');
 var DDPClient = require('ddp');
@@ -133,15 +54,13 @@ function GROWJS(growFile) {
     ssl: false,
     maintainCollections: false
   }));
+
+  self.connect();
 }
 
 util.inherits(GROWJS, Duplex);
 
-
-// TODO: add other files.
-require('./sensors');
-
-module.exports = GROWJS;
+// Maybe we should add more options to connect... like where to for instance.
 
 GROWJS.prototype.connect = function (callback) {
   var self = this;
@@ -250,7 +169,6 @@ GROWJS.prototype._read = function (size) {
 };
 
 
-// Maybe this can be taken care of by a call back or somewhere else?
 GROWJS.prototype.pipeInstance = function () {
   var self = this;
 
@@ -259,121 +177,33 @@ GROWJS.prototype.pipeInstance = function () {
   self.readableStream.pipe(this);
 };
 
-
-/*
-  This file contains functions for working with the Common Garden thing data model and the grow.json file.
-  (To do, link to dpcumentation)
-  
-  This includes parsing and updating the grow file, as well as calling functions.
-
-
-*/
-
-// Maybe this should just be a start function?
-GROWJS.prototype.linkActions = function (actionFunctions) {
-  var self = this,
-      actions = self.getActions();
-
-  for (var key in actionFunctions) {
-    console.log(actionFunctions[key]);
-  }
-
-  // Basically we need to get it so that the call function 
-
-  // TODO: If action has an "every" atribute, we parse it with later and set the timeout
-  // // execute logTime one time on the next occurrence of the text schedule
-  // var timer = self.later.setTimeout(logTime, textSched);
-
-  // // execute logTime for each successive occurrence of the text schedule
-  // var timer2 = self.later.setInterval(logTime, textSched);
-
-
-  // When actions are registered pipe instance
-  self.pipeInstance();
-
-
-};
-
-GROWJS.prototype.parseActions = function () {
-  var self = this;
-  var actions = [];
-
-
-  for (var key in thing) {
-    // The top level thing model.
-    if (key === "actions") {
-      console.log(typeof thing[key]);
-    }
-
-    // Grow kits can also contain sensors and actuators, which have their own models.
-    if (key === "components") {
-      for (var component in thing.components) {
-        for (key in component) {
-          if (component[key] === "actions") {
-            actions.push(component[key]);
-          }
-        }
-      }
-    }
-  }
-
-  console.log(actions);
-  return actions;
-
-};
-
-GROWJS.Action = function () {
-  this.actions = [];
-};
-
-GROWJS.Action.prototype.getActions = function () {
-  return this.actions;
-};
-
-
-GROWJS.Action.prototype.register = function() {
-  for(var i = 0; i < arguments.length; ++i) {
-    if (typeof arguments[i]  === "function") {
-      this.actions.push(arguments[i]);
-    } else {
-      // unpack array
-      for(var j = 0; j < arguments[i].length; ++j) {
-        this.actions.push(arguments[i][j]);
-      }
-    }
-  }
-};
-
+// Sets up listening for actions on the write able stream.
+// Updates state and logs event.
 GROWJS.prototype.writableStream._write = function (command, encoding, callback) {
   var self = this;
 
   // Get a list of action objects and calls
-  var actions = self.getActions();
+  var actions = self.Action.getActions();
 
   // Make sure to support options too.
   for (var action in actions) {
     // Support command.options
     if (command.type === action.call) {
       if (command.options) {
-        self.callFunction(action.call, command.options);
+        self.Action.call(action.call, command.options);
       } else {
-        self.callFunction(action.call);
+        self.Action.call(action.call);
       }
       // Should the below be done in a call back.
-      self.updateProperty(action.actuator.name, "state", action.state);
+      self.API.updateProperty(action.actuator.name, "state", action.state);
       // If command.options, this should be included in event.
-      self.emitEvent({
-        name: action.name
+      self.API.emitEvent({
+        name: action.name,
+        message: action.eventMessage
       });
     }
   }
 };
-
-GROWJS.prototype.registerEventListeners = function () {
-  var self = this;
-};
-
-
 
 GROWJS.prototype.writeChangesToGrowFile = function () {
   var self = this;
@@ -382,48 +212,6 @@ GROWJS.prototype.writeChangesToGrowFile = function () {
     if (error) return console.log("Error", error);
   });
 };
-
-
-// http://stackoverflow.com/questions/359788/how-to-execute-a-javascript-function-when-i-have-its-name-as-a-string
-GROWJS.prototype.executeFunctionByName = function (functionName, context /*, args */) {
-  var args = [].slice.call(arguments).splice(2);
-  var namespaces = functionName.split(".");
-  var func = namespaces.pop();
-  for(var i = 0; i < namespaces.length; i++) {
-    context = context[namespaces[i]];
-  }
-  return context[func].apply(context, args);
-};
-
-
-// Modify this so that it is namespaced for grow.
-GROWJS.Actions.prototype.call = function(str) {
-  var arr = str.split(".");
-
-  var fn = this;
-  for (var i = 0, len = arr.length; i < len; i++) {
-    fn = fn[arr[i]];
-  }
-
-  if (typeof fn !== "function") {
-    throw new Error("function not found");
-  }
-
-  return  fn;
-};
-
-// module.exports = GROWJS
-
-// A placeholder for future work with regards to rules
-
-GROWJS.prototype.addRule = function (rule) {
-  return;
-};
-
-GROWJS.prototype.removeRule = function (rule) {
-  return;
-};
-
 /*
   This file contains functions for working with the Common Garden thing data model and the grow.json file.
   (To do, link to dpcumentation)
@@ -464,14 +252,13 @@ GROWJS.prototype.getActions = function () {
 // Maybe this should just be a start function?
 GROWJS.prototype.linkActions = function (actionFunctions) {
   var self = this,
-      actions = self.getActions();
+      actions = self.Action.getActions();
 
   for (var key in actionFunctions) {
     console.log(actionFunctions[key]);
   }
 
   // Basically we need to get it so that the call function 
-
   // TODO: If action has an "every" atribute, we parse it with later and set the timeout
   // // execute logTime one time on the next occurrence of the text schedule
   // var timer = self.later.setTimeout(logTime, textSched);
@@ -555,3 +342,179 @@ GROWJS.prototype.callFunction = function(str) {
 };
 
 // module.exports = GROWJS
+
+/*
+  This file contains functions for working with the Common Garden thing data model and the grow.json file.
+  (To do, link to dpcumentation)
+  
+  This includes parsing and updating the grow file, as well as calling functions.
+
+
+*/
+
+// Maybe this should just be a start function?
+GROWJS.prototype.registerActions = function (actionFunctions) {
+  var self = this,
+      actions = self.Actions.get();
+
+  for (var key in actionFunctions) {
+    console.log(actionFunctions[key]);
+  }
+
+  // Basically we need to get it so that the call function 
+
+  // TODO: If action has an "every" atribute, we parse it with later and set the timeout
+  // // execute logTime one time on the next occurrence of the text schedule
+  // var timer = self.later.setTimeout(logTime, textSched);
+
+  // // execute logTime for each successive occurrence of the text schedule
+  // var timer2 = self.later.setInterval(logTime, textSched);
+
+
+  // When actions are registered pipe instance
+  self.pipeInstance();
+
+};
+
+GROWJS.Actions = function () {
+  this.actions = [];
+};
+
+GROWJS.Actions.prototype.parse = function () {
+  var self = this;
+  var actions = [];
+
+
+  for (var key in thing) {
+    // The top level thing model.
+    if (key === "actions") {
+      console.log(typeof thing[key]);
+    }
+
+    // Grow kits can also contain sensors and actuators, which have their own models.
+    if (key === "components") {
+      for (var component in thing.components) {
+        for (key in component) {
+          if (component[key] === "actions") {
+            actions.push(component[key]);
+          }
+        }
+      }
+    }
+  }
+
+  console.log(actions);
+  return actions;
+
+};
+
+GROWJS.Actions.prototype.get = function () {
+  return this.actions;
+};
+
+
+GROWJS.Actions.prototype.register = function() {
+  for(var i = 0; i < arguments.length; ++i) {
+    if (typeof arguments[i]  === "function") {
+      this.actions.push(arguments[i]);
+    } else {
+      // unpack array
+      for(var j = 0; j < arguments[i].length; ++j) {
+        this.actions.push(arguments[i][j]);
+      }
+    }
+  }
+};
+
+// http://stackoverflow.com/questions/359788/how-to-execute-a-javascript-function-when-i-have-its-name-as-a-string
+GROWJS.Actions.prototype.call = function (functionName, context /*, args */) {
+  var args = [].slice.call(arguments).splice(2);
+  var namespaces = functionName.split(".");
+  var func = namespaces.pop();
+  for(var i = 0; i < namespaces.length; i++) {
+    context = this.actions[namespaces[i]];
+  }
+  return context[func].apply(context, args);
+};
+
+/*
+  This file contains methods for interacting with the Grow-IoT api.
+*/
+
+GROWJS.API.prototype.sendData = function (data, callback) {
+  var self = this;
+
+  if (!self.ddpclient || !self.uuid || !self.token) {
+    callback("Invalid connection state.");
+    return;
+  }
+
+  self.ddpclient.call(
+    'Device.sendData',
+    [{uuid: self.uuid, token: self.token}, data],
+    function (error, result) {
+      if (error) return callback(error);
+
+      callback(null, result);
+    }
+  );
+};
+
+
+// TODO: fix.
+GROWJS.API.prototype.emitEvent = function (eventMessage, callback) {
+  var self = this;
+
+  event = {
+    event: eventMessage,
+    timestamp: new Date()
+  };
+
+  self.ddpclient.call(
+    'Device.emitEvent',
+    [{uuid: self.uuid, token: self.token}, event],
+    function (error, result) {
+      callback(error, result);
+    }
+  );
+};
+
+
+// Maybe this function needs to be split up?
+GROWJS.API.prototype.updateProperty = function (propertyName, propertyKey, value, callback) {
+  var self = this;
+
+  var thing = self.growFile.thing;
+
+  // Find properties in top level thing object
+  for (var key in thing) {
+    if (key === propertyName) {
+      // thing[key][propertyKey] = value;
+    }
+
+    // Find properties in components 
+    if (key === "components") {
+      for (var component in thing.components) {
+        if (thing.components[component].name === propertyName) {
+          thing.components[component][propertyKey] = value;
+        }
+      }
+    }
+  }
+
+  self.writeChangesToGrowFile();
+
+  self.ddpclient.call(
+    'Device.udpateProperties',
+    [{uuid: self.uuid, token: self.token}, thing],
+    function (error, result) {
+      // if (error) return callback(error);
+      callback(error, result);
+    }
+  );
+};
+
+
+
+// Export Grow.js as npm module. Be sure to include last in gulpfile concatonation.
+module.exports = GROWJS;

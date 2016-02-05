@@ -14,7 +14,15 @@ var sourcemaps = require('gulp-sourcemaps');
 gulp.task('default', ['lint', 'build']);
 
 gulp.task('build', function() {
-  return gulp.src('./src/*.js')
+  return gulp.src([
+  	'./src/base.js',
+  	'./src/connect.js', 
+  	'./src/growfile.js',
+  	'./src/thing.js',
+  	'./src/actions.js',
+  	'./src/grow-api.js',
+  	'./src/export.js'
+  ])
     .pipe(concat('grow.js'))
     .pipe(gulp.dest('./dist/'));
 });

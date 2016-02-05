@@ -2,7 +2,7 @@
   This file contains methods for interacting with the Grow-IoT api.
 */
 
-GROWJS.prototype.sendData = function (data, callback) {
+GROWJS.API.prototype.sendData = function (data, callback) {
   var self = this;
 
   if (!self.ddpclient || !self.uuid || !self.token) {
@@ -23,7 +23,7 @@ GROWJS.prototype.sendData = function (data, callback) {
 
 
 // TODO: fix.
-GROWJS.prototype.emitEvent = function (eventMessage, callback) {
+GROWJS.API.prototype.emitEvent = function (eventMessage, callback) {
   var self = this;
 
   event = {
@@ -42,7 +42,7 @@ GROWJS.prototype.emitEvent = function (eventMessage, callback) {
 
 
 // Maybe this function needs to be split up?
-GROWJS.prototype.updateProperty = function (propertyName, propertyKey, value, callback) {
+GROWJS.API.prototype.updateProperty = function (propertyName, propertyKey, value, callback) {
   var self = this;
 
   var thing = self.growFile.thing;
