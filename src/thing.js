@@ -12,7 +12,7 @@ GROWJS.prototype.getActions = function () {
   var actions = [];
 
 
-  for (key in thing) {
+  for (var key in thing) {
     // The top level thing model.
     if (key === "actions") {
       console.log(typeof thing[key]);
@@ -20,7 +20,7 @@ GROWJS.prototype.getActions = function () {
 
     // Grow kits can also contain sensors and actuators, which have their own models.
     if (key === "components") {
-      for (component in thing.components) {
+      for (var component in thing.components) {
         for (key in component) {
           if (component[key] === "actions") {
             actions.push(component[key]);
@@ -30,17 +30,17 @@ GROWJS.prototype.getActions = function () {
     }
   }
 
-  console.log(actions);
   return actions;
 
-}
+};
 
+// Todo
 // Maybe this should just be a start function?
 GROWJS.prototype.linkActions = function (actionFunctions) {
   var self = this,
-      actions = self.getActions()
+      actions = self.getActions();
 
-  for (key in actionFunctions) {
+  for (var key in actionFunctions) {
     console.log(actionFunctions[key]);
   }
 
@@ -58,7 +58,7 @@ GROWJS.prototype.linkActions = function (actionFunctions) {
   self.pipeInstance();
 
 
-}
+};
 
 GROWJS.prototype.writableStream._write = function (command, encoding, callback) {
   var self = this;
@@ -67,7 +67,7 @@ GROWJS.prototype.writableStream._write = function (command, encoding, callback) 
   var actions = self.getActions();
 
   // Make sure to support options too.
-  for (action in actions) {
+  for (var action in actions) {
     // Support command.options
     if (command.type === action.call) {
       if (command.options) {
@@ -76,18 +76,18 @@ GROWJS.prototype.writableStream._write = function (command, encoding, callback) 
         self.callFunction(action.call);
       }
       // Should the below be done in a call back.
-      self.updateProperty(action.actuator.name, "state", action.state)
+      self.updateProperty(action.actuator.name, "state", action.state);
       // If command.options, this should be included in event.
       self.emitEvent({
         name: action.name
       });
     }
   }
-}
+};
 
 GROWJS.prototype.registerEventListeners = function () {
   var self = this;
-}
+};
 
 
 
@@ -97,7 +97,7 @@ GROWJS.prototype.writeChangesToGrowFile = function () {
   fs.writeFile('./grow.json', JSON.stringify(self.growFile, null, 4), function (error) {
     if (error) return console.log("Error", error);
   });
-}
+};
 
 
 // http://stackoverflow.com/questions/359788/how-to-execute-a-javascript-function-when-i-have-its-name-as-a-string
@@ -109,7 +109,7 @@ GROWJS.prototype.executeFunctionByName = function (functionName, context /*, arg
     context = context[namespaces[i]];
   }
   return context[func].apply(context, args);
-}
+};
 
 
 // Modify this so that it is namespaced for grow.

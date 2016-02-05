@@ -4,6 +4,7 @@
   "dependencies": {
     "ddp": ">=0.11.0",
     "ddp-ejson": ">=0.8.1-3",
+    "gulp-closure-compiler": "^0.4.0",
     "later": "^1.2.0",
     "time": "^0.11.4",
     "underscore": ">=1.8.3"

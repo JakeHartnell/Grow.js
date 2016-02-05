@@ -112,5 +112,5 @@ GROWJS.prototype.pipeInstance = function () {
   // We pipe our readable and writable streams to the instance.
   this.pipe(self.writableStream);
   self.readableStream.pipe(this);
-}
+};
 
