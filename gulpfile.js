@@ -9,6 +9,7 @@ var onError = function (err) {
   gutil.log(gutil.colors.green(err));
 };
 var sourcemaps = require('gulp-sourcemaps');
+var mocha = require('gulp-mocha');
 
 // Default
 gulp.task('default', ['lint', 'build']);
@@ -35,31 +36,22 @@ gulp.task('lint', function() {
 });
 
 // Minify JS
-// gulp.task('minify', ['bundle'], function(){
-//   var uglifyOptions = {
-//       mangle: true,
-//       preserveComments : "license"
-//   };
-//   return gulp.src('dist/grow.js')
-//     .pipe(plumber({ errorHandler: onError }))
-//     .pipe(rename('grow.min.js'))
-//     // .pipe(sourcemaps.init({loadMaps: true}))
-//     .pipe(uglify(uglifyOptions))
-//     // .pipe(sourcemaps.write('./'))
-//     .pipe(size({ showFiles: true }))
-//     .pipe(gulp.dest('dist'));
-// });
-
-// gulp.task('test', function(cb) {
-//   mochify('./test/*.js', {
-//     reporter: 'spec',
-//     transform: 'brfs',
-//     "web-security": false,
-//     "webSecurityEnabled": false,
-//     // "localUrlAccess": true,
-//     watch: true,
-//     wd: false,
-//     debug: false
-//   })
-//   .bundle();
-// });
+gulp.task('minify', function(){
+  var uglifyOptions = {
+      mangle: true,
+      preserveComments : "license"
+  };
+  return gulp.src('dist/grow.js')
+    .pipe(plumber({ errorHandler: onError }))
+    .pipe(rename('grow.min.js'))
+    .pipe(sourcemaps.init({loadMaps: true}))
+    .pipe(uglify(uglifyOptions))
+    .pipe(sourcemaps.write('./'))
+    .pipe(gulp.dest('dist'));
+});
+ 
+gulp.task('test', function () {
+	return gulp.src('test/*.js', {read: false})
+		// gulp-mocha needs filepaths so you can't have any plugins before it 
+		.pipe(mocha({reporter: 'nyan'}));
+});

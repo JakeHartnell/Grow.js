@@ -137,30 +137,28 @@ GROWJS.prototype._afterConnect = function (callback, result) {
     });
   }
 
-  // Make a new readable stream
-  self.readableStream = new Readable({objectMode: true});
-
-  // Make a new writable stream
-  self.writableStream = new Writable({objectMode: true});
-
-  // We are pushing data when sensor measures it so we do not do anything
-  // when we get a request for more data. We just ignore it.
-  self.readableStream._read = function () {};
-
-  // We catch any errors
-  self.readableStream.on('error', function (error) {
-    console.log("Error", error.message);
-  });
-
-
   callback(null, result);
 };
 
-GROWJS.prototype._write = function (chunk, encoding, callback) {
-  var self = this;
 
-  self.sendData(chunk, callback);
-};
+//// STREAMS //////////////////////////////
+
+
+//// Readable Stream
+// Note this is "readable" from the server perspective.
+// The device publishes it's data to the readable stream.
+
+// Make a new readable stream
+GROWJS.prototype.readableStream = new Readable({objectMode: true});
+
+// We are pushing data when sensor measures it so we do not do anything
+// when we get a request for more data. We just ignore it.
+GROWJS.prototype.readableStream._read = function () {};
+
+// We catch any errors
+GROWJS.prototype.readableStream.on('error', function (error) {
+  console.log("Error", error.message);
+});
 
 // We are pushing data to a stream as commands are arriving and are leaving
 // to the stream to buffer them. So we simply ignore requests for more data.
@@ -168,13 +166,17 @@ GROWJS.prototype._read = function (size) {
   var self = this;
 };
 
+//// Writable streams
+// Note: this is writable from the server perspective. A device listens on
+// the writable stream to recieve new commands.
 
-GROWJS.prototype.pipeInstance = function () {
+// Make a new writable stream
+GROWJS.prototype.writableStream = new Writable({objectMode: true});
+
+GROWJS.prototype._write = function (chunk, encoding, callback) {
   var self = this;
 
-  // We pipe our readable and writable streams to the instance.
-  this.pipe(self.writableStream);
-  self.readableStream.pipe(this);
+  self.sendData(chunk, callback);
 };
 
 // Sets up listening for actions on the write able stream.
@@ -203,6 +205,14 @@ GROWJS.prototype.writableStream._write = function (command, encoding, callback) 
       });
     }
   }
+};
+
+// We pipe our readable and writable streams to the instance.
+GROWJS.prototype.pipeInstance = function () {
+  var self = this;
+
+  this.pipe(self.writableStream);
+  self.readableStream.pipe(this);
 };
 
 GROWJS.prototype.writeChangesToGrowFile = function () {
@@ -438,10 +448,10 @@ GROWJS.Actions.prototype.call = function (functionName, context /*, args */) {
 };
 
 /*
-  This file contains methods for interacting with the Grow-IoT api.
+  Methods for interacting with the Grow-IoT api.
 */
 
-GROWJS.API.prototype.sendData = function (data, callback) {
+GROWJS.prototype.sendData = function (data, callback) {
   var self = this;
 
   if (!self.ddpclient || !self.uuid || !self.token) {
@@ -462,7 +472,7 @@ GROWJS.API.prototype.sendData = function (data, callback) {
 
 
 // TODO: fix.
-GROWJS.API.prototype.emitEvent = function (eventMessage, callback) {
+GROWJS.prototype.emitEvent = function (eventMessage, callback) {
   var self = this;
 
   event = {
@@ -481,7 +491,7 @@ GROWJS.API.prototype.emitEvent = function (eventMessage, callback) {
 
 
 // Maybe this function needs to be split up?
-GROWJS.API.prototype.updateProperty = function (propertyName, propertyKey, value, callback) {
+GROWJS.prototype.updateProperty = function (propertyName, propertyKey, value, callback) {
   var self = this;
 
   var thing = self.growFile.thing;
@@ -513,8 +523,6 @@ GROWJS.API.prototype.updateProperty = function (propertyName, propertyKey, value
     }
   );
 };
-
-
 
 // Export Grow.js as npm module. Be sure to include last in gulpfile concatonation.
 module.exports = GROWJS;
