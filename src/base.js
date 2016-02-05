@@ -10,7 +10,6 @@ var fs = require('fs');
 var later = require('later');
 // TODO: include all the code in the src directory.
 
-
 function GROWJS(growFile) {
   var self = this;
   
@@ -61,6 +60,6 @@ util.inherits(GROWJS, Duplex);
 
 
 // TODO: add other files.
-
+require('./sensors');
 
 module.exports = GROWJS;

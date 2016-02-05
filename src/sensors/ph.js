@@ -4,16 +4,29 @@
   Note: we might differentiate between analog and digital sensors.
 */
 
+// https://en.wikipedia.org/wiki/Errors-in-variables_model
+
+var regression = require('regression');
+var time = require('time')(Date);
+
+GROWJS.Sensors.ph = function() {
+  var self = this;
+  self.phData = [];
+}
 
 // Todo support callibaration libraries for sensors.
 // These should accumlate data do some basic cleaning and store the data to 
-GROWJS.prototype.phChange = function (value) {
+GROWJS.Sensors.ph.prototype.phChange = function (value) {
   var self = this;
+  // We push time as our x coordinate and value as our y coordinate.
+  // We will use these for a linear regression when we log our value at a set interval.
 
-  return self.calcPh(value);
+  console.log(new time.Date() + '\n' + self.calcPh(value));
+
+  self.phData.push([new time.Date(), self.calcPh(value)]);
 }
 
-GROWJS.prototype.log_ph = function () {
+GROWJS.Sensors.ph.prototype.ph.log_ph = function () {
   var self = this;
   self.readableStream.push({
       name: "Ph",
@@ -25,6 +38,8 @@ GROWJS.prototype.log_ph = function () {
 
 
 // Some useful math in here.
+
+
 
 // vRefs could be very useful for calibrating sensors.
 var vRef = 4.096; //Our vRef into the ADC wont be exact
@@ -80,3 +95,6 @@ function reset_Params(void) {
   params.pHStep = 59.16;//ideal probe slope
   eeprom_write_block(&params, (void *)0, sizeof(params)); //write these settings back to eeprom
 }
+
+
+console.log(GROWJS);

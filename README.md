@@ -5,7 +5,7 @@
 [General Feedback](http://forum.commongarden.org/c/feedback)
 
 # Grow.js
-An npm packagle of useful functions for working with the [Common Garden Grow app](https://github.com/CommonGarden/Grow).
+An npm packagle of useful functions for working with the [Grow-IoT app](https://github.com/CommonGarden/Grow-IoT).
 
 Install with:
 
@@ -14,6 +14,9 @@ Install with:
 NOTE: This is a work in progress. If you want to help read the code and comments.
 
 ## grow.json
+
+### TOD0: rewrite this section.
+
 Grow.js uses a `grow.json` file by default to describe itself and its api. It is also used for state, in case the device looses internet connnection or power.
 
 You will need to create a `grow.json` file to connect to a Common Garden Grow app instance (local or in the cloud), as this file is used to generate both the API and UI for the device!
