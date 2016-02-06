@@ -369,18 +369,12 @@ GROWJS.prototype.callFunction = function(str) {
 
 */
 
-// Maybe this should just be a start function?
 GROWJS.prototype.registerActions = function (implementation) {
   var self = this;
   self.actions = _.clone(implementation || {});
 
-  // for (var key in implementation) {
-  //   console.log(key);
-  //   console.log(implementation[key]);
-  // }
-
-  self.callAction("check_water_level", "slkdfj");
-  // Basically we need to get it so that the call function 
+  // TODO: we need to get the actions and check to see if 
+  console.log(self.getActions());
 
   // TODO: If action has an "every" atribute, we parse it with later and set the timeout
   // // execute logTime one time on the next occurrence of the text schedule
@@ -389,30 +383,33 @@ GROWJS.prototype.registerActions = function (implementation) {
   // // execute logTime for each successive occurrence of the text schedule
   // var timer2 = self.later.setInt erval(logTime, textSched);
 
-  // self.Actions.register(implementation);
-
-  // self.pipeInstance();
-
 };
 
 
-GROWJS.prototype.parse = function () {
+GROWJS.prototype.getActions = function () {
   var self = this;
+  var thing = self.growFile.thing;
   var actions = [];
 
 
   for (var key in thing) {
     // The top level thing model.
     if (key === "actions") {
-      console.log(typeof thing[key]);
+      for (var action in thing[key]) {
+        actions.push(action);
+      }
     }
 
     // Grow kits can also contain sensors and actuators, which have their own models.
     if (key === "components") {
       for (var component in thing.components) {
-        for (key in component) {
-          if (component[key] === "actions") {
-            actions.push(component[key]);
+        component = thing.components[component];
+        for (var property in component) {
+          if (property === "actions") {
+            var componentActions = component[property];
+            for (var componentAction in componentActions) {
+              actions.push(componentActions[componentAction]);
+            }
           }
         }
       }
@@ -422,28 +419,7 @@ GROWJS.prototype.parse = function () {
   // console.log(actions);
   return actions;
 
-};
-
-
-GROWJS.prototype.get = function () {
-  return GROWJS.actions;
-};
-
-
-GROWJS.prototype.register = function() {
-  var self = this;
-  self.actions = [];
-  for(var i = 0; i < arguments.length; ++i) {
-    if (typeof arguments[i]  === "function") {
-      self.actions.push(arguments[i]);
-    } else {
-      // unpack array
-      for(var j = 0; j < arguments[i].length; ++j) {
-        self.actions.push(arguments[i][j]);
-      }
-    }
-  }
-  // console.log(this);
+  // return GROWJS.actions;
 };
 
 

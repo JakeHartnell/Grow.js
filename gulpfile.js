@@ -12,7 +12,7 @@ var sourcemaps = require('gulp-sourcemaps');
 var mocha = require('gulp-mocha');
 
 // Default
-gulp.task('default', ['lint', 'build']);
+gulp.task('default', ['lint', 'build', 'minify']);
 
 gulp.task('build', function() {
   return gulp.src([
@@ -50,7 +50,8 @@ gulp.task('minify', function(){
     .pipe(gulp.dest('dist'));
 });
  
-gulp.task('test', function () {
+// Run tests
+gulp.task('test', ['lint', 'build'], function () {
 	return gulp.src('test/*.js', {read: false})
 		// gulp-mocha needs filepaths so you can't have any plugins before it 
 		.pipe(mocha({reporter: 'nyan'}));
