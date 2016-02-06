@@ -7,15 +7,16 @@
 
 */
 
-// Maybe this should just be a start function?
-GROWJS.prototype.registerActions = function (actionFunctions) {
-  var self = this,
-      actions = self.Actions.get();
+GROWJS.prototype.registerActions = function (implementation) {
+  var self = this;
+  self.actions = _.clone(implementation || {});
 
-  for (var key in actionFunctions) {
-    console.log(actionFunctions[key]);
-  }
+  // for (var key in implementation) {
+  //   console.log(key);
+  //   console.log(implementation[key]);
+  // }
 
+  self.callAction("check_water_level", "slkdfj");
   // Basically we need to get it so that the call function 
 
   // TODO: If action has an "every" atribute, we parse it with later and set the timeout
@@ -23,19 +24,16 @@ GROWJS.prototype.registerActions = function (actionFunctions) {
   // var timer = self.later.setTimeout(logTime, textSched);
 
   // // execute logTime for each successive occurrence of the text schedule
-  // var timer2 = self.later.setInterval(logTime, textSched);
+  // var timer2 = self.later.setInt erval(logTime, textSched);
 
+  // self.Actions.register(implementation);
 
-  // When actions are registered pipe instance
-  self.pipeInstance();
+  // self.pipeInstance();
 
 };
 
-GROWJS.Actions = function () {
-  this.actions = [];
-};
 
-GROWJS.Actions.prototype.parse = function () {
+GROWJS.prototype.parse = function () {
   var self = this;
   var actions = [];
 
@@ -58,36 +56,25 @@ GROWJS.Actions.prototype.parse = function () {
     }
   }
 
-  console.log(actions);
+  // console.log(actions);
   return actions;
 
 };
 
-GROWJS.Actions.prototype.get = function () {
-  return this.actions;
+
+GROWJS.prototype.get = function () {
+  return GROWJS.actions;
 };
 
-
-GROWJS.Actions.prototype.register = function() {
-  for(var i = 0; i < arguments.length; ++i) {
-    if (typeof arguments[i]  === "function") {
-      this.actions.push(arguments[i]);
-    } else {
-      // unpack array
-      for(var j = 0; j < arguments[i].length; ++j) {
-        this.actions.push(arguments[i][j]);
-      }
-    }
-  }
-};
 
 // http://stackoverflow.com/questions/359788/how-to-execute-a-javascript-function-when-i-have-its-name-as-a-string
-GROWJS.Actions.prototype.call = function (functionName, context /*, args */) {
-  var args = [].slice.call(arguments).splice(2);
-  var namespaces = functionName.split(".");
-  var func = namespaces.pop();
-  for(var i = 0; i < namespaces.length; i++) {
-    context = this.actions[namespaces[i]];
+GROWJS.prototype.callAction = function (functionName, options) {
+  var self = this;
+
+  if (options) {
+    return self.actions[functionName](options);
   }
-  return context[func].apply(context, args);
+  else {
+    return self.actions[functionName]();
+  }
 };

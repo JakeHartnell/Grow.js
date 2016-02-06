@@ -81,7 +81,6 @@ GROWJS.prototype._afterConnect = function (callback, result) {
 
 //// STREAMS //////////////////////////////
 
-
 //// Readable Stream
 // Note this is "readable" from the server perspective.
 // The device publishes it's data to the readable stream.
@@ -123,21 +122,21 @@ GROWJS.prototype.writableStream._write = function (command, encoding, callback) 
   var self = this;
 
   // Get a list of action objects and calls
-  var actions = self.Action.getActions();
+  var actions = self.Actions.getActions();
 
   // Make sure to support options too.
   for (var action in actions) {
     // Support command.options
     if (command.type === action.call) {
       if (command.options) {
-        self.Action.call(action.call, command.options);
+        self.Actions.call(action.call, command.options);
       } else {
-        self.Action.call(action.call);
+        self.Actions.call(action.call);
       }
       // Should the below be done in a call back.
-      self.API.updateProperty(action.actuator.name, "state", action.state);
+      self.updateProperty(action.actuator.name, "state", action.state);
       // If command.options, this should be included in event.
-      self.API.emitEvent({
+      self.emitEvent({
         name: action.name,
         message: action.eventMessage
       });

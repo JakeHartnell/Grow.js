@@ -10,7 +10,7 @@ var fs = require('fs');
 var later = require('later');
 // TODO: include all the code in the src directory.
 
-function GROWJS(growFile) {
+function GROWJS(implementation, growFile) {
   var self = this;
   
   self.later = later;
@@ -18,14 +18,18 @@ function GROWJS(growFile) {
   // Use local time.
   self.later.date.localTime();
 
+  if (!implementation) {
+    throw new Error("Grow.js requires an implementation.");
+  }
+
   if (!(self instanceof GROWJS)) {
-    return new GROWJS(pathToGrowFile);
+    return new GROWJS(growFile);
   }
 
   // The grow file is needed to maintain state in case our IoT device looses power or resets.
   // This part could be better...
   if (growFile) {
-    self.growFile = require(growFile);
+    self.growFile = growFile;
   } else {
     self.growFile = require('../../grow.json');
   }
@@ -56,6 +60,10 @@ function GROWJS(growFile) {
   }));
 
   self.connect();
+
+  self.registerActions(implementation);
+
+  self.pipeInstance();
 }
 
 util.inherits(GROWJS, Duplex);

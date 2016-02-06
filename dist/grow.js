@@ -10,7 +10,7 @@ var fs = require('fs');
 var later = require('later');
 // TODO: include all the code in the src directory.
 
-function GROWJS(growFile) {
+function GROWJS(implementation, growFile) {
   var self = this;
   
   self.later = later;
@@ -18,14 +18,18 @@ function GROWJS(growFile) {
   // Use local time.
   self.later.date.localTime();
 
+  if (!implementation) {
+    throw new Error("Grow.js requires an implementation.");
+  }
+
   if (!(self instanceof GROWJS)) {
-    return new GROWJS(pathToGrowFile);
+    return new GROWJS(growFile);
   }
 
   // The grow file is needed to maintain state in case our IoT device looses power or resets.
   // This part could be better...
   if (growFile) {
-    self.growFile = require(growFile);
+    self.growFile = growFile;
   } else {
     self.growFile = require('../../grow.json');
   }
@@ -56,6 +60,10 @@ function GROWJS(growFile) {
   }));
 
   self.connect();
+
+  self.registerActions(implementation);
+
+  self.pipeInstance();
 }
 
 util.inherits(GROWJS, Duplex);
@@ -143,7 +151,6 @@ GROWJS.prototype._afterConnect = function (callback, result) {
 
 //// STREAMS //////////////////////////////
 
-
 //// Readable Stream
 // Note this is "readable" from the server perspective.
 // The device publishes it's data to the readable stream.
@@ -185,21 +192,21 @@ GROWJS.prototype.writableStream._write = function (command, encoding, callback) 
   var self = this;
 
   // Get a list of action objects and calls
-  var actions = self.Action.getActions();
+  var actions = self.Actions.getActions();
 
   // Make sure to support options too.
   for (var action in actions) {
     // Support command.options
     if (command.type === action.call) {
       if (command.options) {
-        self.Action.call(action.call, command.options);
+        self.Actions.call(action.call, command.options);
       } else {
-        self.Action.call(action.call);
+        self.Actions.call(action.call);
       }
       // Should the below be done in a call back.
-      self.API.updateProperty(action.actuator.name, "state", action.state);
+      self.updateProperty(action.actuator.name, "state", action.state);
       // If command.options, this should be included in event.
-      self.API.emitEvent({
+      self.emitEvent({
         name: action.name,
         message: action.eventMessage
       });
@@ -363,14 +370,16 @@ GROWJS.prototype.callFunction = function(str) {
 */
 
 // Maybe this should just be a start function?
-GROWJS.prototype.registerActions = function (actionFunctions) {
-  var self = this,
-      actions = self.Actions.get();
+GROWJS.prototype.registerActions = function (implementation) {
+  var self = this;
+  self.actions = _.clone(implementation || {});
 
-  for (var key in actionFunctions) {
-    console.log(actionFunctions[key]);
-  }
+  // for (var key in implementation) {
+  //   console.log(key);
+  //   console.log(implementation[key]);
+  // }
 
+  self.callAction("check_water_level", "slkdfj");
   // Basically we need to get it so that the call function 
 
   // TODO: If action has an "every" atribute, we parse it with later and set the timeout
@@ -378,19 +387,16 @@ GROWJS.prototype.registerActions = function (actionFunctions) {
   // var timer = self.later.setTimeout(logTime, textSched);
 
   // // execute logTime for each successive occurrence of the text schedule
-  // var timer2 = self.later.setInterval(logTime, textSched);
+  // var timer2 = self.later.setInt erval(logTime, textSched);
 
+  // self.Actions.register(implementation);
 
-  // When actions are registered pipe instance
-  self.pipeInstance();
+  // self.pipeInstance();
 
 };
 
-GROWJS.Actions = function () {
-  this.actions = [];
-};
 
-GROWJS.Actions.prototype.parse = function () {
+GROWJS.prototype.parse = function () {
   var self = this;
   var actions = [];
 
@@ -413,38 +419,44 @@ GROWJS.Actions.prototype.parse = function () {
     }
   }
 
-  console.log(actions);
+  // console.log(actions);
   return actions;
 
 };
 
-GROWJS.Actions.prototype.get = function () {
-  return this.actions;
+
+GROWJS.prototype.get = function () {
+  return GROWJS.actions;
 };
 
 
-GROWJS.Actions.prototype.register = function() {
+GROWJS.prototype.register = function() {
+  var self = this;
+  self.actions = [];
   for(var i = 0; i < arguments.length; ++i) {
     if (typeof arguments[i]  === "function") {
-      this.actions.push(arguments[i]);
+      self.actions.push(arguments[i]);
     } else {
       // unpack array
       for(var j = 0; j < arguments[i].length; ++j) {
-        this.actions.push(arguments[i][j]);
+        self.actions.push(arguments[i][j]);
       }
     }
   }
+  // console.log(this);
 };
 
+
 // http://stackoverflow.com/questions/359788/how-to-execute-a-javascript-function-when-i-have-its-name-as-a-string
-GROWJS.Actions.prototype.call = function (functionName, context /*, args */) {
-  var args = [].slice.call(arguments).splice(2);
-  var namespaces = functionName.split(".");
-  var func = namespaces.pop();
-  for(var i = 0; i < namespaces.length; i++) {
-    context = this.actions[namespaces[i]];
+GROWJS.prototype.callAction = function (functionName, options) {
+  var self = this;
+
+  if (options) {
+    return self.actions[functionName](options);
   }
-  return context[func].apply(context, args);
+  else {
+    return self.actions[functionName]();
+  }
 };
 
 /*

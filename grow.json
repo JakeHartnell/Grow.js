@@ -1,0 +1,121 @@
+{
+    "host": "localhost",
+    "port": "3000",
+    "thing": {
+        "name": "Smart Pot",
+        "version": "0.1.5",
+        "owner": "Jake@commongarden.org",
+        "description": "An example growkit.",
+        "type": "growkit",
+        "numberOfPlants": 1,
+        "state": "No plants",
+        "components": [
+            {
+                "name": "Light sensor",
+                "type": "light-sensor",
+                "class": "sensor",
+                "vRef": 4.96,
+                "unit": "milivolts",
+                "actions": [
+                    {
+                        "name": "Log light data",
+                        "call": "logLight",
+                        "every": "minute"
+                    }
+                ]
+            },
+            {
+                "name": "Water level sensor",
+                "type": "liquid-level",
+                "class": "sensor",
+                "vRef": 3.3,
+                "unit": "milivolts",
+                "events": [
+                    {
+                        "name": "Water level low",
+                        "message": "Refill the water resevoir. You can water the plant like you would any other, the water will drain into the resevoir and this notification will go away."
+                    }
+                ],
+                "actions": [
+                    {
+                        "name": "Check water level",
+                        "call": "check_water_level",
+                        "options": {
+                            "threshold": 3
+                        },
+                        "every": "minute"
+                    }
+                ]
+            },
+            {
+                "name": "Temperature sensor",
+                "type": "temperature",
+                "class": "sensor",
+                "unit": "Celcius",
+                "actions": [
+                    {
+                        "name": "Log temperature data",
+                        "call": "grow.readTemperature",
+                        "options": {
+                            "unit": "C"
+                        },
+                        "every": "minute"
+                    }
+                ]
+            },
+            {
+                "name": "pH sensor",
+                "type": "ph",
+                "unit": "ph",
+                "class": "sensor",
+                "actions": [
+                    {
+                        "name": "Log ph data",
+                        "call": "grow.readPh",
+                        "every": "minute",
+                        "event-message": "Watered plant for 20 seconds"
+                    }
+                ]
+            },
+            {
+                "name": "Water pump",
+                "type": "water-pump",
+                "class": "actuator",
+                "state": "off",
+                "actions": [
+                    {
+                        "name": "Water plant",
+                        "call": "waterPlant",
+                        "options": {
+                            "duration": "20 seconds"
+                        },
+                        "every": "day at 10am",
+                        "event-message": "Watered plant for 20 seconds"
+                    }
+                ]
+            },
+            {
+                "name": "Light",
+                "type": "relay",
+                "class": "actuator",
+                "state": "on",
+                "actions": [
+                    {
+                        "name": "On",
+                        "call": "light_on",
+                        "every": "day at 9am",
+                        "event-message": "Light turned on"
+                    },
+                    {
+                        "name": "off",
+                        "call": "light_off",
+                        "every": "day at 8:30pm",
+                        "event-message": "Light turned off"
+                    }
+                ]
+            }
+        ]
+    },
+    "uuid": "fed41a75-26d4-41a8-a779-6b20c52c9cd6",
+    "token": "QLDiKNBvhLMTcMkpkQDWuEMQNF8BsTew"
+}
