@@ -1,29 +1,45 @@
-/*
-  This file contains functions for working with the Common Garden thing data model and the grow.json file.
-  (To do, link to dpcumentation)
-  
-  This includes parsing and updating the grow file, as well as calling functions.
-
-
-*/
-
 GROWJS.prototype.registerActions = function (implementation) {
   var self = this;
   self.actions = _.clone(implementation || {});
 
-  // TODO: we need to get the actions and check to see if 
-  console.log(self.getActions());
+  // var growFileActions = self.getActions();
+  // var functionList = [];
 
-  // TODO: If action has an "every" atribute, we parse it with later and set the timeout
-  // // execute logTime one time on the next occurrence of the text schedule
-  // var timer = self.later.setTimeout(logTime, textSched);
+  // TODO: do better checks for options.
+  // for (var i = growFileActions.length - 1; i >= 0; i--) {
+  //   functionList.push(growFileActions[i].call);
 
-  // // execute logTime for each successive occurrence of the text schedule
-  // var timer2 = self.later.setInt erval(logTime, textSched);
+  //   // If action has an "schedule" atribute, we parse it with later and set the interval.
+  //   if (growFileActions[i].schedule) {
+  //     var schedule = later.parse.text(growFileActions[i].schedule);
+  //     if (schedule.error !== -1) {
+  //       console.log(growFileActions[i].schedule);
+  //       console.log(growFileActions[i].schedule.length);
+  //       console.log(schedule.error);
+  //     }
+  //     var functionName = growFileActions[i].call;
+  //     if (typeof growFileActions[i].options === "object") {
+  //       later.setInterval(self.callAction(functionName, growFileActions[i].options), schedule);
+  //     } else {
+  //       later.setInterval(self.callAction(functionName), schedule);
+  //     }
+  //   }
+  // }
 
+  // TODO: make sure these match, if not, throw error. Everything referrenced in grow.json
+  // should be defined in the implementation.
+  // console.log(functionList);
+
+  // console.log(implementation);
+
+  // Finally, if a "start" action is defined, we run it.
+  if (typeof self.actions.start === "function") {
+    return self.actions.start();
+  }
 };
 
 
+// Returns a list of actions in the grow file.
 GROWJS.prototype.getActions = function () {
   var self = this;
   var thing = self.growFile.thing;
@@ -31,14 +47,14 @@ GROWJS.prototype.getActions = function () {
 
 
   for (var key in thing) {
-    // The top level thing model.
+    // Check top level thing model for actions.
     if (key === "actions") {
       for (var action in thing[key]) {
         actions.push(action);
       }
     }
 
-    // Grow kits can also contain sensors and actuators, which have their own models.
+    // Grow kits can also contain components, which have their own thing models.
     if (key === "components") {
       for (var component in thing.components) {
         component = thing.components[component];
@@ -54,14 +70,10 @@ GROWJS.prototype.getActions = function () {
     }
   }
 
-  // console.log(actions);
   return actions;
-
-  // return GROWJS.actions;
 };
 
 
-// http://stackoverflow.com/questions/359788/how-to-execute-a-javascript-function-when-i-have-its-name-as-a-string
 GROWJS.prototype.callAction = function (functionName, options) {
   var self = this;
 

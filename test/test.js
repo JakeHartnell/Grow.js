@@ -4,51 +4,32 @@ var growFile = require('./testgrow.json');
 
 
 var grow = new GrowInstance({
-    start: function (callback) {
-      // Turn on power for sensors
-      // Figure out a version of the kit that doesn't need this hack.
-      lightSensorPower.high();
-      temperatureSensorPower.high();
-      phSensorPower.high();
-
-      // Water pump should be off.
-      waterpump.high();
-
-      // Collect data from sensors when their value changes
-
-      // Grow.js has helpers which collect these values and convert
-      // as well as clean the data for when it is eventually sent to the
-      // host
-      // lightSensor.on("change", function() {
-      //   grow.light(this.value);
-      // });
-      // temperatureSensor.on("change", function() {
-      //   grow.temperature(this.value);
-      // });
-      // phSensor.on("change", function() {
-      //   grow.ph(this.value);
-      // });
+    start: function () {
+      console.log("Started.")
     },
-    waterPlants: function (options, callback) {
-      if (options.duration) {
-        waterpump.low();
-        setTimeout(function () {
-          waterpump.high();
-        }, options.duration)
-      }
-      callback();
+    waterPlant: function (options) {
+      console.log(options);
     },
-    light_on: function (callback) {
-      light.low();
-      callback();
+    light_on: function () {
+      console.log("light on");
+      // return true;
     },
-    light_off: function (callback) {
-      light.high();
-      callback();
+    light_off: function () {
+      return true;
     },
-    check_water_level: function (str) {
-      // TODO
-      console.log("Called" + str);
+    check_water_level: function () {
+      console.log("Water level good");
+      return true;
+    },
+    log_light: function () {
+      return true;
+    },
+    log_temperature: function () {
+      return true;
+    },
+    log_ph: function () {
+      return true;
     }
+
 }, growFile);
 

@@ -19,8 +19,8 @@
                 "actions": [
                     {
                         "name": "Log light data",
-                        "call": "logLight",
-                        "every": "minute"
+                        "call": "log_light",
+                        "sechedule": "every 1 second"
                     }
                 ]
             },
@@ -43,7 +43,7 @@
                         "options": {
                             "threshold": 3
                         },
-                        "every": "minute"
+                        "schedule": "every 1 second"
                     }
                 ]
             },
@@ -55,11 +55,11 @@
                 "actions": [
                     {
                         "name": "Log temperature data",
-                        "call": "grow.readTemperature",
+                        "call": "log_temperature",
                         "options": {
                             "unit": "C"
                         },
-                        "every": "minute"
+                        "schedule": "every 1 minute"
                     }
                 ]
             },
@@ -71,8 +71,8 @@
                 "actions": [
                     {
                         "name": "Log ph data",
-                        "call": "grow.readPh",
-                        "every": "minute",
+                        "call": "log_ph",
+                        "schedule": "every 1 minute",
                         "event-message": "Watered plant for 20 seconds"
                     }
                 ]
@@ -89,7 +89,7 @@
                         "options": {
                             "duration": "20 seconds"
                         },
-                        "every": "day at 10am",
+                        "schedule": "at 10:15am",
                         "event-message": "Watered plant for 20 seconds"
                     }
                 ]
@@ -103,13 +103,13 @@
                     {
                         "name": "On",
                         "call": "light_on",
-                        "every": "day at 9am",
+                        "schedule": "at 9:00am",
                         "event-message": "Light turned on"
                     },
                     {
                         "name": "off",
                         "call": "light_off",
-                        "every": "day at 8:30pm",
+                        "schedule": "at 8:30pm",
                         "event-message": "Light turned off"
                     }
                 ]
