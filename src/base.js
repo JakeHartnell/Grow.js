@@ -8,15 +8,12 @@ var Readable = require('stream').Readable;
 var Writable = require('stream').Writable;
 var fs = require('fs');
 var later = require('later');
-// TODO: include all the code in the src directory.
 
 function GROWJS(implementation, growFile) {
   var self = this;
-  
-  self.later = later;
 
   // Use local time.
-  self.later.date.localTime();
+  later.date.localTime();
 
   if (!implementation) {
     throw new Error("Grow.js requires an implementation.");
@@ -52,15 +49,21 @@ function GROWJS(implementation, growFile) {
 
   self._messageHandlerInstalled = false;
 
-  self.ddpclient = new DDPClient(_.defaults(self.options, {
-    host: 'localhost',
-    port: 3000,
-    ssl: false,
-    maintainCollections: false
-  }));
 
-  self.connect();
+  try {
+    self.ddpclient = new DDPClient(_.defaults(self.options, {
+      host: 'localhost',
+      port: 3000,
+      ssl: false,
+      maintainCollections: false
+    }));
+    self.connect();
+  }
+  catch (error) {
+    console.log(error);
+  }
 
+  // We register and start any recurring actions.
   self.registerActions(implementation);
 
   self.pipeInstance();

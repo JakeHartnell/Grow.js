@@ -8,15 +8,12 @@ var Readable = require('stream').Readable;
 var Writable = require('stream').Writable;
 var fs = require('fs');
 var later = require('later');
-// TODO: include all the code in the src directory.
 
 function GROWJS(implementation, growFile) {
   var self = this;
-  
-  self.later = later;
 
   // Use local time.
-  self.later.date.localTime();
+  later.date.localTime();
 
   if (!implementation) {
     throw new Error("Grow.js requires an implementation.");
@@ -52,15 +49,21 @@ function GROWJS(implementation, growFile) {
 
   self._messageHandlerInstalled = false;
 
-  self.ddpclient = new DDPClient(_.defaults(self.options, {
-    host: 'localhost',
-    port: 3000,
-    ssl: false,
-    maintainCollections: false
-  }));
+  
+  try {
+    self.ddpclient = new DDPClient(_.defaults(self.options, {
+      host: 'localhost',
+      port: 3000,
+      ssl: false,
+      maintainCollections: false
+    }));
+    self.connect();
+  }
+  catch (error) {
+    console.log(error);
+  }
 
-  self.connect();
-
+  // We register and start any recurring actions.
   self.registerActions(implementation);
 
   self.pipeInstance();
@@ -68,13 +71,11 @@ function GROWJS(implementation, growFile) {
 
 util.inherits(GROWJS, Duplex);
 
-// Maybe we should add more options to connect... like where to for instance.
-
-GROWJS.prototype.connect = function (callback) {
+GROWJS.prototype.connect = function () {
   var self = this;
 
   self.ddpclient.connect(function (error, wasReconnect) {
-    if (error) return callback(error);
+    // if (error) return callback(error);
 
     if (wasReconnect) {
       console.log("Reestablishment of a Grow server connection.");
@@ -84,7 +85,7 @@ GROWJS.prototype.connect = function (callback) {
     }
 
     if (self.uuid || self.token) {
-      return self._afterConnect(callback, {
+      return self._afterConnect({
         uuid: self.uuid,
         token: self.token
       });
@@ -94,7 +95,7 @@ GROWJS.prototype.connect = function (callback) {
       'Device.register',
       [self.thing],
       function (error, result) {
-        if (error) return callback(error);
+        // if (error) return callback(error);
 
         assert(result.uuid, result);
         assert(result.token, result);
@@ -102,20 +103,20 @@ GROWJS.prototype.connect = function (callback) {
         self.uuid = result.uuid;
         self.token = result.token;
 
-        self._afterConnect(callback, result);
+        self._afterConnect(result);
       }
     );
   });
 };
 
-GROWJS.prototype._afterConnect = function (callback, result) {
+GROWJS.prototype._afterConnect = function (result) {
   var self = this;
 
   self.ddpclient.subscribe(
     'Device.messages',
     [{uuid: self.uuid, token: self.token}],
     function (error) {
-      if (error) return callback(error);
+      // if (error) return callback(error);
 
       if (!self._messageHandlerInstalled) {
         self._messageHandlerInstalled = true;
@@ -145,7 +146,7 @@ GROWJS.prototype._afterConnect = function (callback, result) {
     });
   }
 
-  callback(null, result);
+  // callback(null, result);
 };
 
 
@@ -192,19 +193,20 @@ GROWJS.prototype.writableStream._write = function (command, encoding, callback) 
   var self = this;
 
   // Get a list of action objects and calls
-  var actions = self.Actions.getActions();
+  var actions = self.getActions();
 
   // Make sure to support options too.
   for (var action in actions) {
     // Support command.options
     if (command.type === action.call) {
       if (command.options) {
-        self.Actions.call(action.call, command.options);
+        self.callAction(action.call, command.options);
       } else {
-        self.Actions.call(action.call);
+        self.callAction(action.call);
       }
-      // Should the below be done in a call back.
-      self.updateProperty(action.actuator.name, "state", action.state);
+      // Should the below be done in a callback?
+      self.updateProperty(action.name, "state", action.state);
+      
       // If command.options, this should be included in event.
       self.emitEvent({
         name: action.name,
@@ -393,11 +395,6 @@ GROWJS.prototype.registerActions = function (implementation) {
   // console.log(functionList);
 
   // console.log(implementation);
-
-  // Finally, if a "start" action is defined, we run it.
-  if (typeof self.actions.start === "function") {
-    return self.actions.start();
-  }
 };
 
 
@@ -522,6 +519,104 @@ GROWJS.prototype.updateProperty = function (propertyName, propertyKey, value, ca
       callback(error, result);
     }
   );
+};
+
+GROWJS.prototype.setupSensors = function() {
+  var self = this;
+  self.ph = {
+  	phData: [],
+  	params: {
+      vRef: 4.096,
+      opampGain: 5.25,
+      pH7Cal: 2048,
+      pH4Cal: 1286,
+      pHStep: 59.16 
+    }
+  };
+  self.temperature = {};
+  self.light = {};
+}
+
+/*
+  This file contains utilities for calibrating and working with data from ph sensors.
+
+  Note: we might differentiate between analog and digital sensors.
+*/
+
+// https://en.wikipedia.org/wiki/Errors-in-variables_model
+
+var regression = require('regression');
+var time = require('time')(Date);
+
+GROWJS.prototype.ph = {
+  phData: [],
+
+  // Defaults
+  params: {
+    vRef: 4.096,
+    opampGain: 5.25,
+    pH7Cal: 2048,
+    pH4Cal: 1286,
+    pHStep: 59.16 
+  },
+
+  // Adds readings to ph Data.
+  addReading: function(reading) {
+    var self = this;
+    self.phData.push([new time.Date(), reading])
+  },
+
+  // Log ph and clear short term data store.
+  log_ph: function () {
+    var self = this;
+    self.readableStream.push({
+      name: "Ph",
+      type: "ph",
+      unit: "ph",
+      value: self.ph.calcPh()
+    });
+    delete self.phData;
+  },
+
+  //Lets read our raw reading while in pH7 calibration fluid and store it
+  //We will store in raw int formats as this math works the same on pH step calcs
+  calibratepH7: function (calnum){
+    var self = this;
+    self.params.pH7Cal = calnum;
+    self.calcpHSlope();
+  },
+
+  //Lets read our raw reading while in pH7 calibration fluid and store it
+  //We will store in raw int formats as this math works the same on pH step calcs
+  calibratepH7: function (calnum){
+    var self = this;
+    self.params.pH7Cal = calnum;
+    self.calcpHSlope();
+  },
+
+  //This is really the heart of the calibration process, we want to capture the
+  //probes "age" and compare it to the Ideal Probe, the easiest way to capture two readings,
+  //at known point(4 and 7 for example) and calculate the slope.
+  //If your slope is drifting too much from ideal (59.16) its time to clean or replace!
+  calcpHSlope: function () {
+    var self = this;
+
+    //RefVoltage * our deltaRawpH / 12bit steps *mV in V / OP-Amp gain /pH step difference 7-4
+    self.params.pHStep = ((((self.vRef*(self.params.pH7Cal - self.params.pH4Cal))/4096)*1000)/self.opampGain)/3;
+  },
+
+  //Now that we know our probe "age" we can calculate the proper pH Its really a matter of applying the math
+  //We will find our millivolts based on ADV vref and reading, then we use the 7 calibration
+  //to find out how many steps that is away from 7, then apply our calibrated slope to calculate real pH
+  calcpH: function() {
+    var self = this;
+    var result = regression('linear', self.phData);
+    console.log(result);
+    var miliVolts = ((result/4096)*self.vRef)*1000;
+    var temp = ((((self.vRef*self.params.pH7Cal)/4096)*1000)- miliVolts)/self.opampGain;
+    var pH = 7-(temp/self.params.pHStep);
+    console.log(pH);
+  }
 };
 
 // Export Grow.js as npm module. Be sure to include last in gulpfile concatonation.

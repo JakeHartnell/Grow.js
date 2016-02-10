@@ -1,4 +1,4 @@
-[![Slack Status](http://slack.commongarden.org/badge.svg)](http://slack.commongarden.org)
+    [![Slack Status](http://slack.commongarden.org/badge.svg)](http://slack.commongarden.org)
 
 [Feature Requests](http://forum.commongarden.org/c/feature-requests)
 

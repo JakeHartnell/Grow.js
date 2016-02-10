@@ -1,4 +1,4 @@
-var assert = require('assert');
+// var assert = require('assert');
 var GrowInstance = require('../dist/grow.js');
 var growFile = require('./testgrow.json');
 
@@ -32,4 +32,13 @@ var grow = new GrowInstance({
     }
 
 }, growFile);
+
+// console.log(grow);
+
+grow.ph.addReading(200);
+grow.ph.addReading(202);
+grow.ph.addReading(200);
+grow.ph.addReading(203);
+
+grow.ph.calcpH();
 

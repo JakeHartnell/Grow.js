@@ -31,11 +31,6 @@ GROWJS.prototype.registerActions = function (implementation) {
   // console.log(functionList);
 
   // console.log(implementation);
-
-  // Finally, if a "start" action is defined, we run it.
-  if (typeof self.actions.start === "function") {
-    return self.actions.start();
-  }
 };
 
 

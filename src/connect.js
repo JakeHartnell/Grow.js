@@ -1,10 +1,8 @@
-// Maybe we should add more options to connect... like where to for instance.
-
-GROWJS.prototype.connect = function (callback) {
+GROWJS.prototype.connect = function () {
   var self = this;
 
   self.ddpclient.connect(function (error, wasReconnect) {
-    if (error) return callback(error);
+    // if (error) return callback(error);
 
     if (wasReconnect) {
       console.log("Reestablishment of a Grow server connection.");
@@ -14,7 +12,7 @@ GROWJS.prototype.connect = function (callback) {
     }
 
     if (self.uuid || self.token) {
-      return self._afterConnect(callback, {
+      return self._afterConnect({
         uuid: self.uuid,
         token: self.token
       });
@@ -24,7 +22,7 @@ GROWJS.prototype.connect = function (callback) {
       'Device.register',
       [self.thing],
       function (error, result) {
-        if (error) return callback(error);
+        // if (error) return callback(error);
 
         assert(result.uuid, result);
         assert(result.token, result);
@@ -32,20 +30,20 @@ GROWJS.prototype.connect = function (callback) {
         self.uuid = result.uuid;
         self.token = result.token;
 
-        self._afterConnect(callback, result);
+        self._afterConnect(result);
       }
     );
   });
 };
 
-GROWJS.prototype._afterConnect = function (callback, result) {
+GROWJS.prototype._afterConnect = function (result) {
   var self = this;
 
   self.ddpclient.subscribe(
     'Device.messages',
     [{uuid: self.uuid, token: self.token}],
     function (error) {
-      if (error) return callback(error);
+      // if (error) return callback(error);
 
       if (!self._messageHandlerInstalled) {
         self._messageHandlerInstalled = true;
@@ -75,7 +73,7 @@ GROWJS.prototype._afterConnect = function (callback, result) {
     });
   }
 
-  callback(null, result);
+  // callback(null, result);
 };
 
 
@@ -122,19 +120,20 @@ GROWJS.prototype.writableStream._write = function (command, encoding, callback) 
   var self = this;
 
   // Get a list of action objects and calls
-  var actions = self.Actions.getActions();
+  var actions = self.getActions();
 
   // Make sure to support options too.
   for (var action in actions) {
     // Support command.options
     if (command.type === action.call) {
       if (command.options) {
-        self.Actions.call(action.call, command.options);
+        self.callAction(action.call, command.options);
       } else {
-        self.Actions.call(action.call);
+        self.callAction(action.call);
       }
-      // Should the below be done in a call back.
-      self.updateProperty(action.actuator.name, "state", action.state);
+      // Should the below be done in a callback?
+      self.updateProperty(action.name, "state", action.state);
+
       // If command.options, this should be included in event.
       self.emitEvent({
         name: action.name,
