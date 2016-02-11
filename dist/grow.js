@@ -61,7 +61,58 @@ function GROWJS(implementation, growFile) {
 
     self.registerActions(implementation);
 
-    self.pipeInstance();
+    //// Readable Stream
+    // Note this is "readable" from the server perspective.
+    // The device publishes it's data to the readable stream.
+    var readableStream = new Readable({objectMode: true});
+
+    // We are pushing data when sensor measures it so we do not do anything
+    // when we get a request for more data. We just ignore it.
+    readableStream._read = function () {};
+
+    readableStream.on('error', function (error) {
+      console.log("Error", error.message);
+    });
+
+    //// Writable streams
+    // Note: this is writable from the server perspective. A device listens on
+    // the writable stream to recieve new commands.
+    writableStream = new Writable({objectMode: true});
+
+
+    // Sets up listening for actions on the write able stream.
+    // Updates state and logs event.
+    var actions = self.actions;
+    writableStream._write = function (command, encoding, callback) {
+      // Make sure to support options too.
+      console.log("called");
+      for (var action in actions) {
+        // console.log(action);
+        // Support command.options
+        if (command.type === action) {
+          if (command.options) {
+            actions[action](command.options);
+          } else {
+            // console.log();
+            actions[action]();
+          }
+          // // Should the below be done in a callback?
+          // self.updateProperty(action.name, "state", action.state);
+
+          // // If command.options, this should be included in event.
+          // self.emitEvent({
+          //   name: action.name,
+          //   message: action.eventMessage
+          // });
+        }
+      }
+
+      callback(null);
+    };
+
+    self.pipe(writableStream);
+    readableStream.pipe(self);
+    // self.pipeInstance();
   });
 
   // self.pipeInstance();
@@ -123,7 +174,7 @@ GROWJS.prototype._afterConnect = function (callback, result) {
     'Device.messages',
     [{uuid: self.uuid, token: self.token}],
     function (error) {
-      // if (error) return callback(error);
+      if (error) return callback(error);
 
       if (!self._messageHandlerInstalled) {
         self._messageHandlerInstalled = true;
@@ -153,29 +204,29 @@ GROWJS.prototype._afterConnect = function (callback, result) {
     });
   }
 
-  //// Readable Stream
-  // Note this is "readable" from the server perspective.
-  // The device publishes it's data to the readable stream.
-  self.readableStream = new Readable({objectMode: true});
+  // //// Readable Stream
+  // // Note this is "readable" from the server perspective.
+  // // The device publishes it's data to the readable stream.
+  // self.readableStream = new Readable({objectMode: true});
 
-  // We are pushing data when sensor measures it so we do not do anything
-  // when we get a request for more data. We just ignore it.
-  self.readableStream._read = function () {};
+  // // We are pushing data when sensor measures it so we do not do anything
+  // // when we get a request for more data. We just ignore it.
+  // self.readableStream._read = function () {};
 
-  self.readableStream.on('error', function (error) {
-    console.log("Error", error.message);
-  });
+  // self.readableStream.on('error', function (error) {
+  //   console.log("Error", error.message);
+  // });
 
-  // We are pushing data to a stream as commands are arriving and are leaving
-  // to the stream to buffer them. So we simply ignore requests for more data.
-  self._read = function (size) {
-    var self = this;
-  };
+  // // We are pushing data to a stream as commands are arriving and are leaving
+  // // to the stream to buffer them. So we simply ignore requests for more data.
+  // self._read = function (size) {
+  //   var self = this;
+  // };
 
-  //// Writable streams
-  // Note: this is writable from the server perspective. A device listens on
-  // the writable stream to recieve new commands.
-  self.writableStream = new Writable({objectMode: true});
+  // //// Writable streams
+  // // Note: this is writable from the server perspective. A device listens on
+  // // the writable stream to recieve new commands.
+  // self.writableStream = new Writable({objectMode: true});
 
   // self.pipeInstance();
 
@@ -189,6 +240,19 @@ GROWJS.prototype.pipeInstance = function () {
   this.pipe(self.writableStream);
   self.readableStream.pipe(this);
 };
+
+GROWJS.prototype._write = function (chunk, encoding, callback) {
+  var self = this;
+
+  self.sendData(chunk, callback);
+};
+
+// We are pushing data to a stream as commands are arriving and are leaving
+// to the stream to buffer them. So we simply ignore requests for more data.
+GROWJS.prototype._read = function (size) {
+  var self = this;
+};
+
 
 GROWJS.prototype.writeChangesToGrowFile = function () {
   var self = this;
@@ -331,41 +395,6 @@ GROWJS.prototype.callFunction = function(str) {
 GROWJS.prototype.registerActions = function (implementation) {
   var self = this;
   self.actions = _.clone(implementation || {});
-
-  var actions = self.actions;
-  // var growFileActions = self.getActions();
-  // var functionList = [];
-  // console.log(self);
-
-  // Sets up listening for actions on the write able stream.
-  // Updates state and logs event.
-  self.writableStream._write = function (command, encoding, callback) {
-    var self = this;
-
-    // console.log(actions);
-
-    // Make sure to support options too.
-    for (var action in actions) {
-      // console.log(action);
-      // Support command.options
-      if (command.type === action) {
-        if (command.options) {
-          actions[action](command.options);
-        } else {
-          // console.log();
-          actions[action]();
-        }
-        // // Should the below be done in a callback?
-        // self.updateProperty(action.name, "state", action.state);
-
-        // // If command.options, this should be included in event.
-        // self.emitEvent({
-        //   name: action.name,
-        //   message: action.eventMessage
-        // });
-      }
-    }
-  };
 
   // this.pipe(self.writableStream);
   // self.readableStream.pipe(this);
