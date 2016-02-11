@@ -25,7 +25,6 @@ board.on("ready", function start() {
   var grow = new GrowInstance({
     log_ph: function () {
       console.log("aslkdfjlksdf");
-      grow.ph.log_ph();
     }
   }, growfile);
 });

@@ -51,19 +51,20 @@ function GROWJS(implementation, growFile) {
 
 
   // try {
-    self.ddpclient = new DDPClient(_.defaults(self.options, {
-      host: 'localhost',
-      port: 3000,
-      ssl: false,
-      maintainCollections: false
-    }));
-    self.connect(function(error, data) {
-      // We register and start any recurring actions.
-      console.log("Connected.")
-      self.registerActions(implementation);
+  self.ddpclient = new DDPClient(_.defaults(self.options, {
+    host: 'localhost',
+    port: 3000,
+    ssl: false,
+    maintainCollections: false
+  }));
+  self.connect(function(error, data) {
 
-      // self.pipeInstance();
-    });
+    self.registerActions(implementation);
+
+    self.pipeInstance();
+  });
+
+  // self.pipeInstance();
   // }
   // catch (error) {
   //   console.log(error);
@@ -155,8 +156,6 @@ GROWJS.prototype._afterConnect = function (callback, result) {
   //// Readable Stream
   // Note this is "readable" from the server perspective.
   // The device publishes it's data to the readable stream.
-
-  // Make a new readable stream
   self.readableStream = new Readable({objectMode: true});
 
   // We are pushing data when sensor measures it so we do not do anything
@@ -167,32 +166,29 @@ GROWJS.prototype._afterConnect = function (callback, result) {
     console.log("Error", error.message);
   });
 
-// // We are pushing data to a stream as commands are arriving and are leaving
-// // to the stream to buffer them. So we simply ignore requests for more data.
-//   self._read = function (size) {
-//     var self = this;
-//   };
+  // We are pushing data to a stream as commands are arriving and are leaving
+  // to the stream to buffer them. So we simply ignore requests for more data.
+  self._read = function (size) {
+    var self = this;
+  };
 
   //// Writable streams
   // Note: this is writable from the server perspective. A device listens on
   // the writable stream to recieve new commands.
-
-  // Make a new writable stream
   self.writableStream = new Writable({objectMode: true});
 
-  // self.pipe(self.writableStream);
-  // self.readableStream.pipe(self);
+  // self.pipeInstance();
 
-    callback(null, result);
-  };
+  callback(null, result);
+};
 
 // We pipe our readable and writable streams to the instance.
-// GROWJS.prototype.pipeInstance = function () {
-//   var self = this;
+GROWJS.prototype.pipeInstance = function () {
+  var self = this;
 
-//   self.pipe(self.writableStream);
-//   self.readableStream.pipe(self);
-// };
+  this.pipe(self.writableStream);
+  self.readableStream.pipe(this);
+};
 
 GROWJS.prototype.writeChangesToGrowFile = function () {
   var self = this;
@@ -336,23 +332,28 @@ GROWJS.prototype.registerActions = function (implementation) {
   var self = this;
   self.actions = _.clone(implementation || {});
 
+  var actions = self.actions;
   // var growFileActions = self.getActions();
   // var functionList = [];
-  console.log(self);
+  // console.log(self);
 
   // Sets up listening for actions on the write able stream.
   // Updates state and logs event.
   self.writableStream._write = function (command, encoding, callback) {
-    console.log("called.");
+    var self = this;
+
+    // console.log(actions);
 
     // Make sure to support options too.
-    for (var action in self.actions) {
+    for (var action in actions) {
+      // console.log(action);
       // Support command.options
-      if (command.type === action.call) {
+      if (command.type === action) {
         if (command.options) {
-          self.callAction(action.call, command.options);
+          actions[action](command.options);
         } else {
-          self.callAction(action.call);
+          // console.log();
+          actions[action]();
         }
         // // Should the below be done in a callback?
         // self.updateProperty(action.name, "state", action.state);
@@ -366,8 +367,8 @@ GROWJS.prototype.registerActions = function (implementation) {
     }
   };
 
-  self.pipe(self.writableStream);
-  self.readableStream.pipe(self);
+  // this.pipe(self.writableStream);
+  // self.readableStream.pipe(this);
 
   // TODO: do better checks for options.
   // for (var i = growFileActions.length - 1; i >= 0; i--) {

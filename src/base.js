@@ -51,19 +51,20 @@ function GROWJS(implementation, growFile) {
 
 
   // try {
-    self.ddpclient = new DDPClient(_.defaults(self.options, {
-      host: 'localhost',
-      port: 3000,
-      ssl: false,
-      maintainCollections: false
-    }));
-    self.connect(function(error, data) {
-      // We register and start any recurring actions.
-      console.log("Connected.")
-      self.registerActions(implementation);
+  self.ddpclient = new DDPClient(_.defaults(self.options, {
+    host: 'localhost',
+    port: 3000,
+    ssl: false,
+    maintainCollections: false
+  }));
+  self.connect(function(error, data) {
 
-      // self.pipeInstance();
-    });
+    self.registerActions(implementation);
+
+    self.pipeInstance();
+  });
+
+  // self.pipeInstance();
   // }
   // catch (error) {
   //   console.log(error);

@@ -2,23 +2,28 @@ GROWJS.prototype.registerActions = function (implementation) {
   var self = this;
   self.actions = _.clone(implementation || {});
 
+  var actions = self.actions;
   // var growFileActions = self.getActions();
   // var functionList = [];
-  console.log(self);
+  // console.log(self);
 
   // Sets up listening for actions on the write able stream.
   // Updates state and logs event.
   self.writableStream._write = function (command, encoding, callback) {
-    console.log("called.");
+    var self = this;
+
+    // console.log(actions);
 
     // Make sure to support options too.
-    for (var action in self.actions) {
+    for (var action in actions) {
+      // console.log(action);
       // Support command.options
-      if (command.type === action.call) {
+      if (command.type === action) {
         if (command.options) {
-          self.callAction(action.call, command.options);
+          actions[action](command.options);
         } else {
-          self.callAction(action.call);
+          // console.log();
+          actions[action]();
         }
         // // Should the below be done in a callback?
         // self.updateProperty(action.name, "state", action.state);
@@ -32,8 +37,8 @@ GROWJS.prototype.registerActions = function (implementation) {
     }
   };
 
-  self.pipe(self.writableStream);
-  self.readableStream.pipe(self);
+  // this.pipe(self.writableStream);
+  // self.readableStream.pipe(this);
 
   // TODO: do better checks for options.
   // for (var i = growFileActions.length - 1; i >= 0; i--) {
