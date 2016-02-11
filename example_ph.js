@@ -1,6 +1,6 @@
 var GrowInstance = require('./dist/grow.js');
 var five = require('johnny-five');
-var growfile = require('./grow.json');
+var growfile = require('./ph-sensor.json');
 var board = new five.Board();
 
 board.on("ready", function start() {
@@ -11,7 +11,7 @@ board.on("ready", function start() {
 
   // On Johnny-five's change event we log the value.
   phSensor.on("change", function() {
-    grow.Sensors.ph.addReading(this.value);
+    grow.ph.addReading(this.value);
   });
 
   /* 
@@ -24,7 +24,8 @@ board.on("ready", function start() {
   */
   var grow = new GrowInstance({
     log_ph: function () {
-      grow.Sensors.ph.log_ph();
+      console.log("aslkdfjlksdf");
+      grow.ph.log_ph();
     }
   }, growfile);
 });

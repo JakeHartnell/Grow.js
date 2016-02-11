@@ -49,7 +49,7 @@ function GROWJS(implementation, growFile) {
 
   self._messageHandlerInstalled = false;
 
-  
+
   try {
     self.ddpclient = new DDPClient(_.defaults(self.options, {
       host: 'localhost',
@@ -57,21 +57,27 @@ function GROWJS(implementation, growFile) {
       ssl: false,
       maintainCollections: false
     }));
-    self.connect();
+    self.connect(function(error, data) {
+      // We register and start any recurring actions.
+      console.log("Connected.")
+      self.registerActions(implementation);
+
+      self.pipeInstance();
+    });
   }
   catch (error) {
     console.log(error);
   }
 
   // We register and start any recurring actions.
-  self.registerActions(implementation);
+  // self.registerActions(implementation);
 
-  self.pipeInstance();
+  // self.pipeInstance();
 }
 
 util.inherits(GROWJS, Duplex);
 
-GROWJS.prototype.connect = function () {
+GROWJS.prototype.connect = function (callback) {
   var self = this;
 
   self.ddpclient.connect(function (error, wasReconnect) {
@@ -103,13 +109,13 @@ GROWJS.prototype.connect = function () {
         self.uuid = result.uuid;
         self.token = result.token;
 
-        self._afterConnect(result);
+        self._afterConnect(callback, result);
       }
     );
   });
 };
 
-GROWJS.prototype._afterConnect = function (result) {
+GROWJS.prototype._afterConnect = function (callback, result) {
   var self = this;
 
   self.ddpclient.subscribe(
@@ -146,7 +152,7 @@ GROWJS.prototype._afterConnect = function (result) {
     });
   }
 
-  // callback(null, result);
+  callback(null, result);
 };
 
 
@@ -185,35 +191,6 @@ GROWJS.prototype._write = function (chunk, encoding, callback) {
   var self = this;
 
   self.sendData(chunk, callback);
-};
-
-// Sets up listening for actions on the write able stream.
-// Updates state and logs event.
-GROWJS.prototype.writableStream._write = function (command, encoding, callback) {
-  var self = this;
-
-  // Get a list of action objects and calls
-  var actions = self.getActions();
-
-  // Make sure to support options too.
-  for (var action in actions) {
-    // Support command.options
-    if (command.type === action.call) {
-      if (command.options) {
-        self.callAction(action.call, command.options);
-      } else {
-        self.callAction(action.call);
-      }
-      // Should the below be done in a callback?
-      self.updateProperty(action.name, "state", action.state);
-      
-      // If command.options, this should be included in event.
-      self.emitEvent({
-        name: action.name,
-        message: action.eventMessage
-      });
-    }
-  }
 };
 
 // We pipe our readable and writable streams to the instance.
@@ -368,6 +345,32 @@ GROWJS.prototype.registerActions = function (implementation) {
 
   // var growFileActions = self.getActions();
   // var functionList = [];
+  console.log(self.actions);
+
+  // Sets up listening for actions on the write able stream.
+  // Updates state and logs event.
+  self.writableStream._write = function (command, encoding, callback) {
+    
+    // Make sure to support options too.
+    for (var action in actions) {
+      // Support command.options
+      if (command.type === action.call) {
+        if (command.options) {
+          self.callAction(action.call, command.options);
+        } else {
+          self.callAction(action.call);
+        }
+        // Should the below be done in a callback?
+        self.updateProperty(action.name, "state", action.state);
+
+        // If command.options, this should be included in event.
+        self.emitEvent({
+          name: action.name,
+          message: action.eventMessage
+        });
+      }
+    }
+  };
 
   // TODO: do better checks for options.
   // for (var i = growFileActions.length - 1; i >= 0; i--) {
@@ -563,17 +566,18 @@ GROWJS.prototype.ph = {
   // Adds readings to ph Data.
   addReading: function(reading) {
     var self = this;
-    self.phData.push([new time.Date(), reading])
+    self.phData.push([Date.now(), reading])
   },
 
   // Log ph and clear short term data store.
   log_ph: function () {
     var self = this;
+    var ph = self.calcpH();
     self.readableStream.push({
       name: "Ph",
       type: "ph",
       unit: "ph",
-      value: self.ph.calcPh()
+      value: ph
     });
     delete self.phData;
   },
@@ -605,17 +609,28 @@ GROWJS.prototype.ph = {
     self.params.pHStep = ((((self.vRef*(self.params.pH7Cal - self.params.pH4Cal))/4096)*1000)/self.opampGain)/3;
   },
 
+  average: function () {
+    var self = this;
+    var total = 0;
+    for (var i = self.phData.length - 1; i >= 0; i--) {
+      total = total + self.phData[i][1];
+    };
+    return total / self.phData.length;
+  },
+
   //Now that we know our probe "age" we can calculate the proper pH Its really a matter of applying the math
   //We will find our millivolts based on ADV vref and reading, then we use the 7 calibration
   //to find out how many steps that is away from 7, then apply our calibrated slope to calculate real pH
   calcpH: function() {
     var self = this;
-    var result = regression('linear', self.phData);
-    console.log(result);
-    var miliVolts = ((result/4096)*self.vRef)*1000;
-    var temp = ((((self.vRef*self.params.pH7Cal)/4096)*1000)- miliVolts)/self.opampGain;
-    var pH = 7-(temp/self.params.pHStep);
-    console.log(pH);
+    // TODO: use better math than just an average.
+    // var result = regression('linear', self.phData);
+    var params = self.params;
+    var result = self.average();
+    var miliVolts = ((result/4096)*params.vRef)*1000;
+    var temp = ((((params.vRef*params.pH7Cal)/4096)*1000)- miliVolts)/params.opampGain;
+    var pH = 7-(temp/params.pHStep);
+    return pH;
   }
 };
 

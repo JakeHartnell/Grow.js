@@ -1,4 +1,4 @@
-GROWJS.prototype.connect = function () {
+GROWJS.prototype.connect = function (callback) {
   var self = this;
 
   self.ddpclient.connect(function (error, wasReconnect) {
@@ -30,13 +30,13 @@ GROWJS.prototype.connect = function () {
         self.uuid = result.uuid;
         self.token = result.token;
 
-        self._afterConnect(result);
+        self._afterConnect(callback, result);
       }
     );
   });
 };
 
-GROWJS.prototype._afterConnect = function (result) {
+GROWJS.prototype._afterConnect = function (callback, result) {
   var self = this;
 
   self.ddpclient.subscribe(
@@ -73,7 +73,7 @@ GROWJS.prototype._afterConnect = function (result) {
     });
   }
 
-  // callback(null, result);
+  callback(null, result);
 };
 
 
@@ -112,35 +112,6 @@ GROWJS.prototype._write = function (chunk, encoding, callback) {
   var self = this;
 
   self.sendData(chunk, callback);
-};
-
-// Sets up listening for actions on the write able stream.
-// Updates state and logs event.
-GROWJS.prototype.writableStream._write = function (command, encoding, callback) {
-  var self = this;
-
-  // Get a list of action objects and calls
-  var actions = self.getActions();
-
-  // Make sure to support options too.
-  for (var action in actions) {
-    // Support command.options
-    if (command.type === action.call) {
-      if (command.options) {
-        self.callAction(action.call, command.options);
-      } else {
-        self.callAction(action.call);
-      }
-      // Should the below be done in a callback?
-      self.updateProperty(action.name, "state", action.state);
-
-      // If command.options, this should be included in event.
-      self.emitEvent({
-        name: action.name,
-        message: action.eventMessage
-      });
-    }
-  }
 };
 
 // We pipe our readable and writable streams to the instance.

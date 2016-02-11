@@ -24,17 +24,18 @@ GROWJS.prototype.ph = {
   // Adds readings to ph Data.
   addReading: function(reading) {
     var self = this;
-    self.phData.push([new time.Date(), reading])
+    self.phData.push([Date.now(), reading])
   },
 
   // Log ph and clear short term data store.
   log_ph: function () {
     var self = this;
+    var ph = self.calcpH();
     self.readableStream.push({
       name: "Ph",
       type: "ph",
       unit: "ph",
-      value: self.ph.calcPh()
+      value: ph
     });
     delete self.phData;
   },
@@ -66,16 +67,27 @@ GROWJS.prototype.ph = {
     self.params.pHStep = ((((self.vRef*(self.params.pH7Cal - self.params.pH4Cal))/4096)*1000)/self.opampGain)/3;
   },
 
+  average: function () {
+    var self = this;
+    var total = 0;
+    for (var i = self.phData.length - 1; i >= 0; i--) {
+      total = total + self.phData[i][1];
+    };
+    return total / self.phData.length;
+  },
+
   //Now that we know our probe "age" we can calculate the proper pH Its really a matter of applying the math
   //We will find our millivolts based on ADV vref and reading, then we use the 7 calibration
   //to find out how many steps that is away from 7, then apply our calibrated slope to calculate real pH
   calcpH: function() {
     var self = this;
-    var result = regression('linear', self.phData);
-    console.log(result);
-    var miliVolts = ((result/4096)*self.vRef)*1000;
-    var temp = ((((self.vRef*self.params.pH7Cal)/4096)*1000)- miliVolts)/self.opampGain;
-    var pH = 7-(temp/self.params.pHStep);
-    console.log(pH);
+    // TODO: use better math than just an average.
+    // var result = regression('linear', self.phData);
+    var params = self.params;
+    var result = self.average();
+    var miliVolts = ((result/4096)*params.vRef)*1000;
+    var temp = ((((params.vRef*params.pH7Cal)/4096)*1000)- miliVolts)/params.opampGain;
+    var pH = 7-(temp/params.pHStep);
+    return pH;
   }
 };

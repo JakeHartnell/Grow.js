@@ -40,5 +40,5 @@ grow.ph.addReading(202);
 grow.ph.addReading(200);
 grow.ph.addReading(203);
 
-grow.ph.calcpH();
+grow.ph.log_ph();
 

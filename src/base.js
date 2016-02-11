@@ -57,16 +57,22 @@ function GROWJS(implementation, growFile) {
       ssl: false,
       maintainCollections: false
     }));
-    self.connect();
+    self.connect(function(error, data) {
+      // We register and start any recurring actions.
+      console.log("Connected.")
+      self.registerActions(implementation);
+
+      self.pipeInstance();
+    });
   }
   catch (error) {
     console.log(error);
   }
 
   // We register and start any recurring actions.
-  self.registerActions(implementation);
+  // self.registerActions(implementation);
 
-  self.pipeInstance();
+  // self.pipeInstance();
 }
 
 util.inherits(GROWJS, Duplex);
