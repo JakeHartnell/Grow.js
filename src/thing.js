@@ -54,35 +54,35 @@ GROWJS.prototype.linkActions = function (actionFunctions) {
 
 
   // When actions are registered pipe instance
-  self.pipeInstance();
+  // self.pipeInstance();
 
 
 };
 
-GROWJS.prototype.writableStream._write = function (command, encoding, callback) {
-  var self = this;
+// GROWJS.prototype.writableStream._write = function (command, encoding, callback) {
+//   var self = this;
 
-  // Get a list of action objects and calls
-  var actions = self.getActions();
+//   // Get a list of action objects and calls
+//   var actions = self.getActions();
 
-  // Make sure to support options too.
-  for (var action in actions) {
-    // Support command.options
-    if (command.type === action.call) {
-      if (command.options) {
-        self.callFunction(action.call, command.options);
-      } else {
-        self.callFunction(action.call);
-      }
-      // Should the below be done in a call back.
-      self.updateProperty(action.actuator.name, "state", action.state);
-      // If command.options, this should be included in event.
-      self.emitEvent({
-        name: action.name
-      });
-    }
-  }
-};
+//   // Make sure to support options too.
+//   for (var action in actions) {
+//     // Support command.options
+//     if (command.type === action.call) {
+//       if (command.options) {
+//         self.callFunction(action.call, command.options);
+//       } else {
+//         self.callFunction(action.call);
+//       }
+//       // Should the below be done in a call back.
+//       self.updateProperty(action.actuator.name, "state", action.state);
+//       // If command.options, this should be included in event.
+//       self.emitEvent({
+//         name: action.name
+//       });
+//     }
+//   }
+// };
 
 GROWJS.prototype.registerEventListeners = function () {
   var self = this;

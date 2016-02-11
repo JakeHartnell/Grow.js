@@ -50,7 +50,7 @@ function GROWJS(implementation, growFile) {
   self._messageHandlerInstalled = false;
 
 
-  try {
+  // try {
     self.ddpclient = new DDPClient(_.defaults(self.options, {
       host: 'localhost',
       port: 3000,
@@ -62,12 +62,12 @@ function GROWJS(implementation, growFile) {
       console.log("Connected.")
       self.registerActions(implementation);
 
-      self.pipeInstance();
+      // self.pipeInstance();
     });
-  }
-  catch (error) {
-    console.log(error);
-  }
+  // }
+  // catch (error) {
+  //   console.log(error);
+  // }
 
   // We register and start any recurring actions.
   // self.registerActions(implementation);
@@ -152,54 +152,47 @@ GROWJS.prototype._afterConnect = function (callback, result) {
     });
   }
 
-  callback(null, result);
-};
+  //// Readable Stream
+  // Note this is "readable" from the server perspective.
+  // The device publishes it's data to the readable stream.
 
+  // Make a new readable stream
+  self.readableStream = new Readable({objectMode: true});
 
-//// STREAMS //////////////////////////////
+  // We are pushing data when sensor measures it so we do not do anything
+  // when we get a request for more data. We just ignore it.
+  self.readableStream._read = function () {};
 
-//// Readable Stream
-// Note this is "readable" from the server perspective.
-// The device publishes it's data to the readable stream.
+  self.readableStream.on('error', function (error) {
+    console.log("Error", error.message);
+  });
 
-// Make a new readable stream
-GROWJS.prototype.readableStream = new Readable({objectMode: true});
+// // We are pushing data to a stream as commands are arriving and are leaving
+// // to the stream to buffer them. So we simply ignore requests for more data.
+//   self._read = function (size) {
+//     var self = this;
+//   };
 
-// We are pushing data when sensor measures it so we do not do anything
-// when we get a request for more data. We just ignore it.
-GROWJS.prototype.readableStream._read = function () {};
+  //// Writable streams
+  // Note: this is writable from the server perspective. A device listens on
+  // the writable stream to recieve new commands.
 
-// We catch any errors
-GROWJS.prototype.readableStream.on('error', function (error) {
-  console.log("Error", error.message);
-});
+  // Make a new writable stream
+  self.writableStream = new Writable({objectMode: true});
 
-// We are pushing data to a stream as commands are arriving and are leaving
-// to the stream to buffer them. So we simply ignore requests for more data.
-GROWJS.prototype._read = function (size) {
-  var self = this;
-};
+  // self.pipe(self.writableStream);
+  // self.readableStream.pipe(self);
 
-//// Writable streams
-// Note: this is writable from the server perspective. A device listens on
-// the writable stream to recieve new commands.
-
-// Make a new writable stream
-GROWJS.prototype.writableStream = new Writable({objectMode: true});
-
-GROWJS.prototype._write = function (chunk, encoding, callback) {
-  var self = this;
-
-  self.sendData(chunk, callback);
-};
+    callback(null, result);
+  };
 
 // We pipe our readable and writable streams to the instance.
-GROWJS.prototype.pipeInstance = function () {
-  var self = this;
+// GROWJS.prototype.pipeInstance = function () {
+//   var self = this;
 
-  this.pipe(self.writableStream);
-  self.readableStream.pipe(this);
-};
+//   self.pipe(self.writableStream);
+//   self.readableStream.pipe(self);
+// };
 
 GROWJS.prototype.writeChangesToGrowFile = function () {
   var self = this;
@@ -264,35 +257,35 @@ GROWJS.prototype.linkActions = function (actionFunctions) {
 
 
   // When actions are registered pipe instance
-  self.pipeInstance();
+  // self.pipeInstance();
 
 
 };
 
-GROWJS.prototype.writableStream._write = function (command, encoding, callback) {
-  var self = this;
+// GROWJS.prototype.writableStream._write = function (command, encoding, callback) {
+//   var self = this;
 
-  // Get a list of action objects and calls
-  var actions = self.getActions();
+//   // Get a list of action objects and calls
+//   var actions = self.getActions();
 
-  // Make sure to support options too.
-  for (var action in actions) {
-    // Support command.options
-    if (command.type === action.call) {
-      if (command.options) {
-        self.callFunction(action.call, command.options);
-      } else {
-        self.callFunction(action.call);
-      }
-      // Should the below be done in a call back.
-      self.updateProperty(action.actuator.name, "state", action.state);
-      // If command.options, this should be included in event.
-      self.emitEvent({
-        name: action.name
-      });
-    }
-  }
-};
+//   // Make sure to support options too.
+//   for (var action in actions) {
+//     // Support command.options
+//     if (command.type === action.call) {
+//       if (command.options) {
+//         self.callFunction(action.call, command.options);
+//       } else {
+//         self.callFunction(action.call);
+//       }
+//       // Should the below be done in a call back.
+//       self.updateProperty(action.actuator.name, "state", action.state);
+//       // If command.options, this should be included in event.
+//       self.emitEvent({
+//         name: action.name
+//       });
+//     }
+//   }
+// };
 
 GROWJS.prototype.registerEventListeners = function () {
   var self = this;
@@ -345,14 +338,15 @@ GROWJS.prototype.registerActions = function (implementation) {
 
   // var growFileActions = self.getActions();
   // var functionList = [];
-  console.log(self.actions);
+  console.log(self);
 
   // Sets up listening for actions on the write able stream.
   // Updates state and logs event.
   self.writableStream._write = function (command, encoding, callback) {
-    
+    console.log("called.");
+
     // Make sure to support options too.
-    for (var action in actions) {
+    for (var action in self.actions) {
       // Support command.options
       if (command.type === action.call) {
         if (command.options) {
@@ -360,17 +354,20 @@ GROWJS.prototype.registerActions = function (implementation) {
         } else {
           self.callAction(action.call);
         }
-        // Should the below be done in a callback?
-        self.updateProperty(action.name, "state", action.state);
+        // // Should the below be done in a callback?
+        // self.updateProperty(action.name, "state", action.state);
 
-        // If command.options, this should be included in event.
-        self.emitEvent({
-          name: action.name,
-          message: action.eventMessage
-        });
+        // // If command.options, this should be included in event.
+        // self.emitEvent({
+        //   name: action.name,
+        //   message: action.eventMessage
+        // });
       }
     }
   };
+
+  self.pipe(self.writableStream);
+  self.readableStream.pipe(self);
 
   // TODO: do better checks for options.
   // for (var i = growFileActions.length - 1; i >= 0; i--) {

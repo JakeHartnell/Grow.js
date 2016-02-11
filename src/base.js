@@ -50,7 +50,7 @@ function GROWJS(implementation, growFile) {
   self._messageHandlerInstalled = false;
 
 
-  try {
+  // try {
     self.ddpclient = new DDPClient(_.defaults(self.options, {
       host: 'localhost',
       port: 3000,
@@ -62,12 +62,12 @@ function GROWJS(implementation, growFile) {
       console.log("Connected.")
       self.registerActions(implementation);
 
-      self.pipeInstance();
+      // self.pipeInstance();
     });
-  }
-  catch (error) {
-    console.log(error);
-  }
+  // }
+  // catch (error) {
+  //   console.log(error);
+  // }
 
   // We register and start any recurring actions.
   // self.registerActions(implementation);

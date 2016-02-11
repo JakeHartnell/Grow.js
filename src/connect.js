@@ -73,51 +73,44 @@ GROWJS.prototype._afterConnect = function (callback, result) {
     });
   }
 
-  callback(null, result);
-};
+  //// Readable Stream
+  // Note this is "readable" from the server perspective.
+  // The device publishes it's data to the readable stream.
 
+  // Make a new readable stream
+  self.readableStream = new Readable({objectMode: true});
 
-//// STREAMS //////////////////////////////
+  // We are pushing data when sensor measures it so we do not do anything
+  // when we get a request for more data. We just ignore it.
+  self.readableStream._read = function () {};
 
-//// Readable Stream
-// Note this is "readable" from the server perspective.
-// The device publishes it's data to the readable stream.
+  self.readableStream.on('error', function (error) {
+    console.log("Error", error.message);
+  });
 
-// Make a new readable stream
-GROWJS.prototype.readableStream = new Readable({objectMode: true});
+// // We are pushing data to a stream as commands are arriving and are leaving
+// // to the stream to buffer them. So we simply ignore requests for more data.
+//   self._read = function (size) {
+//     var self = this;
+//   };
 
-// We are pushing data when sensor measures it so we do not do anything
-// when we get a request for more data. We just ignore it.
-GROWJS.prototype.readableStream._read = function () {};
+  //// Writable streams
+  // Note: this is writable from the server perspective. A device listens on
+  // the writable stream to recieve new commands.
 
-// We catch any errors
-GROWJS.prototype.readableStream.on('error', function (error) {
-  console.log("Error", error.message);
-});
+  // Make a new writable stream
+  self.writableStream = new Writable({objectMode: true});
 
-// We are pushing data to a stream as commands are arriving and are leaving
-// to the stream to buffer them. So we simply ignore requests for more data.
-GROWJS.prototype._read = function (size) {
-  var self = this;
-};
+  // self.pipe(self.writableStream);
+  // self.readableStream.pipe(self);
 
-//// Writable streams
-// Note: this is writable from the server perspective. A device listens on
-// the writable stream to recieve new commands.
-
-// Make a new writable stream
-GROWJS.prototype.writableStream = new Writable({objectMode: true});
-
-GROWJS.prototype._write = function (chunk, encoding, callback) {
-  var self = this;
-
-  self.sendData(chunk, callback);
-};
+    callback(null, result);
+  };
 
 // We pipe our readable and writable streams to the instance.
-GROWJS.prototype.pipeInstance = function () {
-  var self = this;
+// GROWJS.prototype.pipeInstance = function () {
+//   var self = this;
 
-  this.pipe(self.writableStream);
-  self.readableStream.pipe(this);
-};
+//   self.pipe(self.writableStream);
+//   self.readableStream.pipe(self);
+// };
