@@ -24,7 +24,8 @@ board.on("ready", function start() {
   */
   var grow = new GrowInstance({
     log_ph: function () {
-      console.log("aslkdfjlksdf");
+      reading = grow.ph.log_ph();
+      grow.readableStream.push(reading);
     }
   }, growfile);
 });

@@ -1,7 +1,3 @@
-/*
-  Methods for interacting with the Grow-IoT api.
-*/
-
 GROWJS.prototype.sendData = function (data, callback) {
   var self = this;
 
@@ -21,8 +17,6 @@ GROWJS.prototype.sendData = function (data, callback) {
   );
 };
 
-
-// TODO: fix.
 GROWJS.prototype.emitEvent = function (eventMessage, callback) {
   var self = this;
 
@@ -39,7 +33,6 @@ GROWJS.prototype.emitEvent = function (eventMessage, callback) {
     }
   );
 };
-
 
 // Maybe this function needs to be split up?
 GROWJS.prototype.updateProperty = function (propertyName, propertyKey, value, callback) {
@@ -69,7 +62,6 @@ GROWJS.prototype.updateProperty = function (propertyName, propertyKey, value, ca
     'Device.udpateProperties',
     [{uuid: self.uuid, token: self.token}, thing],
     function (error, result) {
-      // if (error) return callback(error);
       callback(error, result);
     }
   );

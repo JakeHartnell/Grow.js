@@ -2,9 +2,6 @@ GROWJS.prototype.registerActions = function (implementation) {
   var self = this;
   self.actions = _.clone(implementation || {});
 
-  // this.pipe(self.writableStream);
-  // self.readableStream.pipe(this);
-
   // TODO: do better checks for options.
   // for (var i = growFileActions.length - 1; i >= 0; i--) {
   //   functionList.push(growFileActions[i].call);
@@ -29,8 +26,31 @@ GROWJS.prototype.registerActions = function (implementation) {
   // TODO: make sure these match, if not, throw error. Everything referrenced in grow.json
   // should be defined in the implementation.
   // console.log(functionList);
-
   // console.log(implementation);
+
+  // Sets up listening for actions on the write able stream.
+  // Updates state and logs event.
+  var actions = self.actions;
+  self.writableStream._write = function (command, encoding, callback) {
+    for (var action in actions) {
+      if (command.type === action) {
+        if (command.options) {
+          actions[action](command.options);
+        } else {
+          actions[action]();
+        }
+        // self.updateProperty(action.name, "state", action.state);
+
+        // // If command.options, this should be included in event.
+        // self.emitEvent({
+        //   name: action.name,
+        //   message: action.eventMessage
+        // });
+      }
+    }
+
+    callback(null);
+  };
 };
 
 

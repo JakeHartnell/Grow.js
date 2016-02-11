@@ -19,10 +19,8 @@ gulp.task('build', function() {
   	'./src/base.js',
   	'./src/connect.js', 
   	'./src/growfile.js',
-  	'./src/thing.js',
   	'./src/actions.js',
   	'./src/grow-api.js',
-    './src/sensors/base.js',
     './src/sensors/ph.js',
   	'./src/export.js'
   ])
