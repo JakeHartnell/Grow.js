@@ -1,0 +1,20 @@
+{
+    "thing": {
+        "name": "Ph sensor",
+        "version": "0.1.5",
+        "description": "An ph sensor.",
+        "type": "ph",
+        "unit": "ph",
+        "class": "sensor",
+        "actions": [
+            {
+                "name": "Log ph data",
+                "call": "log_ph",
+                "schedule": "every 1 minute",
+                "event-message": "Watered plant for 20 seconds"
+            }
+        ]
+    },
+    "uuid": "10d17c19-3c84-4c65-a75f-707d9d690396",
+    "token": "w935CGBW2zHChjNAde8X4W9DSqxjmb8q"
+}

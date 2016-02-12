@@ -1,4 +1,4 @@
-var GrowInstance = require('./dist/grow.js');
+var GrowInstance = require('.././dist/grow.js');
 var five = require('johnny-five');
 var growfile = require('./ph-sensor.json');
 var board = new five.Board();
