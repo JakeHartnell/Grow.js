@@ -29,7 +29,9 @@ GROWJS.prototype.emitEvent = function (eventMessage, callback) {
     'Device.emitEvent',
     [{uuid: self.uuid, token: self.token}, event],
     function (error, result) {
-      callback(error, result);
+      if (!_.isUndefined(callback)) {
+        callback(error, result);
+      }
     }
   );
 };

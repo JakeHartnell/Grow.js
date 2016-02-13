@@ -1,20 +1,119 @@
 {
     "thing": {
-        "name": "Ph sensor",
+        "name": "Smart Pot",
         "version": "0.1.5",
-        "description": "An ph sensor.",
-        "type": "ph",
-        "unit": "ph",
-        "class": "sensor",
-        "actions": [
+        "owner": "Jake@commongarden.org",
+        "description": "An example growkit.",
+        "type": "growkit",
+        "numberOfPlants": 1,
+        "state": "No plants",
+        "components": [
             {
-                "name": "Log ph data",
-                "call": "log_ph",
-                "schedule": "every 1 minute",
-                "event-message": "Watered plant for 20 seconds"
+                "name": "Light sensor",
+                "type": "light-sensor",
+                "class": "sensor",
+                "vRef": 4.96,
+                "unit": "milivolts",
+                "actions": [
+                    {
+                        "name": "Log light data",
+                        "call": "log_light",
+                        "sechedule": "every 1 second"
+                    }
+                ]
+            },
+            {
+                "name": "Water level sensor",
+                "type": "liquid-level",
+                "class": "sensor",
+                "vRef": 3.3,
+                "unit": "milivolts",
+                "events": [
+                    {
+                        "name": "Water level low",
+                        "message": "Refill the water resevoir. You can water the plant like you would any other, the water will drain into the resevoir and this notification will go away."
+                    }
+                ],
+                "actions": [
+                    {
+                        "name": "Check water level",
+                        "call": "check_water_level",
+                        "options": {
+                            "threshold": 3
+                        },
+                        "schedule": "every 1 second"
+                    }
+                ]
+            },
+            {
+                "name": "Temperature sensor",
+                "type": "temperature",
+                "class": "sensor",
+                "unit": "Celcius",
+                "actions": [
+                    {
+                        "name": "Log temperature data",
+                        "call": "log_temperature",
+                        "options": {
+                            "unit": "C"
+                        },
+                        "schedule": "every 1 minute"
+                    }
+                ]
+            },
+            {
+                "name": "pH sensor",
+                "type": "ph",
+                "unit": "ph",
+                "class": "sensor",
+                "actions": [
+                    {
+                        "name": "Log ph data",
+                        "call": "log_ph",
+                        "schedule": "every 1 minute",
+                        "event-message": "Watered plant for 20 seconds"
+                    }
+                ]
+            },
+            {
+                "name": "Water pump",
+                "type": "water-pump",
+                "class": "actuator",
+                "state": "off",
+                "actions": [
+                    {
+                        "name": "Water plant",
+                        "call": "waterPlant",
+                        "options": {
+                            "duration": "20 seconds"
+                        },
+                        "schedule": "at 10:15am",
+                        "event-message": "Watered plant for 20 seconds"
+                    }
+                ]
+            },
+            {
+                "name": "Light",
+                "type": "relay",
+                "class": "actuator",
+                "state": "on",
+                "actions": [
+                    {
+                        "name": "On",
+                        "call": "light_on",
+                        "schedule": "at 9:00am",
+                        "event-message": "Light turned on"
+                    },
+                    {
+                        "name": "off",
+                        "call": "light_off",
+                        "schedule": "at 8:30pm",
+                        "event-message": "Light turned off"
+                    }
+                ]
             }
         ]
     },
-    "uuid": "fa75d737-d73f-4c4f-a73a-bc8129d18989",
-    "token": "ro97daPPLQsjX97vLWs9Hn3K5NvoabyX"
+    "uuid": "c8e09db6-182f-4b59-a0ad-6ab9026b25e6",
+    "token": "Q94jYwQ5dhoWAwaXzGtvG5erdJzQ7BxF"
 }

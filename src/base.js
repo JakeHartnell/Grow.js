@@ -11,11 +11,12 @@ var later = require('later');
 var regression = require('regression');
 var time = require('time')(Date);
 
-function GROWJS(implementation, growFile) {
+// Use local time.
+later.date.localTime();
+
+function GROWJS(implementation, growFile, callback) {
   var self = this;
 
-  // Use local time.
-  later.date.localTime();
 
   if (!implementation) {
     throw new Error("Grow.js requires an implementation.");
@@ -51,19 +52,23 @@ function GROWJS(implementation, growFile) {
 
   self._messageHandlerInstalled = false;
 
-
-  // try {
   self.ddpclient = new DDPClient(_.defaults(self.options, {
     host: 'localhost',
     port: 3000,
     ssl: false,
     maintainCollections: false
   }));
+
   self.connect(function(error, data) {
+    if (error) {console.log(error);}
 
     self.registerActions(implementation);
 
     self.pipeInstance();
+
+    if (!_.isUndefined(callback)) {
+      callback(null, self);
+    }
   });
 }
 

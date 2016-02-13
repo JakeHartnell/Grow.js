@@ -11,11 +11,12 @@ var later = require('later');
 var regression = require('regression');
 var time = require('time')(Date);
 
-function GROWJS(implementation, growFile) {
+// Use local time.
+later.date.localTime();
+
+function GROWJS(implementation, growFile, callback) {
   var self = this;
 
-  // Use local time.
-  later.date.localTime();
 
   if (!implementation) {
     throw new Error("Grow.js requires an implementation.");
@@ -51,19 +52,23 @@ function GROWJS(implementation, growFile) {
 
   self._messageHandlerInstalled = false;
 
-
-  // try {
   self.ddpclient = new DDPClient(_.defaults(self.options, {
     host: 'localhost',
     port: 3000,
     ssl: false,
     maintainCollections: false
   }));
+
   self.connect(function(error, data) {
+    if (error) {console.log(error);}
 
     self.registerActions(implementation);
 
     self.pipeInstance();
+
+    if (!_.isUndefined(callback)) {
+      callback(null, self);
+    }
   });
 }
 
@@ -195,54 +200,50 @@ GROWJS.prototype.writeChangesToGrowFile = function () {
   });
 };
 
+GROWJS.prototype.callAction = function (functionName, options) {
+  var self = this;
+
+  console.log(self.getActions());
+
+  if (options) {
+    self.actions[functionName](options);
+    // self.emitEvent({
+    //   name: actions[action].name,
+    //   message: actions[action].eventMessage,
+    //   options: command.options
+    // });
+  }
+  else {
+    self.actions[functionName]();
+    // Emit event
+    // self.emitEvent({
+    //   name: actions[action].name,
+    //   message: actions[action].eventMessage
+    // });
+  }
+  // If the action has a state property, we update the state.
+  // if (actions[action].state) {
+  //   self.updateProperty(actions[action].name, "state", actions[action].state);
+  // }
+};
+
 GROWJS.prototype.registerActions = function (implementation) {
   var self = this;
   self.actions = _.clone(implementation || {});
 
-  // TODO: do better checks for options.
-  // for (var i = growFileActions.length - 1; i >= 0; i--) {
-  //   functionList.push(growFileActions[i].call);
+  // TODO: make sure the implementation matches the growfile.
 
-  //   // If action has an "schedule" atribute, we parse it with later and set the interval.
-  //   if (growFileActions[i].schedule) {
-  //     var schedule = later.parse.text(growFileActions[i].schedule);
-  //     if (schedule.error !== -1) {
-  //       console.log(growFileActions[i].schedule);
-  //       console.log(growFileActions[i].schedule.length);
-  //       console.log(schedule.error);
-  //     }
-  //     var functionName = growFileActions[i].call;
-  //     if (typeof growFileActions[i].options === "object") {
-  //       later.setInterval(self.callAction(functionName, growFileActions[i].options), schedule);
-  //     } else {
-  //       later.setInterval(self.callAction(functionName), schedule);
-  //     }
-  //   }
-  // }
-
-  // TODO: make sure these match, if not, throw error. Everything referrenced in grow.json
-  // should be defined in the implementation.
-  // console.log(functionList);
-  // console.log(implementation);
-
-  // Sets up listening for actions on the write able stream.
-  // Updates state and logs event.
+  // Sets up listening for actions on the writeable stream.
   var actions = self.actions;
   self.writableStream._write = function (command, encoding, callback) {
     for (var action in actions) {
       if (command.type === action) {
         if (command.options) {
-          actions[action](command.options);
-        } else {
-          actions[action]();
-        }
-        // self.updateProperty(action.name, "state", action.state);
+          self.callAction(action, command.options);
 
-        // // If command.options, this should be included in event.
-        // self.emitEvent({
-        //   name: action.name,
-        //   message: action.eventMessage
-        // });
+        } else {
+          self.callAction(action);
+        }
       }
     }
 
@@ -250,19 +251,40 @@ GROWJS.prototype.registerActions = function (implementation) {
   };
 };
 
+// TODO:
+GROWJS.prototype.startScheduledActions = function () {
+  return;
+};
+
+GROWJS.prototype.getActionMetaByCall = function (functionName) {
+  var self = this;
+  var actionsMeta = self.getActions();
+  for (var i = actionsMeta.length - 1; i >= 0; i--) {
+    // for (var k = actionsMeta[i].length - 1; k >= 0; k--) {
+    //   console.log(i);
+    //   console.log(k);
+    //   console.log(actionsMeta[i][k]);
+    // };
+    if (actionsMeta[i].call === functionName) {
+      return actionsMeta[i];
+    }
+  }
+};
 
 // Returns a list of actions in the grow file.
 GROWJS.prototype.getActions = function () {
   var self = this;
   var thing = self.growFile.thing;
-  var actions = [];
+  // console.log(thing);
+  var actionMetaData = [];
 
 
   for (var key in thing) {
+    // console.log(key);
     // Check top level thing model for actions.
     if (key === "actions") {
       for (var action in thing[key]) {
-        actions.push(action);
+        actionMetaData.push(action);
       }
     }
 
@@ -274,7 +296,7 @@ GROWJS.prototype.getActions = function () {
           if (property === "actions") {
             var componentActions = component[property];
             for (var componentAction in componentActions) {
-              actions.push(componentActions[componentAction]);
+              actionMetaData.push(componentActions[componentAction]);
             }
           }
         }
@@ -282,20 +304,9 @@ GROWJS.prototype.getActions = function () {
     }
   }
 
-  return actions;
+  return actionMetaData;
 };
 
-
-GROWJS.prototype.callAction = function (functionName, options) {
-  var self = this;
-
-  if (options) {
-    return self.actions[functionName](options);
-  }
-  else {
-    return self.actions[functionName]();
-  }
-};
 
 GROWJS.prototype.sendData = function (data, callback) {
   var self = this;
@@ -328,7 +339,9 @@ GROWJS.prototype.emitEvent = function (eventMessage, callback) {
     'Device.emitEvent',
     [{uuid: self.uuid, token: self.token}, event],
     function (error, result) {
-      callback(error, result);
+      if (!_.isUndefined(callback)) {
+        callback(error, result);
+      }
     }
   );
 };
@@ -405,24 +418,24 @@ GROWJS.prototype.ph = {
     };
   },
 
-  //Lets read our raw reading while in pH7 calibration fluid and store it
-  //We will store in raw int formats as this math works the same on pH step calcs
+  // Lets read our raw reading while in pH7 calibration fluid and store it
+  // We will store in raw int formats as this math works the same on pH step calcs
   calibratepH7: function (calnum){
     this.params.pH7Cal = calnum;
     this.calcpHSlope();
   },
 
-  //Lets read our raw reading while in pH7 calibration fluid and store it
-  //We will store in raw int formats as this math works the same on pH step calcs
+  // Lets read our raw reading while in pH7 calibration fluid and store it
+  // We will store in raw int formats as this math works the same on pH step calcs
   calibratepH7: function (calnum){
     this.params.pH7Cal = calnum;
     this.calcpHSlope();
   },
 
-  //This is really the heart of the calibration process, we want to capture the
-  //probes "age" and compare it to the Ideal Probe, the easiest way to capture two readings,
-  //at known point(4 and 7 for example) and calculate the slope.
-  //If your slope is drifting too much from ideal (59.16) its time to clean or replace!
+  // This is really the heart of the calibration process, we want to capture the
+  // probes "age" and compare it to the Ideal Probe, the easiest way to capture two readings,
+  // at known point(4 and 7 for example) and calculate the slope.
+  // If your slope is drifting too much from ideal (59.16) its time to clean or replace!
   calcpHSlope: function () {
     //RefVoltage * our deltaRawpH / 12bit steps *mV in V / OP-Amp gain /pH step difference 7-4
     this.params.pHStep = ((((this.vRef*(this.params.pH7Cal - this.params.pH4Cal))/4096)*1000)/this.opampGain)/3;
@@ -438,9 +451,9 @@ GROWJS.prototype.ph = {
     }
   },
 
-  //Now that we know our probe "age" we can calculate the proper pH Its really a matter of applying the math
-  //We will find our millivolts based on ADV vref and reading, then we use the 7 calibration
-  //to find out how many steps that is away from 7, then apply our calibrated slope to calculate real pH
+  // Now that we know our probe "age" we can calculate the proper pH Its really a matter of applying the math
+  // We will find our millivolts based on ADV vref and reading, then we use the 7 calibration
+  // to find out how many steps that is away from 7, then apply our calibrated slope to calculate real pH
   calcpH: function() {
     // TODO: use better math than just an average.
     // var result = regression('linear', this.phData);
