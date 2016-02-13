@@ -203,27 +203,28 @@ GROWJS.prototype.writeChangesToGrowFile = function () {
 GROWJS.prototype.callAction = function (functionName, options) {
   var self = this;
 
-  console.log(self.getActions());
+  var meta = self.getActionMetaByCall(functionName);
+
+  console.log(meta);
 
   if (options) {
     self.actions[functionName](options);
-    // self.emitEvent({
-    //   name: actions[action].name,
-    //   message: actions[action].eventMessage,
-    //   options: command.options
-    // });
+    self.emitEvent({
+      name: meta.name,
+      message: meta["event-message"],
+      options: command.options
+    });
   }
   else {
     self.actions[functionName]();
-    // Emit event
-    // self.emitEvent({
-    //   name: actions[action].name,
-    //   message: actions[action].eventMessage
-    // });
+    self.emitEvent({
+      name: meta.name,
+      message: meta["event-message"]
+    });
   }
   // If the action has a state property, we update the state.
-  // if (actions[action].state) {
-  //   self.updateProperty(actions[action].name, "state", actions[action].state);
+  // if (meta.state) {
+  //   self.updateProperty(meta.name, "state", meta.state);
   // }
 };
 
@@ -330,14 +331,14 @@ GROWJS.prototype.sendData = function (data, callback) {
 GROWJS.prototype.emitEvent = function (eventMessage, callback) {
   var self = this;
 
-  event = {
+  var body = {
     event: eventMessage,
     timestamp: new Date()
   };
 
   self.ddpclient.call(
     'Device.emitEvent',
-    [{uuid: self.uuid, token: self.token}, event],
+    [{uuid: self.uuid, token: self.token}, body],
     function (error, result) {
       if (!_.isUndefined(callback)) {
         callback(error, result);

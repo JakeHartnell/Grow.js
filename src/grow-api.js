@@ -20,14 +20,14 @@ GROWJS.prototype.sendData = function (data, callback) {
 GROWJS.prototype.emitEvent = function (eventMessage, callback) {
   var self = this;
 
-  event = {
+  var body = {
     event: eventMessage,
     timestamp: new Date()
   };
 
   self.ddpclient.call(
     'Device.emitEvent',
-    [{uuid: self.uuid, token: self.token}, event],
+    [{uuid: self.uuid, token: self.token}, body],
     function (error, result) {
       if (!_.isUndefined(callback)) {
         callback(error, result);

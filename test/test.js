@@ -33,8 +33,9 @@ var grow = new GrowInstance({
   }, 
   growFile, 
   function (error, grow) {
-    console.log(grow.getActionMetaByCall("light_on"));
+    // console.log(grow.getActionMetaByCall("light_on"));
 
+    grow.callAction("light_off");
     // grow.emitEvent("message");
 
     // grow.ph.addReading(200);
