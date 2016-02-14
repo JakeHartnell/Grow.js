@@ -101,12 +101,14 @@
                     {
                         "name": "On",
                         "call": "light_on",
+                        "state": "on",
                         "schedule": "at 9:00am",
                         "event-message": "Light turned on"
                     },
                     {
                         "name": "off",
                         "call": "light_off",
+                        "state": "off",
                         "schedule": "at 8:30pm",
                         "event-message": "Light turned off"
                     }

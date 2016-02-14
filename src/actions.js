@@ -21,11 +21,12 @@ GROWJS.prototype.callAction = function (functionName, options) {
       message: meta["event-message"]
     });
   }
-  
-  // If the action has a state property, we update the state.
-  // if (meta.state) {
-  //   self.updateProperty(meta.name, "state", meta.state);
-  // }
+
+  // TODO: If the action has a state property, we update the state.
+  if (meta.state) {
+    console.log(meta.state);
+    self.updateProperty(meta.name, "state", meta.state);
+  }
 };
 
 GROWJS.prototype.registerActions = function (implementation) {

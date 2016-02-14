@@ -200,6 +200,7 @@ GROWJS.prototype.writeChangesToGrowFile = function () {
   });
 };
 
+// Calls action, emits event, and updates state (if applicable).
 GROWJS.prototype.callAction = function (functionName, options) {
   var self = this;
 
@@ -222,10 +223,12 @@ GROWJS.prototype.callAction = function (functionName, options) {
       message: meta["event-message"]
     });
   }
-  // If the action has a state property, we update the state.
-  // if (meta.state) {
-  //   self.updateProperty(meta.name, "state", meta.state);
-  // }
+
+  // TODO: If the action has a state property, we update the state.
+  if (meta.state) {
+    console.log(meta.state);
+    self.updateProperty(meta.name, "state", meta.state);
+  }
 };
 
 GROWJS.prototype.registerActions = function (implementation) {
@@ -257,15 +260,11 @@ GROWJS.prototype.startScheduledActions = function () {
   return;
 };
 
+// Returns an object of action metadata based on function name.
 GROWJS.prototype.getActionMetaByCall = function (functionName) {
   var self = this;
   var actionsMeta = self.getActions();
   for (var i = actionsMeta.length - 1; i >= 0; i--) {
-    // for (var k = actionsMeta[i].length - 1; k >= 0; k--) {
-    //   console.log(i);
-    //   console.log(k);
-    //   console.log(actionsMeta[i][k]);
-    // };
     if (actionsMeta[i].call === functionName) {
       return actionsMeta[i];
     }
@@ -276,12 +275,10 @@ GROWJS.prototype.getActionMetaByCall = function (functionName) {
 GROWJS.prototype.getActions = function () {
   var self = this;
   var thing = self.growFile.thing;
-  // console.log(thing);
   var actionMetaData = [];
 
 
   for (var key in thing) {
-    // console.log(key);
     // Check top level thing model for actions.
     if (key === "actions") {
       for (var action in thing[key]) {

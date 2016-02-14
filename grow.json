@@ -101,12 +101,14 @@
                     {
                         "name": "On",
                         "call": "light_on",
+                        "state": "on",
                         "schedule": "at 9:00am",
                         "event-message": "Light turned on"
                     },
                     {
                         "name": "off",
                         "call": "light_off",
+                        "state": "off",
                         "schedule": "at 8:30pm",
                         "event-message": "Light turned off"
                     }
@@ -114,6 +116,6 @@
             }
         ]
     },
-    "uuid": "d6670385-7c7a-4f8f-9dab-088c8879fd5c",
-    "token": "vZQsG3bGyMmkyMaCipqKd4x2mBRbB43M"
+    "uuid": "6e93d5d6-68b7-420b-935b-c4d6190960eb",
+    "token": "iNXFLCTb4HtAqWkmniZCrouspPpbtrYn"
 }
