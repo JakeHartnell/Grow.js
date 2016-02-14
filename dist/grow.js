@@ -350,6 +350,8 @@ GROWJS.prototype.updateProperty = function (propertyName, propertyKey, value, ca
 
   var thing = self.growFile.thing;
 
+  console.log("update prop");
+
   // Find properties in top level thing object
   for (var key in thing) {
     if (key === propertyName) {
