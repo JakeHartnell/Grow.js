@@ -1,4 +1,4 @@
-[![Slack Status](http://slack.commongarden.org/badge.svg)](http://slack.commongarden.org), [Feature Requests](http://forum.commongarden.org/c/feature-requests), [General Feedback](http://forum.commongarden.org/c/feedback)
+[![Slack Status](http://slack.commongarden.org/badge.svg)](http://slack.commongarden.org) | [Feature Requests](http://forum.commongarden.org/c/feature-requests) | [General Feedback](http://forum.commongarden.org/c/feedback)
 
 # Grow.js
 An npm packagle of useful functions for working with the [Grow-IoT app](https://github.com/CommonGarden/Grow-IoT).
@@ -7,21 +7,17 @@ Install with:
 
     npm install grow.js
 
-NOTE: This is a work in progress. If you want to help read the code and comments.
-
 # Developing
 ```
-    git clone https://github.com/CommonGarden/grow.js
-    cd grow.js
-    npm install
+git clone https://github.com/CommonGarden/grow.js
+cd grow.js
+npm install
 ```
 
 #### Build grow.js with Gulp
 We use [gulp](http://gulpjs.com/) as our build system, to run the examples or tests, be sure to buld the files in the `/dist/` folder. You can do so with a simple command.
 
-```
-    gulp
-```
+`gulp`
 
 ## grow.json
 

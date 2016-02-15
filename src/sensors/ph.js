@@ -28,7 +28,7 @@ GROWJS.prototype.ph = {
   log_ph: function () {
     var ph = this.calcpH();
     // We reset phData after calculating.
-    delete phData;
+    // delete phData;
     return {
       name: "Ph",
       type: "ph",

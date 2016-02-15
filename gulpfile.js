@@ -10,6 +10,7 @@ var onError = function (err) {
 };
 var sourcemaps = require('gulp-sourcemaps');
 var mocha = require('gulp-mocha');
+var babel = require('gulp-babel');
 
 // Default
 gulp.task('default', ['lint', 'build', 'minify']);
@@ -55,4 +56,21 @@ gulp.task('test', ['lint', 'build'], function () {
 	return gulp.src('test/*.js', {read: false})
 		// gulp-mocha needs filepaths so you can't have any plugins before it 
 		.pipe(mocha({reporter: 'nyan'}));
+});
+ 
+gulp.task('es6', function () {
+  return gulp.src([
+    './src/base.js',
+    './src/connect.js', 
+    './src/growfile.js',
+    './src/actions.js',
+    './src/grow-api.js',
+    './src/sensors/ph.js',
+    './src/export.js'
+  ])
+    .pipe(concat('grow.js'))
+    .pipe(babel({
+      presets: ['es2015']
+    }))
+    .pipe(gulp.dest('./build/'));
 });
