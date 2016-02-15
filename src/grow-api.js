@@ -37,19 +37,14 @@ GROWJS.prototype.emitEvent = function (eventMessage, callback) {
 };
 
 // Maybe this function needs to be split up?
+// Maybe two functions? Update property and update component?
 GROWJS.prototype.updateProperty = function (propertyName, propertyKey, value, callback) {
   var self = this;
 
   var thing = self.growFile.thing;
 
-  console.log("update prop");
-
   // Find properties in top level thing object
   for (var key in thing) {
-    if (key === propertyName) {
-      // thing[key][propertyKey] = value;
-    }
-
     // Find properties in components 
     if (key === "components") {
       for (var component in thing.components) {
@@ -57,6 +52,8 @@ GROWJS.prototype.updateProperty = function (propertyName, propertyKey, value, ca
           thing.components[component][propertyKey] = value;
         }
       }
+    } else if (thing[key] === propertyName) {
+      thing[key] = value;
     }
   }
 

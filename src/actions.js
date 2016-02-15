@@ -4,8 +4,6 @@ GROWJS.prototype.callAction = function (functionName, options) {
 
   var meta = self.getActionMetaByCall(functionName);
 
-  console.log(meta);
-
   if (options) {
     self.actions[functionName](options);
     self.emitEvent({
@@ -24,7 +22,6 @@ GROWJS.prototype.callAction = function (functionName, options) {
 
   // TODO: If the action has a state property, we update the state.
   if (meta.state) {
-    console.log(meta.state);
     self.updateProperty(meta.name, "state", meta.state);
   }
 };

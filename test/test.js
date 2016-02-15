@@ -2,7 +2,7 @@
 var GrowInstance = require('../dist/grow.js');
 var growFile = require('./testgrow.json');
 
-
+// Note: we still need to write proper tests.
 var grow = new GrowInstance({
       start: function () {
         console.log("Started.")
@@ -35,7 +35,8 @@ var grow = new GrowInstance({
   function (error, grow) {
     // console.log(grow.getActionMetaByCall("light_on"));
 
-    grow.callAction("light_off");
+    // grow.callAction("light_off");
+    grow.updateProperty("Smart Pot", "state", "value")
     // grow.emitEvent("message");
 
     // grow.ph.addReading(200);

@@ -206,8 +206,6 @@ GROWJS.prototype.callAction = function (functionName, options) {
 
   var meta = self.getActionMetaByCall(functionName);
 
-  console.log(meta);
-
   if (options) {
     self.actions[functionName](options);
     self.emitEvent({
@@ -226,7 +224,6 @@ GROWJS.prototype.callAction = function (functionName, options) {
 
   // TODO: If the action has a state property, we update the state.
   if (meta.state) {
-    console.log(meta.state);
     self.updateProperty(meta.name, "state", meta.state);
   }
 };
@@ -345,19 +342,14 @@ GROWJS.prototype.emitEvent = function (eventMessage, callback) {
 };
 
 // Maybe this function needs to be split up?
+// Maybe two functions? Update property and update component?
 GROWJS.prototype.updateProperty = function (propertyName, propertyKey, value, callback) {
   var self = this;
 
   var thing = self.growFile.thing;
 
-  console.log("update prop");
-
   // Find properties in top level thing object
   for (var key in thing) {
-    if (key === propertyName) {
-      // thing[key][propertyKey] = value;
-    }
-
     // Find properties in components 
     if (key === "components") {
       for (var component in thing.components) {
@@ -365,6 +357,8 @@ GROWJS.prototype.updateProperty = function (propertyName, propertyKey, value, ca
           thing.components[component][propertyKey] = value;
         }
       }
+    } else if (thing[key] === propertyName) {
+      thing[key] = value;
     }
   }
 
