@@ -34,9 +34,9 @@ var grow = new GrowInstance({
   growFile, 
   function (error, grow) {
     // console.log(grow.getActionMetaByCall("light_on"));
-
+    setTimeout(function(){grow.callAction("light_off");}, 10000)
     // grow.callAction("light_off");
-    grow.updateProperty("Smart Pot", "state", "value")
+    // grow.updateProperty("Smart Pot", "state", "value")
     // grow.emitEvent("message");
 
     // grow.ph.addReading(200);
@@ -47,4 +47,5 @@ var grow = new GrowInstance({
     // grow.getActions();
   }
 );
+
 

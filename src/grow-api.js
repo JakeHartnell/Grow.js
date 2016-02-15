@@ -20,10 +20,8 @@ GROWJS.prototype.sendData = function (data, callback) {
 GROWJS.prototype.emitEvent = function (eventMessage, callback) {
   var self = this;
 
-  var body = {
-    event: eventMessage,
-    timestamp: new Date()
-  };
+  var body = eventMessage;
+  body.timestamp = new Date();
 
   self.ddpclient.call(
     'Device.emitEvent',

@@ -325,10 +325,8 @@ GROWJS.prototype.sendData = function (data, callback) {
 GROWJS.prototype.emitEvent = function (eventMessage, callback) {
   var self = this;
 
-  var body = {
-    event: eventMessage,
-    timestamp: new Date()
-  };
+  var body = eventMessage;
+  body.timestamp = new Date();
 
   self.ddpclient.call(
     'Device.emitEvent',
@@ -403,7 +401,7 @@ GROWJS.prototype.ph = {
   log_ph: function () {
     var ph = this.calcpH();
     // We reset phData after calculating.
-    delete phData;
+    // delete phData;
     return {
       name: "Ph",
       type: "ph",
