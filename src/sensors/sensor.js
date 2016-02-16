@@ -1,4 +1,4 @@
-class Sensor extends GROWJS { 
+class Sensor {
 	constructor (type, params = {}) {
 	 super()
 	 this.data = []
