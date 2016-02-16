@@ -65,7 +65,8 @@ gulp.task('es6', function () {
     './src/growfile.js',
     './src/actions.js',
     './src/grow-api.js',
-    './src/sensors/ph.js',
+    // './src/sensors/ph.js',
+    './src/sensors/sensor.js',
     './src/export.js'
   ])
     .pipe(concat('grow.js'))

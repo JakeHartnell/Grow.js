@@ -1,20 +1,68 @@
 {
     "thing": {
-        "name": "Ph sensor",
-        "version": "0.1.5",
-        "description": "An ph sensor.",
-        "type": "ph",
-        "unit": "ph",
-        "class": "sensor",
-        "actions": [
+        "name": "Grow hub",
+        "version": "0.1.0",
+        "description": "",
+        "type": "growhub",
+        "components": [
             {
-                "name": "Log ph data",
-                "call": "log_ph",
-                "schedule": "every 1 minute",
-                "event-message": "Watered plant for 20 seconds"
-            }
+                "name": "Light sensor",
+                "type": "light-sensor",
+                "class": "sensor",
+                "vRef": 4.96,
+                "unit": "milivolts",
+                "actions": [
+                    {
+                        "name": "Log light data",
+                        "call": "log_light",
+                        "sechedule": "every 1 second"
+                    }
+                ]
+            },
+            {
+                "name": "Temperature sensor",
+                "type": "temperature",
+                "class": "sensor",
+                "controller": "MPL3115A2",
+                "actions": [
+                    {
+                        "name": "Log temperature data",
+                        "call": "log_temperature",
+                        "schedule": "every 1 minute"
+                    }
+                ]
+            },
+            {
+                "name": "Humidity sensor",
+                "type": "humidity",
+                "class": "sensor",
+                "controller": "HTU21D",
+                "actions": [
+                    {
+                        "name": "Log humidity data",
+                        "call": "log_humidity",
+                        "schedule": "every 1 minute"
+                    }
+                ]
+            },
+            {
+                "name": "Altimeter",
+                "type": "altimeter",
+                "class": "sensor",
+                "controller": "MPL3115A2",
+                "elevation": 12,
+                "actions": [
+                    {
+                        "name": "Log altitude data",
+                        "call": "log_altitude",
+                        "schedule": "every 1 minute"
+                    }
+                ]
+            },
+            {},
+            {}
         ]
     },
-    "uuid": "2541f761-0d6e-4e66-950c-7db15f71c3c4",
-    "token": "dDwqkwtHFRhFpfkcxP7MZ3BGb47GMy9g"
+    "uuid": "6ead301f-3d52-4bd9-9d7e-f135741c1738",
+    "token": "vZGRsBwDv75BhDesjYAxQbGeTnTgQ94q"
 }

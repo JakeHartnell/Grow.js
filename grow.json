@@ -1,12 +1,9 @@
 {
     "thing": {
-        "name": "Smart Pot",
-        "version": "0.1.5",
-        "owner": "Jake@commongarden.org",
-        "description": "An example growkit.",
-        "type": "growkit",
-        "numberOfPlants": 1,
-        "state": "No plants",
+        "name": "Grow hub",
+        "version": "0.1.0",
+        "description": "",
+        "type": "growhub",
         "components": [
             {
                 "name": "Light sensor",
@@ -23,99 +20,49 @@
                 ]
             },
             {
-                "name": "Water level sensor",
-                "type": "liquid-level",
-                "class": "sensor",
-                "vRef": 3.3,
-                "unit": "milivolts",
-                "events": [
-                    {
-                        "name": "Water level low",
-                        "message": "Refill the water resevoir. You can water the plant like you would any other, the water will drain into the resevoir and this notification will go away."
-                    }
-                ],
-                "actions": [
-                    {
-                        "name": "Check water level",
-                        "call": "check_water_level",
-                        "options": {
-                            "threshold": 3
-                        },
-                        "schedule": "every 1 second"
-                    }
-                ]
-            },
-            {
                 "name": "Temperature sensor",
                 "type": "temperature",
                 "class": "sensor",
-                "unit": "Celcius",
+                "controller": "MPL3115A2",
                 "actions": [
                     {
                         "name": "Log temperature data",
                         "call": "log_temperature",
-                        "options": {
-                            "unit": "C"
-                        },
                         "schedule": "every 1 minute"
                     }
                 ]
             },
             {
-                "name": "pH sensor",
-                "type": "ph",
-                "unit": "ph",
+                "name": "Humidity sensor",
+                "type": "humidity",
                 "class": "sensor",
+                "controller": "HTU21D",
                 "actions": [
                     {
-                        "name": "Log ph data",
-                        "call": "log_ph",
-                        "schedule": "every 1 minute",
-                        "event-message": "Watered plant for 20 seconds"
+                        "name": "Log humidity data",
+                        "call": "log_humidity",
+                        "schedule": "every 1 minute"
                     }
                 ]
             },
             {
-                "name": "Water pump",
-                "type": "water-pump",
-                "class": "actuator",
-                "state": "off",
+                "name": "Altimeter",
+                "type": "altimeter",
+                "class": "sensor",
+                "controller": "MPL3115A2",
+                "elevation": 12,
                 "actions": [
                     {
-                        "name": "Water plant",
-                        "call": "waterPlant",
-                        "options": {
-                            "duration": "20 seconds"
-                        },
-                        "schedule": "at 10:15am",
-                        "event-message": "Watered plant for 20 seconds"
+                        "name": "Log altitude data",
+                        "call": "log_altitude",
+                        "schedule": "every 1 minute"
                     }
                 ]
             },
-            {
-                "name": "Light",
-                "type": "relay",
-                "class": "actuator",
-                "state": "on",
-                "actions": [
-                    {
-                        "name": "On",
-                        "call": "light_on",
-                        "state": "on",
-                        "schedule": "at 9:00am",
-                        "event-message": "Light turned on"
-                    },
-                    {
-                        "name": "off",
-                        "call": "light_off",
-                        "state": "off",
-                        "schedule": "at 8:30pm",
-                        "event-message": "Light turned off"
-                    }
-                ]
-            }
+            {},
+            {}
         ]
     },
-    "uuid": "5b434534-b7e3-4a90-8a47-ea527183a7bb",
-    "token": "axZHKQw4Hf8X2w9npYXFKkXpycq5bs6u"
+    "uuid": "07a1a48c-6d17-4bb9-910e-72d6a23af7c5",
+    "token": "mtzLgrGf2mJSvPG7yzkeseLQde5gzssC"
 }

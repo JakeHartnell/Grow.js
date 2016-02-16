@@ -1,5 +1,13 @@
 'use strict';
 
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
 var _ = require('underscore');
 var assert = require('assert');
 var DDPClient = require('ddp');
@@ -24,7 +32,7 @@ function GROWJS(implementation, growFile, callback) {
   }
 
   if (!(self instanceof GROWJS)) {
-    return new GROWJS(growFile);
+    return new GROWJS(implementation, growFile, callback);
   }
 
   // The grow file is needed to maintain state in case our IoT device looses power or resets.
@@ -310,10 +318,8 @@ GROWJS.prototype.sendData = function (data, callback) {
 GROWJS.prototype.emitEvent = function (eventMessage, callback) {
   var self = this;
 
-  var body = {
-    event: eventMessage,
-    timestamp: new Date()
-  };
+  var body = eventMessage;
+  body.timestamp = new Date();
 
   self.ddpclient.call('Device.emitEvent', [{ uuid: self.uuid, token: self.token }, body], function (error, result) {
     if (!_.isUndefined(callback)) {
@@ -350,92 +356,79 @@ GROWJS.prototype.updateProperty = function (propertyName, propertyKey, value, ca
   });
 };
 
-/*
-  This section contains utilities for calibrating and working with data from ph sensors.
-*/
+var sensor = function (_GROWJS) {
+  _inherits(sensor, _GROWJS);
 
-GROWJS.prototype.ph = {
-  phData: [],
+  function sensor(type) {
+    var params = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
 
-  // Defaults
-  params: {
-    vRef: 4.096,
-    opampGain: 5.25,
-    pH7Cal: 2048,
-    pH4Cal: 1286,
-    pHStep: 59.16
-  },
+    _classCallCheck(this, sensor);
+
+    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(sensor).call(this));
+
+    _this.data = [];
+    _this.type = type;
+    _this.params = params;
+    return _this;
+  }
 
   // Adds readings to ph Data.
-  addReading: function addReading(reading) {
-    if (_.isUndefined(this.phData)) {
-      this.phData = [];
-      this.phData.push([Date.now(), reading]);
-    } else {
-      this.phData.push([Date.now(), reading]);
-    }
-  },
 
-  // Log ph and clear short term data store.
-  log_ph: function log_ph() {
-    var ph = this.calcpH();
-    // We reset phData after calculating.
-    // delete phData;
-    return {
-      name: "Ph",
-      type: "ph",
-      unit: "ph",
-      value: ph
-    };
-  },
 
-  // Lets read our raw reading while in pH7 calibration fluid and store it
-  // We will store in raw int formats as this math works the same on pH step calcs
-  calibratepH7: function calibratepH7(calnum) {
-    this.params.pH7Cal = calnum;
-    this.calcpHSlope();
-  },
-
-  // Lets read our raw reading while in pH7 calibration fluid and store it
-  // We will store in raw int formats as this math works the same on pH step calcs
-  calibratepH7: function calibratepH7(calnum) {
-    this.params.pH7Cal = calnum;
-    this.calcpHSlope();
-  },
-
-  // This is really the heart of the calibration process, we want to capture the
-  // probes "age" and compare it to the Ideal Probe, the easiest way to capture two readings,
-  // at known point(4 and 7 for example) and calculate the slope.
-  // If your slope is drifting too much from ideal (59.16) its time to clean or replace!
-  calcpHSlope: function calcpHSlope() {
-    //RefVoltage * our deltaRawpH / 12bit steps *mV in V / OP-Amp gain /pH step difference 7-4
-    this.params.pHStep = this.vRef * (this.params.pH7Cal - this.params.pH4Cal) / 4096 * 1000 / this.opampGain / 3;
-  },
-
-  average: function average() {
-    var total = 0;
-    if (!_.isUndefined(this.phData)) {
-      for (var i = this.phData.length - 1; i >= 0; i--) {
-        total = total + this.phData[i][1];
+  _createClass(sensor, [{
+    key: 'addReading',
+    value: function addReading(reading) {
+      if (_.isUndefined(this.phData)) {
+        this.data = [];
+        this.data.push([Date.now(), reading]);
+      } else {
+        this.data.push([Date.now(), reading]);
       }
-      return total / this.phData.length;
     }
-  },
+  }, {
+    key: 'read',
+    value: function read() {
+      // perhaps check if a calculate method is defined.
+      var temp = this.calc();
+      // We clear data after log.
+      return {
+        name: "Temperture",
+        type: "temperature",
+        unit: "C",
+        value: temp
+      };
+    }
 
-  // Now that we know our probe "age" we can calculate the proper pH Its really a matter of applying the math
-  // We will find our millivolts based on ADV vref and reading, then we use the 7 calibration
-  // to find out how many steps that is away from 7, then apply our calibrated slope to calculate real pH
-  calcpH: function calcpH() {
-    // TODO: use better math than just an average.
-    // var result = regression('linear', this.phData);
-    var params = this.params;
-    var result = this.average();
-    var miliVolts = result / 4096 * params.vRef * 1000;
-    var temp = (params.vRef * params.pH7Cal / 4096 * 1000 - miliVolts) / params.opampGain;
-    var pH = 7 - temp / params.pHStep;
-    return pH;
-  }
-};
+    // TODO
+    // The calibration function could be very simple and utilized for
+    // multiple sensors.
 
+  }, {
+    key: 'calibrate',
+    value: function calibrate(correct, reading) {
+      // return;
+    }
+  }, {
+    key: 'averageData',
+    value: function averageData() {
+      var total = 0;
+      if (!_.isUndefined(this.data)) {
+        for (var i = this.data.length - 1; i >= 0; i--) {
+          total = total + this.phData[i][1];
+        }
+        return total / this.data.length;
+      }
+    }
+  }, {
+    key: 'log',
+    value: function log(reading) {
+      this.readableStream.push(reading);
+    }
+  }]);
+
+  return sensor;
+}(GROWJS);
 // Export Grow.js as npm module. Be sure to include last in gulpfile concatonation.
+
+
 module.exports = GROWJS;

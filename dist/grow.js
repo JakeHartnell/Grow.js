@@ -23,7 +23,7 @@ function GROWJS(implementation, growFile, callback) {
   }
 
   if (!(self instanceof GROWJS)) {
-    return new GROWJS(growFile);
+    return new GROWJS(implementation, growFile, callback);
   }
 
   // The grow file is needed to maintain state in case our IoT device looses power or resets.

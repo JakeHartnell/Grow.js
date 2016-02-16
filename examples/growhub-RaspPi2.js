@@ -1,15 +1,16 @@
 var GrowInstance = require('.././dist/grow.js');
-// var growfile = require('./growhub.json');
-// var raspi = require('raspi-io');
+var growfile = require('./growhub.json');
 var five = require('johnny-five');
 
+// TODO: make working on raspberry pi
+// var raspi = require('raspi-io');
 // var board = new five.Board({
 //   io: new raspi()
 // });
 
 var board = new five.Board();
 
-board.on("ready", function() {
+board.on("ready", function start () {
 
   var hygrometer = new five.Hygrometer({
     controller: "HTU21D"
@@ -17,21 +18,6 @@ board.on("ready", function() {
 
   hygrometer.on("change", function() {
     console.log(this.relativeHumidity + " %");
-  });
-
-  var altitude = new five.Altimeter({
-    controller: "MPL3115A2",
-    // Change `elevation` with whatever is reported
-    // on http://www.whatismyelevation.com/.
-    // `12` is the elevation (meters) for where I live in Brooklyn
-    elevation: 12,
-  });
-
-  altitude.on("data", function() {
-    console.log("Altitude");
-    console.log("  feet   : ", this.feet);
-    console.log("  meters : ", this.meters);
-    console.log("--------------------------------------");
   });
 
   var barometer = new five.Barometer({
@@ -55,5 +41,50 @@ board.on("ready", function() {
     console.log("  kelvin       : ", this.kelvin);
     console.log("--------------------------------------");
   });
+
+  // Define Actuators
+  var fan = new five.Pin(4),
+      light = new five.Pin(5),
+      wateringPump = new five.Pin(6);
+
+  // Create grow instance
+  var grow = GrowInstance({
+    log_temperature: function () {
+      // 
+
+    },
+    log_humidity: function () {
+      // body...
+    },
+    log_ph: function () {
+      // s
+    },
+    log_pressure: function () {
+      // 
+    },
+    water: function (options) {
+      // Needs duration argument.
+      if (options.duration) {
+        wateringPump.high();
+        setTimeout(function () {
+          wateringPump.low();
+        }, options.duration);
+      }
+    },
+    turn_fan_off: function () {
+      // 
+    },
+    turn_fan_on: function () {
+
+    },
+    turn_light_on: function () {
+
+    },
+    turn_light_off: function () {
+
+    } 
+  }, growfile);
+
+  console.log(grow.sensor);
 
 });
