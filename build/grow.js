@@ -11,7 +11,7 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 var _ = require('underscore');
 var assert = require('assert');
 var DDPClient = require('ddp');
-EJSON = require("ddp-ejson");
+var EJSON = require("ddp-ejson");
 var util = require('util');
 var Duplex = require('stream').Duplex;
 var Readable = require('stream').Readable;
@@ -356,15 +356,15 @@ GROWJS.prototype.updateProperty = function (propertyName, propertyKey, value, ca
   });
 };
 
-var sensor = function (_GROWJS) {
-  _inherits(sensor, _GROWJS);
+var Sensor = function (_GROWJS) {
+  _inherits(Sensor, _GROWJS);
 
-  function sensor(type) {
+  function Sensor(type) {
     var params = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
 
-    _classCallCheck(this, sensor);
+    _classCallCheck(this, Sensor);
 
-    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(sensor).call(this));
+    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Sensor).call(this));
 
     _this.data = [];
     _this.type = type;
@@ -375,7 +375,7 @@ var sensor = function (_GROWJS) {
   // Adds readings to ph Data.
 
 
-  _createClass(sensor, [{
+  _createClass(Sensor, [{
     key: 'addReading',
     value: function addReading(reading) {
       if (_.isUndefined(this.phData)) {
@@ -387,17 +387,17 @@ var sensor = function (_GROWJS) {
     }
   }, {
     key: 'read',
-    value: function read() {
-      // perhaps check if a calculate method is defined.
-      var temp = this.calc();
-      // We clear data after log.
-      return {
-        name: "Temperture",
-        type: "temperature",
-        unit: "C",
-        value: temp
-      };
-    }
+    value: function read() {}
+    // perhaps check if a calculate method is defined.
+    // let temp = this.calc();
+    // // We clear data after log.
+    // super.readableStream.push {
+    //   name: "Temperture",
+    //   type: "temperature",
+    //   unit: "C",
+    //   value: temp
+    // };
+
 
     // TODO
     // The calibration function could be very simple and utilized for
@@ -426,7 +426,7 @@ var sensor = function (_GROWJS) {
     }
   }]);
 
-  return sensor;
+  return Sensor;
 }(GROWJS);
 // Export Grow.js as npm module. Be sure to include last in gulpfile concatonation.
 

@@ -18,14 +18,14 @@ class Sensor extends GROWJS {
   
   	read () {
   		// perhaps check if a calculate method is defined.
-	    let temp = this.calc();
-	    // We clear data after log.
-	    super.readableStream.push {
-	      name: "Temperture",
-	      type: "temperature",
-	      unit: "C",
-	      value: temp
-	    };
+	    // let temp = this.calc();
+	    // // We clear data after log.
+	    // super.readableStream.push {
+	    //   name: "Temperture",
+	    //   type: "temperature",
+	    //   unit: "C",
+	    //   value: temp
+	    // };
 	}
 	
 	// TODO

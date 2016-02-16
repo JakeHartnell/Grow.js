@@ -1,7 +1,7 @@
 var _ = require('underscore');
 var assert = require('assert');
 var DDPClient = require('ddp');
-EJSON = require("ddp-ejson");
+var EJSON = require("ddp-ejson");
 var util = require('util');
 var Duplex = require('stream').Duplex;
 var Readable = require('stream').Readable;

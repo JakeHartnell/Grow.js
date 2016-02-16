@@ -11,6 +11,7 @@ var onError = function (err) {
 var sourcemaps = require('gulp-sourcemaps');
 var mocha = require('gulp-mocha');
 var babel = require('gulp-babel');
+var eslint = require('gulp-eslint');
 
 // Default
 gulp.task('default', ['lint', 'build', 'minify']);
@@ -30,6 +31,7 @@ gulp.task('build', function() {
 });
 
 // Lint JS
+// TODO: setup to work with ES6
 gulp.task('lint', function() {
   return gulp.src('src/*.js')
     .pipe(jshint())
@@ -52,7 +54,7 @@ gulp.task('minify', function(){
 });
  
 // Run tests
-gulp.task('test', ['lint', 'build'], function () {
+gulp.task('test', function () {
 	return gulp.src('test/*.js', {read: false})
 		// gulp-mocha needs filepaths so you can't have any plugins before it 
 		.pipe(mocha({reporter: 'nyan'}));
@@ -69,6 +71,12 @@ gulp.task('es6', function () {
     './src/sensors/sensor.js',
     './src/export.js'
   ])
+    // eslint() attaches the lint output to the "eslint" property
+    // of the file object so it can be used by other modules.
+    .pipe(eslint())
+    // eslint.format() outputs the lint results to the console.
+    // Alternatively use eslint.formatEach() (see Docs).
+    .pipe(eslint.format())
     .pipe(concat('grow.js'))
     .pipe(babel({
       presets: ['es2015']
