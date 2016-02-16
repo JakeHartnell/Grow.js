@@ -61,7 +61,9 @@ GROWJS.prototype.updateProperty = function (propertyName, propertyKey, value, ca
     'Device.udpateProperties',
     [{uuid: self.uuid, token: self.token}, thing],
     function (error, result) {
-      callback(error, result);
+      if (!_.isUndefined(callback)) {
+        callback(error, result);
+      }
     }
   );
 };

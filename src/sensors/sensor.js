@@ -1,4 +1,4 @@
-class Sensor {
+class Sensor extends GROWJS{
 	constructor (type, params = {}) {
 	 super()
 	 this.data = []
@@ -8,7 +8,7 @@ class Sensor {
 	
 	// Adds readings to ph Data.
 	addReading (reading) {
-	    if (_.isUndefined(this.phData)) {
+	    if (_.isUndefined(this.data)) {
 	      this.data = [];
 	      this.data.push([Date.now(), reading]);
 	    } else {

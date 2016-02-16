@@ -1,28 +1,14 @@
 {
     "thing": {
-        "name": "Grow hub",
+        "name": "Propigator",
         "version": "0.1.0",
-        "description": "",
+        "description": "A controlled environment for propigating plants.",
         "type": "growhub",
         "components": [
             {
-                "name": "Light sensor",
-                "type": "light-sensor",
-                "class": "sensor",
-                "vRef": 4.96,
-                "unit": "milivolts",
-                "actions": [
-                    {
-                        "name": "Log light data",
-                        "call": "log_light",
-                        "sechedule": "every 1 second"
-                    }
-                ]
-            },
-            {
                 "name": "Temperature sensor",
                 "type": "temperature",
-                "class": "sensor",
+                "template": "sensor",
                 "controller": "MPL3115A2",
                 "actions": [
                     {
@@ -35,7 +21,7 @@
             {
                 "name": "Humidity sensor",
                 "type": "humidity",
-                "class": "sensor",
+                "template": "sensor",
                 "controller": "HTU21D",
                 "actions": [
                     {
@@ -46,21 +32,92 @@
                 ]
             },
             {
-                "name": "Altimeter",
-                "type": "altimeter",
-                "class": "sensor",
+                "name": "Air pressure",
+                "type": "barometer",
+                "template": "sensor",
                 "controller": "MPL3115A2",
-                "elevation": 12,
                 "actions": [
                     {
-                        "name": "Log altitude data",
-                        "call": "log_altitude",
+                        "name": "Log air pressure data",
+                        "call": "log_pressure",
                         "schedule": "every 1 minute"
                     }
                 ]
             },
-            {},
-            {}
+            {
+                "name": "Ph sensor",
+                "type": "ph",
+                "template": "sensor",
+                "controller": "analog",
+                "actions": [
+                    {
+                        "name": "Log ph data",
+                        "call": "log_ph",
+                        "schedule": "every 1 minute"
+                    }
+                ]
+            },
+            {
+                "name": "Water pump",
+                "type": "waterpump",
+                "template": "actuator",
+                "state": "off",
+                "actions": [
+                    {
+                        "name": "Water plant",
+                        "call": "water",
+                        "options": {
+                            "duration": "20 seconds"
+                        },
+                        "schedule": "at 10:15am",
+                        "event-message": "Watered plant for 20 seconds"
+                    }
+                ]
+            },
+            {
+                "name": "Light",
+                "type": "relay",
+                "template": "actuator",
+                "state": "on",
+                "actions": [
+                    {
+                        "name": "On",
+                        "call": "turn_light_on",
+                        "state": "on",
+                        "schedule": "at 9:00am",
+                        "event-message": "Light turned on"
+                    },
+                    {
+                        "name": "off",
+                        "call": "turn_light_off",
+                        "state": "off",
+                        "schedule": "at 8:30pm",
+                        "event-message": "Light turned off"
+                    }
+                ]
+            },
+            {
+                "name": "Fan",
+                "type": "fan",
+                "template": "actuator",
+                "state": "on",
+                "actions": [
+                    {
+                        "name": "On",
+                        "call": "turn_fan_on",
+                        "state": "on",
+                        "schedule": "at 9:00am",
+                        "event-message": "Light turned on"
+                    },
+                    {
+                        "name": "off",
+                        "call": "turn_fan_off",
+                        "state": "off",
+                        "schedule": "at 8:30pm",
+                        "event-message": "Light turned off"
+                    }
+                ]
+            }
         ]
     }
 }

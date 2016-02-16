@@ -9,7 +9,7 @@ GROWJS.prototype.callAction = function (functionName, options) {
     self.emitEvent({
       name: meta.name,
       message: meta["event-message"],
-      options: command.options
+      options: options
     });
   }
   else {

@@ -23,7 +23,6 @@ gulp.task('build', function() {
   	'./src/growfile.js',
   	'./src/actions.js',
   	'./src/grow-api.js',
-    './src/sensors/ph.js',
   	'./src/export.js'
   ])
     .pipe(concat('grow.js'))
@@ -68,7 +67,7 @@ gulp.task('es6', function () {
     './src/actions.js',
     './src/grow-api.js',
     // './src/sensors/ph.js',
-    './src/sensors/sensor.js',
+    // './src/sensors/sensor.js',
     './src/export.js'
   ])
     // eslint() attaches the lint output to the "eslint" property
