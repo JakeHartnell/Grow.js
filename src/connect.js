@@ -2,7 +2,7 @@ GROWJS.prototype.connect = function (callback) {
   var self = this;
 
   self.ddpclient.connect(function (error, wasReconnect) {
-    // if (error) return callback(error);
+    if (error) return callback(error);
 
     if (wasReconnect) {
       console.log("Reestablishment of a Grow server connection.");
@@ -12,7 +12,7 @@ GROWJS.prototype.connect = function (callback) {
     }
 
     if (self.uuid || self.token) {
-      return self._afterConnect({
+      return self._afterConnect(callback, {
         uuid: self.uuid,
         token: self.token
       });
@@ -22,7 +22,7 @@ GROWJS.prototype.connect = function (callback) {
       'Device.register',
       [self.thing],
       function (error, result) {
-        // if (error) return callback(error);
+        if (error) return callback(error);
 
         assert(result.uuid, result);
         assert(result.token, result);
@@ -61,17 +61,14 @@ GROWJS.prototype._afterConnect = function (callback, result) {
     }
   );
 
+
   /* Now check to see if we have a stored UUID.
    * If no UUID is specified, store a new UUID. */
   if (_.isUndefined(self.growFile.uuid) || _.isUndefined(self.growFile.token)) {
     self.growFile.uuid = result.uuid;
     self.growFile.token = result.token;
-    self.writeChangesToGrowFile();
-    // fs.writeFile('./grow.json', JSON.stringify(self.growFile, null, 4), function (error) {
-    //     if (error) return console.log("Error", error);
 
-    //     console.log("New configration was saved with a uuid of: " + result.uuid);
-    // });
+    self.writeChangesToGrowFile();
   }
 
   /////////// Setup Streams /////////////////////

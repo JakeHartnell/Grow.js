@@ -1,4 +1,4 @@
-GROWJS.prototype.writeChangesToGrowFile = function (callback) {
+GROWJS.prototype.writeChangesToGrowFile = function () {
   var self = this;
 
   if (typeof self.pathToGrowFile === 'string') {
