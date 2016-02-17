@@ -2,7 +2,7 @@ GROWJS.prototype.connect = function (callback) {
   var self = this;
 
   self.ddpclient.connect(function (error, wasReconnect) {
-    if (error) return callback(error);
+    // if (error) return callback(error);
 
     if (wasReconnect) {
       console.log("Reestablishment of a Grow server connection.");
@@ -12,7 +12,7 @@ GROWJS.prototype.connect = function (callback) {
     }
 
     if (self.uuid || self.token) {
-      return self._afterConnect(callback, {
+      return self._afterConnect({
         uuid: self.uuid,
         token: self.token
       });
@@ -22,7 +22,7 @@ GROWJS.prototype.connect = function (callback) {
       'Device.register',
       [self.thing],
       function (error, result) {
-        if (error) return callback(error);
+        // if (error) return callback(error);
 
         assert(result.uuid, result);
         assert(result.token, result);
@@ -66,30 +66,42 @@ GROWJS.prototype._afterConnect = function (callback, result) {
   if (_.isUndefined(self.growFile.uuid) || _.isUndefined(self.growFile.token)) {
     self.growFile.uuid = result.uuid;
     self.growFile.token = result.token;
-    fs.writeFile('./grow.json', JSON.stringify(self.growFile, null, 4), function (error) {
-        if (error) return console.log("Error", error);
+    self.writeChangesToGrowFile();
+    // fs.writeFile('./grow.json', JSON.stringify(self.growFile, null, 4), function (error) {
+    //     if (error) return console.log("Error", error);
 
-        console.log("New configration was saved with a uuid of: " + result.uuid);
-    });
+    //     console.log("New configration was saved with a uuid of: " + result.uuid);
+    // });
   }
 
-  // Make a new readable stream
+  /////////// Setup Streams /////////////////////
+  // Documentation: https://nodejs.org/api/stream.html
+
+  // Readable Stream: this is "readable" from the server perspective.
+  // The device publishes it's data to the readable stream.
   self.readableStream = new Readable({objectMode: true});
 
-  // Make a new writable stream
-  self.writableStream = new Writable({objectMode: true});
-
   // We are pushing data when sensor measures it so we do not do anything
-  // when we get a request for more data. We just ignore it.
+  // when we get a request for more data. We just ignore it for now.
   self.readableStream._read = function () {};
 
-  // We catch any errors
   self.readableStream.on('error', function (error) {
     console.log("Error", error.message);
   });
 
+  // Writable stream: this is writable from the server perspective. A device listens on
+  // the writable stream to recieve new commands.
+  self.writableStream = new Writable({objectMode: true});
 
   callback(null, result);
+};
+
+// We pipe our readable and writable streams to the instance.
+GROWJS.prototype.pipeInstance = function () {
+  var self = this;
+
+  this.pipe(self.writableStream);
+  self.readableStream.pipe(this);
 };
 
 GROWJS.prototype._write = function (chunk, encoding, callback) {
@@ -103,14 +115,4 @@ GROWJS.prototype._write = function (chunk, encoding, callback) {
 GROWJS.prototype._read = function (size) {
   var self = this;
 };
-
-
-// Maybe this can be taken care of by a call back or somewhere else?
-GROWJS.prototype.pipeInstance = function () {
-  var self = this;
-
-  // We pipe our readable and writable streams to the instance.
-  this.pipe(self.writableStream);
-  self.readableStream.pipe(this);
-}
 
