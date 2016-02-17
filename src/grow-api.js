@@ -57,6 +57,7 @@ GROWJS.prototype.updateProperty = function (propertyName, propertyKey, value, ca
 
   self.writeChangesToGrowFile();
 
+  // Maybe this should be a callback of write changes?
   self.ddpclient.call(
     'Device.udpateProperties',
     [{uuid: self.uuid, token: self.token}, thing],

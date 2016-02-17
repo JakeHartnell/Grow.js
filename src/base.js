@@ -28,8 +28,9 @@ function GROWJS(implementation, growFile, callback) {
 
   // The grow file is needed to maintain state in case our IoT device looses power or resets.
   // This part could be better...
-  if (growFile) {
-    self.growFile = growFile;
+  if (typeof growFile === "string") {
+    self.pathToGrowFile = growFile;
+    self.growFile = require(growFile);
   } else {
     self.growFile = require('../../grow.json');
   }

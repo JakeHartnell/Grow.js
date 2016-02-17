@@ -1,6 +1,6 @@
 {
     "thing": {
-        "name": "Smart Pot",
+        "name": "value",
         "version": "0.1.5",
         "owner": "Jake@commongarden.org",
         "description": "An example growkit.",
@@ -115,5 +115,7 @@
                 ]
             }
         ]
-    }
+    },
+    "uuid": "4dae5ef6-39f9-4d58-a052-27e947e15af7",
+    "token": "Kx78yMXpj9QuY8ZRSGFBXpJB2DxKSeSg"
 }

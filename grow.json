@@ -1,71 +1,89 @@
 {
     "thing": {
-        "name": "Propigator",
-        "version": "0.1.0",
-        "description": "A controlled environment for propigating plants.",
-        "type": "growhub",
+        "name": "Smart Pot",
+        "version": "0.1.5",
+        "owner": "Jake@commongarden.org",
+        "description": "An example growkit.",
+        "type": "growkit",
+        "numberOfPlants": 1,
+        "state": "No plants",
         "components": [
+            {
+                "name": "Light sensor",
+                "type": "light-sensor",
+                "class": "sensor",
+                "vRef": 4.96,
+                "unit": "milivolts",
+                "actions": [
+                    {
+                        "name": "Log light data",
+                        "call": "log_light",
+                        "sechedule": "every 1 second"
+                    }
+                ]
+            },
+            {
+                "name": "Water level sensor",
+                "type": "liquid-level",
+                "class": "sensor",
+                "vRef": 3.3,
+                "unit": "milivolts",
+                "events": [
+                    {
+                        "name": "Water level low",
+                        "message": "Refill the water resevoir. You can water the plant like you would any other, the water will drain into the resevoir and this notification will go away."
+                    }
+                ],
+                "actions": [
+                    {
+                        "name": "Check water level",
+                        "call": "check_water_level",
+                        "options": {
+                            "threshold": 3
+                        },
+                        "schedule": "every 1 second"
+                    }
+                ]
+            },
             {
                 "name": "Temperature sensor",
                 "type": "temperature",
-                "template": "sensor",
-                "controller": "MPL3115A2",
+                "class": "sensor",
+                "unit": "Celcius",
                 "actions": [
                     {
                         "name": "Log temperature data",
                         "call": "log_temperature",
+                        "options": {
+                            "unit": "C"
+                        },
                         "schedule": "every 1 minute"
                     }
                 ]
             },
             {
-                "name": "Humidity sensor",
-                "type": "humidity",
-                "template": "sensor",
-                "controller": "HTU21D",
-                "actions": [
-                    {
-                        "name": "Log humidity data",
-                        "call": "log_humidity",
-                        "schedule": "every 1 minute"
-                    }
-                ]
-            },
-            {
-                "name": "Air pressure",
-                "type": "barometer",
-                "template": "sensor",
-                "controller": "MPL3115A2",
-                "actions": [
-                    {
-                        "name": "Log air pressure data",
-                        "call": "log_pressure",
-                        "schedule": "every 1 minute"
-                    }
-                ]
-            },
-            {
-                "name": "Ph sensor",
+                "name": "pH sensor",
                 "type": "ph",
-                "template": "sensor",
-                "controller": "analog",
+                "unit": "ph",
+                "class": "sensor",
                 "actions": [
                     {
                         "name": "Log ph data",
                         "call": "log_ph",
-                        "schedule": "every 1 minute"
+                        "schedule": "every 1 minute",
+                        "event-message": "Watered plant for 20 seconds"
                     }
                 ]
             },
             {
                 "name": "Water pump",
-                "type": "waterpump",
-                "template": "actuator",
+                "type": "water-pump",
+                "class": "actuator",
                 "state": "off",
                 "actions": [
                     {
                         "name": "Water plant",
-                        "call": "water",
+                        "call": "waterPlant",
                         "options": {
                             "duration": "20 seconds"
                         },
@@ -77,41 +95,19 @@
             {
                 "name": "Light",
                 "type": "relay",
-                "template": "actuator",
+                "class": "actuator",
                 "state": "on",
                 "actions": [
                     {
                         "name": "On",
-                        "call": "turn_light_on",
+                        "call": "light_on",
                         "state": "on",
                         "schedule": "at 9:00am",
                         "event-message": "Light turned on"
                     },
                     {
                         "name": "off",
-                        "call": "turn_light_off",
-                        "state": "off",
-                        "schedule": "at 8:30pm",
-                        "event-message": "Light turned off"
-                    }
-                ]
-            },
-            {
-                "name": "Fan",
-                "type": "fan",
-                "template": "actuator",
-                "state": "on",
-                "actions": [
-                    {
-                        "name": "On",
-                        "call": "turn_fan_on",
-                        "state": "on",
-                        "schedule": "at 9:00am",
-                        "event-message": "Light turned on"
-                    },
-                    {
-                        "name": "off",
-                        "call": "turn_fan_off",
+                        "call": "light_off",
                         "state": "off",
                         "schedule": "at 8:30pm",
                         "event-message": "Light turned off"
@@ -120,6 +116,6 @@
             }
         ]
     },
-    "uuid": "c4a54539-2083-4ef3-a28c-6d937576fb92",
-    "token": "zQkFxkccgjidhJ3QWEnNJWHonsLrG6jC"
+    "uuid": "3424ae05-c2a3-4284-81bb-6a4b2449e484",
+    "token": "AF4fSccqGgwBYNzPCKgzMx8jtLj5yP3C"
 }

@@ -66,11 +66,12 @@ GROWJS.prototype._afterConnect = function (callback, result) {
   if (_.isUndefined(self.growFile.uuid) || _.isUndefined(self.growFile.token)) {
     self.growFile.uuid = result.uuid;
     self.growFile.token = result.token;
-    fs.writeFile('./grow.json', JSON.stringify(self.growFile, null, 4), function (error) {
-        if (error) return console.log("Error", error);
+    self.writeChangesToGrowFile();
+    // fs.writeFile('./grow.json', JSON.stringify(self.growFile, null, 4), function (error) {
+    //     if (error) return console.log("Error", error);
 
-        console.log("New configration was saved with a uuid of: " + result.uuid);
-    });
+    //     console.log("New configration was saved with a uuid of: " + result.uuid);
+    // });
   }
 
   /////////// Setup Streams /////////////////////

@@ -28,8 +28,9 @@ function GROWJS(implementation, growFile, callback) {
 
   // The grow file is needed to maintain state in case our IoT device looses power or resets.
   // This part could be better...
-  if (growFile) {
-    self.growFile = growFile;
+  if (typeof growFile === "string") {
+    self.pathToGrowFile = growFile;
+    self.growFile = require(growFile);
   } else {
     self.growFile = require('../../grow.json');
   }
@@ -142,11 +143,12 @@ GROWJS.prototype._afterConnect = function (callback, result) {
   if (_.isUndefined(self.growFile.uuid) || _.isUndefined(self.growFile.token)) {
     self.growFile.uuid = result.uuid;
     self.growFile.token = result.token;
-    fs.writeFile('./grow.json', JSON.stringify(self.growFile, null, 4), function (error) {
-        if (error) return console.log("Error", error);
+    self.writeChangesToGrowFile();
+    // fs.writeFile('./grow.json', JSON.stringify(self.growFile, null, 4), function (error) {
+    //     if (error) return console.log("Error", error);
 
-        console.log("New configration was saved with a uuid of: " + result.uuid);
-    });
+    //     console.log("New configration was saved with a uuid of: " + result.uuid);
+    // });
   }
 
   /////////// Setup Streams /////////////////////
@@ -192,12 +194,19 @@ GROWJS.prototype._read = function (size) {
 };
 
 
-GROWJS.prototype.writeChangesToGrowFile = function () {
+GROWJS.prototype.writeChangesToGrowFile = function (callback) {
   var self = this;
 
-  fs.writeFile('./grow.json', JSON.stringify(self.growFile, null, 4), function (error) {
-    if (error) return console.log("Error", error);
-  });
+  if (typeof self.pathToGrowFile === 'string') {
+  	// Stupid hack.
+  	fs.writeFile(self.pathToGrowFile.slice(1), JSON.stringify(self.growFile, null, 4), function (error) {
+		if (error) return console.log("Error", error);
+	});
+  } else {
+	fs.writeFile('./grow.json', JSON.stringify(self.growFile, null, 4), function (error) {
+		if (error) return console.log("Error", error);
+	});
+  }
 };
 
 // Calls action, emits event, and updates state (if applicable).
@@ -362,6 +371,7 @@ GROWJS.prototype.updateProperty = function (propertyName, propertyKey, value, ca
 
   self.writeChangesToGrowFile();
 
+  // Maybe this should be a callback of write changes?
   self.ddpclient.call(
     'Device.udpateProperties',
     [{uuid: self.uuid, token: self.token}, thing],

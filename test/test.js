@@ -1,6 +1,6 @@
 // var assert = require('assert');
-var GrowInstance = require('../build/grow.js');
-var growFile = require('./testgrow.json');
+var GrowInstance = require('../dist/grow.js');
+var growFile = '../test/testgrow.json';
 
 // Note: we still need to write proper tests.
 var grow = new GrowInstance({
