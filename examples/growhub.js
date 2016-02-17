@@ -1,5 +1,5 @@
 var GrowInstance = require('.././dist/grow.js');
-var growfile = require('./growhub.json');
+var growfile = '../examples/growhub.json';
 var five = require('johnny-five');
 
 var board = new five.Board();

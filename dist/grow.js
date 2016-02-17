@@ -203,10 +203,12 @@ GROWJS.prototype.writeChangesToGrowFile = function (callback) {
 		if (error) return console.log("Error", error);
 	});
   } else {
-	fs.writeFile('./grow.json', JSON.stringify(self.growFile, null, 4), function (error) {
-		if (error) return console.log("Error", error);
-	});
+  	fs.writeFile('./grow.json', JSON.stringify(self.growFile, null, 4), function (error) {
+  		if (error) return console.log("Error", error);
+  	});
   }
+
+  
 };
 
 // Calls action, emits event, and updates state (if applicable).
@@ -243,10 +245,12 @@ GROWJS.prototype.registerActions = function (implementation) {
 
   // TODO: make sure the implementation matches the growfile.
 
+  // Start actions that have a schedule property.
+  // self.startScheduledActions();
+
   // Sets up listening for actions on the writeable stream.
-  var actions = self.actions;
   self.writableStream._write = function (command, encoding, callback) {
-    for (var action in actions) {
+    for (var action in self.actions) {
       if (command.type === action) {
         if (command.options) {
           self.callAction(action, command.options);
@@ -261,8 +265,11 @@ GROWJS.prototype.registerActions = function (implementation) {
   };
 };
 
-// TODO:
 GROWJS.prototype.startScheduledActions = function () {
+  if (_.isUndefined(self.actions)) {
+    throw new Error("No actions registered.");
+  }
+
   return;
 };
 
@@ -326,7 +333,9 @@ GROWJS.prototype.sendData = function (data, callback) {
     function (error, result) {
       if (error) return callback(error);
 
-      callback(null, result);
+      if (!_.isUndefined(callback)) {
+        callback(null, result);
+      }
     }
   );
 };
@@ -372,6 +381,7 @@ GROWJS.prototype.updateProperty = function (propertyName, propertyKey, value, ca
   self.writeChangesToGrowFile();
 
   // Maybe this should be a callback of write changes?
+  // Otherwise we have instances when state is out of sync.
   self.ddpclient.call(
     'Device.udpateProperties',
     [{uuid: self.uuid, token: self.token}, thing],
