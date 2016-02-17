@@ -32,10 +32,12 @@ GROWJS.prototype.registerActions = function (implementation) {
 
   // TODO: make sure the implementation matches the growfile.
 
+  // Start actions that have a schedule property.
+  self.startScheduledActions();
+
   // Sets up listening for actions on the writeable stream.
-  var actions = self.actions;
   self.writableStream._write = function (command, encoding, callback) {
-    for (var action in actions) {
+    for (var action in self.actions) {
       if (command.type === action) {
         if (command.options) {
           self.callAction(action, command.options);
@@ -50,8 +52,11 @@ GROWJS.prototype.registerActions = function (implementation) {
   };
 };
 
-// TODO:
 GROWJS.prototype.startScheduledActions = function () {
+  if (_.isUndefined(self.actions)) {
+    throw new Error("No actions registered.");
+  }
+
   return;
 };
 

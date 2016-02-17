@@ -7,8 +7,10 @@ GROWJS.prototype.writeChangesToGrowFile = function (callback) {
 		if (error) return console.log("Error", error);
 	});
   } else {
-	fs.writeFile('./grow.json', JSON.stringify(self.growFile, null, 4), function (error) {
-		if (error) return console.log("Error", error);
-	});
+  	fs.writeFile('./grow.json', JSON.stringify(self.growFile, null, 4), function (error) {
+  		if (error) return console.log("Error", error);
+  	});
   }
+
+  
 };

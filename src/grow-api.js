@@ -12,7 +12,9 @@ GROWJS.prototype.sendData = function (data, callback) {
     function (error, result) {
       if (error) return callback(error);
 
-      callback(null, result);
+      if (!_.isUndefined(callback)) {
+        callback(null, result);
+      }
     }
   );
 };
@@ -58,6 +60,7 @@ GROWJS.prototype.updateProperty = function (propertyName, propertyKey, value, ca
   self.writeChangesToGrowFile();
 
   // Maybe this should be a callback of write changes?
+  // Otherwise we have instances when state is out of sync.
   self.ddpclient.call(
     'Device.udpateProperties',
     [{uuid: self.uuid, token: self.token}, thing],
