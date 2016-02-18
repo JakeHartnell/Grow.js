@@ -66,10 +66,6 @@ function GROWJS(implementation, growFile, callback) {
     self.registerActions(implementation);
 
     self.pipeInstance();
-
-    if (!_.isUndefined(callback)) {
-      callback(null, self);
-    }
   });
 }
 

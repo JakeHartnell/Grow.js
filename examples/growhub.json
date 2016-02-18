@@ -4,6 +4,7 @@
         "version": "0.1.0",
         "description": "A controlled environment for propigating plants.",
         "type": "growhub",
+        "owner": "jake@commongarden.org",
         "components": [
             {
                 "name": "Temperature sensor",

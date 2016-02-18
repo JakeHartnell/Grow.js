@@ -47,21 +47,23 @@ board.on("ready", function start () {
       light = new five.Pin(11),
       wateringPump = new five.Pin(12);
 
+      light.low();
+
   // Create grow instance
   var grow = GrowInstance({
     // TODO: format sensor data!
-    log_temperature: function () {
-      grow.readableStream.push(sensorData.temperature);
-    },
-    log_humidity: function () {
-      grow.readableStream.push(sensorData.humidty);
-    },
-    log_ph: function () {
-      grow.readableStream.push(sensorData.ph);
-    },
-    log_pressure: function () {
-      grow.readableStream.push(sensorData.pressure);
-    },
+    // log_temperature: function () {
+    //   grow.readableStream.push(sensorData.temperature);
+    // },
+    // log_humidity: function () {
+    //   grow.readableStream.push(sensorData.humidty);
+    // },
+    // log_ph: function () {
+    //   grow.readableStream.push(sensorData.ph);
+    // },
+    // log_pressure: function () {
+    //   grow.readableStream.push(sensorData.pressure);
+    // },
     water: function (options) {
       // Needs duration argument.
       console.log(typeof options.duration);

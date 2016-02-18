@@ -66,10 +66,6 @@ function GROWJS(implementation, growFile, callback) {
     self.registerActions(implementation);
 
     self.pipeInstance();
-
-    if (!_.isUndefined(callback)) {
-      callback(null, self);
-    }
   });
 }
 
@@ -144,8 +140,7 @@ GROWJS.prototype._afterConnect = function (callback, result) {
   if (_.isUndefined(self.growFile.uuid) || _.isUndefined(self.growFile.token)) {
     self.growFile.uuid = result.uuid;
     self.growFile.token = result.token;
-    
-    // THIS PART SUCKS. For some reason when it runs, it alters the callback.
+
     self.writeChangesToGrowFile();
   }
 
