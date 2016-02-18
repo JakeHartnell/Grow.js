@@ -41,7 +41,7 @@
                     {
                         "name": "Log air pressure data",
                         "call": "log_pressure",
-                        "schedule": "every 1 minute"
+                        "schedule": "every 2 seconds"
                     }
                 ]
             },
@@ -54,7 +54,7 @@
                     {
                         "name": "Log ph data",
                         "call": "log_ph",
-                        "schedule": "every 1 minute"
+                        "schedule": "every 1 second"
                     }
                 ]
             },

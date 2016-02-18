@@ -239,7 +239,7 @@ GROWJS.prototype.registerActions = function (implementation) {
   // TODO: make sure the implementation matches the growfile.
 
   // Start actions that have a schedule property.
-  // self.startScheduledActions();
+  self.startScheduledActions();
 
   // Sets up listening for actions on the writeable stream.
   self.writableStream._write = function (command, encoding, callback) {
@@ -259,12 +259,37 @@ GROWJS.prototype.registerActions = function (implementation) {
 };
 
 GROWJS.prototype.startScheduledActions = function () {
+  var self = this;
+  self.scheduledActions = [];
+
   if (_.isUndefined(self.actions)) {
     throw new Error("No actions registered.");
   }
 
-  return;
+  for (var action in self.actions) {
+    self.startAction(action);
+    // var meta = self.getActionMetaByCall(action);
+    // if (!_.isUndefined(meta.schedule)) {
+    //   // console.log(meta.schedule);
+    //   var schedule = later.parse.text(meta.schedule);
+    //   var scheduledAction = later.setInterval(function() {self.callAction(action);}, schedule);
+    //   self.scheduledActions.push(scheduledAction);
+    // }
+  }
+
+  console.log(self.scheduledActions);
 };
+
+GROWJS.prototype.startAction = function (action) {
+  var self = this;
+  var meta = self.getActionMetaByCall(action);
+  if (!_.isUndefined(meta.schedule)) {
+    // console.log(meta.schedule);
+    var schedule = later.parse.text(meta.schedule);
+    var scheduledAction = later.setInterval(function() {self.callAction(action);}, schedule);
+    return scheduledAction;
+  }
+}
 
 // Returns an object of action metadata based on function name.
 GROWJS.prototype.getActionMetaByCall = function (functionName) {
