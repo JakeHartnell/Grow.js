@@ -15,7 +15,8 @@
                     {
                         "name": "Log temperature data",
                         "call": "log_temperature",
-                        "schedule": "every 1 minute"
+                        "event-message": null,
+                        "schedule": "every 3 seconds"
                     }
                 ]
             },
@@ -28,7 +29,8 @@
                     {
                         "name": "Log humidity data",
                         "call": "log_humidity",
-                        "schedule": "every 1 minute"
+                        "event-message": null,
+                        "schedule": "every 4 seconds"
                     }
                 ]
             },
@@ -41,7 +43,8 @@
                     {
                         "name": "Log air pressure data",
                         "call": "log_pressure",
-                        "schedule": "every 2 seconds"
+                        "event-message": null,
+                        "schedule": "every 5 seconds"
                     }
                 ]
             },
@@ -54,7 +57,8 @@
                     {
                         "name": "Log ph data",
                         "call": "log_ph",
-                        "schedule": "every 1 second"
+                        "event-message": null,
+                        "schedule": "every 7 seconds"
                     }
                 ]
             },
@@ -120,5 +124,7 @@
                 ]
             }
         ]
-    }
+    },
+    "uuid": "95009b7d-5fc8-43a6-8cc8-39dfd59df77b",
+    "token": "8MCdaCyZFjn2FRvCdgDQxCHDYroN7iwt"
 }

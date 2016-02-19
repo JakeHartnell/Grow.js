@@ -16,7 +16,7 @@ board.on("ready", function start () {
   var temperature = new five.Thermometer({
     controller: "MPL3115A2"
   });
-  var ph = new five.Sensor("A1");
+  var phSensor = new five.Sensor("A1");
 
   // This vartiable holds our sensor data.
   var sensorData = {};
@@ -38,7 +38,7 @@ board.on("ready", function start () {
     };
   });
 
-  ph.on("change", function() {
+  phSensor.on("change", function() {
     sensorData.ph = this.value;
   });
 
@@ -49,18 +49,22 @@ board.on("ready", function start () {
 
   // Create grow instance
   var grow = GrowInstance({
-    // TODO: format sensor data!
+    // // TODO: format sensor data!
     log_temperature: function () {
-      console.log(sensorData.temperature);
+      // console.log("temperature");
+      grow.readableStream.push("sensorData.temperature");
     },
     log_humidity: function () {
-      console.log(sensorData.humidty);
+      // console.log("humidty");
+      grow.readableStream.push("sensorData.humidty");
     },
     log_ph: function () {
-      console.log("sensorData.ph");
+      // console.log(self);
+      grow.readableStream.push(sensorData.ph);
     },
     log_pressure: function () {
-      console.log("sensorData.pressure");
+      // console.log("Pressure");
+      grow.readableStream.push("sensorData.pressure");
     },
     water: function (options) {
       // Needs duration argument.

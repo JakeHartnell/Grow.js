@@ -4,7 +4,13 @@ GROWJS.prototype.callAction = function (functionName, options) {
 
   var meta = self.getActionMetaByCall(functionName);
 
-  if (options) {
+  // Not sure if this is a good idea, should have a better way of handling data
+  // from sensors. They shouldn't be logging events, becuase they're already logging
+  // data.
+  if (meta["event-message"] === null) {
+    self.actions[functionName]();
+  }
+  else if (options) {
     self.actions[functionName](options);
     self.emitEvent({
       name: meta.name,
@@ -31,6 +37,7 @@ GROWJS.prototype.registerActions = function (implementation) {
   self.actions = _.clone(implementation || {});
 
   // TODO: make sure the implementation matches the growfile.
+  // If not, we throw some helpful errors.
 
   // Start actions that have a schedule property.
   self.startScheduledActions();
@@ -62,18 +69,10 @@ GROWJS.prototype.startScheduledActions = function () {
 
   for (var action in self.actions) {
     self.startAction(action);
-    // var meta = self.getActionMetaByCall(action);
-    // if (!_.isUndefined(meta.schedule)) {
-    //   // console.log(meta.schedule);
-    //   var schedule = later.parse.text(meta.schedule);
-    //   var scheduledAction = later.setInterval(function() {self.callAction(action);}, schedule);
-    //   self.scheduledActions.push(scheduledAction);
-    // }
   }
-
-  console.log(self.scheduledActions);
 };
 
+// TODO: Support options.
 GROWJS.prototype.startAction = function (action) {
   var self = this;
   var meta = self.getActionMetaByCall(action);
@@ -81,6 +80,7 @@ GROWJS.prototype.startAction = function (action) {
     // console.log(meta.schedule);
     var schedule = later.parse.text(meta.schedule);
     var scheduledAction = later.setInterval(function() {self.callAction(action);}, schedule);
+    self.scheduledActions.push(scheduledAction);
     return scheduledAction;
   }
 }
