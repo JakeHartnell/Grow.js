@@ -58,10 +58,10 @@ board.on("ready", function start () {
       // console.log("humidty");
       grow.readableStream.push("sensorData.humidty");
     },
-    log_ph: function () {
-      // console.log(self);
-      grow.readableStream.push(sensorData.ph);
-    },
+    // log_ph: function () {
+    //   // console.log(self);
+    //   grow.readableStream.push(sensorData.ph);
+    // },
     log_pressure: function () {
       // console.log("Pressure");
       grow.readableStream.push("sensorData.pressure");

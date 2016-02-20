@@ -4,29 +4,37 @@ GROWJS.prototype.callAction = function (functionName, options) {
 
   var meta = self.getActionMetaByCall(functionName);
 
-  // Not sure if this is a good idea, should have a better way of handling data
-  // from sensors. They shouldn't be logging events, becuase they're already logging
-  // data.
-  if (meta["event-message"] === null) {
-    self.actions[functionName]();
+  // If the actions "event" property is set to null or is undefined,
+  // No event is logged.
+  if (meta.event === null || _.isUndefined(meta.event)) {
+    if (options) {
+      self.actions[functionName](options);
+    }
+    else {
+      self.actions[functionName]();
+    }
   }
-  else if (options) {
-    self.actions[functionName](options);
-    self.emitEvent({
-      name: meta.name,
-      message: meta["event-message"],
-      options: options
-    });
-  }
+  // Otherwise we log an event.
   else {
-    self.actions[functionName]();
-    self.emitEvent({
-      name: meta.name,
-      message: meta["event-message"]
-    });
+    if (options) {
+      self.actions[functionName](options);
+      self.emitEvent({
+        name: meta.name,
+        message: meta.event,
+        options: options
+      });
+    }
+    else {
+      self.actions[functionName]();
+      self.emitEvent({
+        name: meta.name,
+        message: meta.event
+      });
+    }
   }
 
   // TODO: If the action has a state property, we update the state.
+  // NOT WORKING.
   if (meta.state) {
     self.updateProperty(meta.name, "state", meta.state);
   }
@@ -59,6 +67,7 @@ GROWJS.prototype.registerActions = function (implementation) {
   };
 };
 
+// TODO: stop actions, etc.
 GROWJS.prototype.startScheduledActions = function () {
   var self = this;
   self.scheduledActions = [];
@@ -67,8 +76,29 @@ GROWJS.prototype.startScheduledActions = function () {
     throw new Error("No actions registered.");
   }
 
+  // TODO if sensor call a separate logData function that doesn't fire and event.
+  // Or if event = null perhaps?
   for (var action in self.actions) {
-    self.startAction(action);
+    var meta = self.getActionMetaByCall(action);
+    if (meta.event === null || _.isUndefined(meta.event)) {
+      self.startAction(action);
+    } else {
+      self.startActionWithEventLog(action);
+    }
+  }
+
+};
+
+// TODO: Support options.
+GROWJS.prototype.startActionWithEventLog = function (action) {
+  var self = this;
+  var meta = self.getActionMetaByCall(action);
+  if (!_.isUndefined(meta.schedule)) {
+    var schedule = later.parse.text(meta.schedule);
+    var scheduledAction = later.setInterval(function() {self.callAction(action);}, schedule);
+    // TODO: extend scheduled action so that they have a name.
+    self.scheduledActions.push(scheduledAction);
+    return scheduledAction;
   }
 };
 
@@ -83,13 +113,14 @@ GROWJS.prototype.startAction = function (action) {
     self.scheduledActions.push(scheduledAction);
     return scheduledAction;
   }
-}
+};
 
 // Returns an object of action metadata based on function name.
 GROWJS.prototype.getActionMetaByCall = function (functionName) {
   var self = this;
   var actionsMeta = self.getActions();
   for (var i = actionsMeta.length - 1; i >= 0; i--) {
+    // console.log(actionsMeta[i]);
     if (actionsMeta[i].call === functionName) {
       return actionsMeta[i];
     }

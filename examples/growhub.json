@@ -15,7 +15,7 @@
                     {
                         "name": "Log temperature data",
                         "call": "log_temperature",
-                        "event-message": null,
+                        "event": null,
                         "schedule": "every 3 seconds"
                     }
                 ]
@@ -29,7 +29,7 @@
                     {
                         "name": "Log humidity data",
                         "call": "log_humidity",
-                        "event-message": null,
+                        "event": null,
                         "schedule": "every 4 seconds"
                     }
                 ]
@@ -43,22 +43,8 @@
                     {
                         "name": "Log air pressure data",
                         "call": "log_pressure",
-                        "event-message": null,
+                        "event": null,
                         "schedule": "every 5 seconds"
-                    }
-                ]
-            },
-            {
-                "name": "Ph sensor",
-                "type": "ph",
-                "template": "sensor",
-                "controller": "analog",
-                "actions": [
-                    {
-                        "name": "Log ph data",
-                        "call": "log_ph",
-                        "event-message": null,
-                        "schedule": "every 7 seconds"
                     }
                 ]
             },
@@ -75,7 +61,7 @@
                             "duration": "20 seconds"
                         },
                         "schedule": "at 10:15am",
-                        "event-message": "Watered plant for 20 seconds"
+                        "event": "Watered plant for 20 seconds"
                     }
                 ]
             },
@@ -90,14 +76,14 @@
                         "call": "turn_light_on",
                         "state": "on",
                         "schedule": "at 9:00am",
-                        "event-message": "Light turned on"
+                        "event": "Light turned on"
                     },
                     {
                         "name": "off",
                         "call": "turn_light_off",
                         "state": "off",
                         "schedule": "at 8:30pm",
-                        "event-message": "Light turned off"
+                        "event": "Light turned off"
                     }
                 ]
             },
@@ -112,14 +98,14 @@
                         "call": "turn_fan_on",
                         "state": "on",
                         "schedule": "at 9:00am",
-                        "event-message": "Light turned on"
+                        "event": "Light turned on"
                     },
                     {
                         "name": "off",
                         "call": "turn_fan_off",
                         "state": "off",
                         "schedule": "at 8:30pm",
-                        "event-message": "Light turned off"
+                        "event": "Light turned off"
                     }
                 ]
             }

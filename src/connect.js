@@ -61,7 +61,6 @@ GROWJS.prototype._afterConnect = function (callback, result) {
     }
   );
 
-
   /* Now check to see if we have a stored UUID.
    * If no UUID is specified, store a new UUID. */
   if (_.isUndefined(self.growFile.uuid) || _.isUndefined(self.growFile.token)) {
@@ -112,4 +111,3 @@ GROWJS.prototype._write = function (chunk, encoding, callback) {
 GROWJS.prototype._read = function (size) {
   var self = this;
 };
-
