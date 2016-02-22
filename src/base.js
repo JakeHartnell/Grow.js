@@ -17,7 +17,6 @@ later.date.localTime();
 function GROWJS(implementation, growFile, callback) {
   var self = this;
 
-
   if (!implementation) {
     throw new Error("Grow.js requires an implementation.");
   }
@@ -67,6 +66,10 @@ function GROWJS(implementation, growFile, callback) {
 
     self.pipeInstance();
   });
+
+  if (!_.isUndefined(callback)) {
+    callback(null, self);
+  }
 }
 
 util.inherits(GROWJS, Duplex);

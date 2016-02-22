@@ -2,6 +2,7 @@
 GROWJS.prototype.callAction = function (functionName, options) {
   var self = this;
 
+
   var meta = self.getActionMetaByCall(functionName);
 
   // If the actions "event" property is set to null or is undefined,
@@ -33,10 +34,10 @@ GROWJS.prototype.callAction = function (functionName, options) {
     }
   }
 
-  // TODO: If the action has a state property, we update the state.
-  // NOT WORKING.
-  if (meta.state) {
-    self.updateProperty(meta.name, "state", meta.state);
+  var component = self.getComponentByActionCall(functionName);
+
+  if (meta.updateState) {
+    self.updateProperty(component.name, "state", meta.updateState);
   }
 };
 
@@ -107,7 +108,6 @@ GROWJS.prototype.startAction = function (action) {
   var self = this;
   var meta = self.getActionMetaByCall(action);
   if (!_.isUndefined(meta.schedule)) {
-    // console.log(meta.schedule);
     var schedule = later.parse.text(meta.schedule);
     var scheduledAction = later.setInterval(function() {self.callAction(action);}, schedule);
     self.scheduledActions.push(scheduledAction);
@@ -115,24 +115,61 @@ GROWJS.prototype.startAction = function (action) {
   }
 };
 
+// Maybe there should be a get action component function?
+GROWJS.prototype.getComponentByActionCall = function (functionName) {
+  var self = this;
+  var thing = self.growFile.thing;
+
+  var actionComponent = {};
+
+  for (var key in thing) {
+    if (key === "components") {
+      // We loop through the list of component objects
+      for (var component in thing.components) {
+        component = thing.components[component];
+        for (var property in component) {
+          if (property === "actions") {
+            // Loop through actions list
+            for (var action in component[property]) {
+              // Check the action call to see if it is the same, return component
+              if (component[property][action].call === functionName) {
+                actionComponent = component;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // The top level thing object can also have actions, we check that here.
+    if (key === "actions") {
+      for (var actionItem in thing[key]) {
+        if (thing[key][actionItem].call === functionName) {
+          actionComponent = thing;
+        }
+      }
+    }
+  }
+
+  return actionComponent;
+};
+
 // Returns an object of action metadata based on function name.
 GROWJS.prototype.getActionMetaByCall = function (functionName) {
   var self = this;
-  var actionsMeta = self.getActions();
+  var actionsMeta = self.getActionsList();
   for (var i = actionsMeta.length - 1; i >= 0; i--) {
-    // console.log(actionsMeta[i]);
     if (actionsMeta[i].call === functionName) {
       return actionsMeta[i];
     }
   }
 };
 
-// Returns a list of actions in the grow file.
-GROWJS.prototype.getActions = function () {
+// Returns a list of action objects in the grow file.
+GROWJS.prototype.getActionsList = function () {
   var self = this;
   var thing = self.growFile.thing;
   var actionMetaData = [];
-
 
   for (var key in thing) {
     // Check top level thing model for actions.

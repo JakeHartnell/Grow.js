@@ -33,13 +33,17 @@ var grow = new GrowInstance({
   }, 
   growFile, 
   function (error, grow) {
-    console.log(grow.getActionMetaByCall("light_on"));
-    setTimeout(function(){grow.callAction("light_off");}, 10000)
-    grow.callAction("light_off");
-
-    // Not working...
-    grow.updateProperty("Light sensor", "class", "actuator");
-    
+    // console.log(grow.getActionMetaByCall("light_on"));
+    // setTimeout(function(){grow.callAction("light_off");}, 10000)
+    // grow.callAction("light_off");
+    // // Not working...
+    setTimeout(function () {
+      grow.callAction("light_off");
+      // grow.getComponentByActionCall('light_off');
+      console.log("ran");
+    }, 5000);
+    // var sensor = new grow.Sensor();
+    // console.log(sensor);
   }
 );
 

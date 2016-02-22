@@ -74,14 +74,14 @@
                     {
                         "name": "On",
                         "call": "turn_light_on",
-                        "state": "on",
+                        "updateState": "on",
                         "schedule": "at 9:00am",
                         "event": "Light turned on"
                     },
                     {
                         "name": "off",
                         "call": "turn_light_off",
-                        "state": "off",
+                        "updateState": "off",
                         "schedule": "at 8:30pm",
                         "event": "Light turned off"
                     }
@@ -96,14 +96,14 @@
                     {
                         "name": "On",
                         "call": "turn_fan_on",
-                        "state": "on",
+                        "updateState": "on",
                         "schedule": "at 9:00am",
                         "event": "Light turned on"
                     },
                     {
                         "name": "off",
                         "call": "turn_fan_off",
-                        "state": "off",
+                        "updateState": "off",
                         "schedule": "at 8:30pm",
                         "event": "Light turned off"
                     }

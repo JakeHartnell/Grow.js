@@ -1,3 +1,5 @@
+
+
 GROWJS.prototype.temperature = {
   data: [],
   params: {},
