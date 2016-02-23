@@ -51,7 +51,7 @@ GROWJS.prototype.registerSensor = function (component) {
 	var self = this;
 
 	// TODO: get component type and register as it.
-
+	
 
 	// TODO: if there is already one type of commont we start appending numbers
 	/*

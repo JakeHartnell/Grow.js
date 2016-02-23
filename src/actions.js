@@ -68,7 +68,7 @@ GROWJS.prototype.registerActions = function (implementation) {
   };
 };
 
-// TODO: stop actions, etc.
+// TODO: stop actions, restart action with new schedule, etc.
 GROWJS.prototype.startScheduledActions = function () {
   var self = this;
   self.scheduledActions = [];
@@ -77,10 +77,12 @@ GROWJS.prototype.startScheduledActions = function () {
     throw new Error("No actions registered.");
   }
 
-  // TODO if sensor call a separate logData function that doesn't fire and event.
-  // Or if event = null perhaps?
   for (var action in self.actions) {
     var meta = self.getActionMetaByCall(action);
+
+    // Actions can optionally log an event when they run.
+    // Some actions like logging data from sensors are already posting
+    // data so they can leave event undefined or set it to null.
     if (meta.event === null || _.isUndefined(meta.event)) {
       self.startAction(action);
     } else {

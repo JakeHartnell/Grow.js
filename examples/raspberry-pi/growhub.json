@@ -1,0 +1,116 @@
+{
+    "thing": {
+        "name": "Propigator",
+        "version": "0.1.0",
+        "description": "A controlled environment for propigating plants.",
+        "type": "growhub",
+        "owner": "jake@commongarden.org",
+        "components": [
+            {
+                "name": "Temperature sensor",
+                "type": "temperature",
+                "template": "sensor",
+                "controller": "MPL3115A2",
+                "actions": [
+                    {
+                        "name": "Log temperature data",
+                        "call": "log_temperature",
+                        "event": null,
+                        "schedule": "every 3 seconds"
+                    }
+                ]
+            },
+            {
+                "name": "Humidity sensor",
+                "type": "humidity",
+                "template": "sensor",
+                "controller": "HTU21D",
+                "actions": [
+                    {
+                        "name": "Log humidity data",
+                        "call": "log_humidity",
+                        "event": null,
+                        "schedule": "every 4 seconds"
+                    }
+                ]
+            },
+            {
+                "name": "Air pressure",
+                "type": "barometer",
+                "template": "sensor",
+                "controller": "MPL3115A2",
+                "actions": [
+                    {
+                        "name": "Log air pressure data",
+                        "call": "log_pressure",
+                        "event": null,
+                        "schedule": "every 5 seconds"
+                    }
+                ]
+            },
+            {
+                "name": "Water pump",
+                "type": "waterpump",
+                "template": "actuator",
+                "state": "off",
+                "actions": [
+                    {
+                        "name": "Water plant",
+                        "call": "water",
+                        "options": {
+                            "duration": "20 seconds"
+                        },
+                        "schedule": "at 10:15am",
+                        "event": "Watered plant for 20 seconds"
+                    }
+                ]
+            },
+            {
+                "name": "Light",
+                "type": "relay",
+                "template": "actuator",
+                "state": "on",
+                "actions": [
+                    {
+                        "name": "On",
+                        "call": "turn_light_on",
+                        "updateState": "on",
+                        "schedule": "at 9:00am",
+                        "event": "Light turned on"
+                    },
+                    {
+                        "name": "off",
+                        "call": "turn_light_off",
+                        "updateState": "off",
+                        "schedule": "at 8:30pm",
+                        "event": "Light turned off"
+                    }
+                ]
+            },
+            {
+                "name": "Fan",
+                "type": "fan",
+                "template": "actuator",
+                "state": "on",
+                "actions": [
+                    {
+                        "name": "On",
+                        "call": "turn_fan_on",
+                        "updateState": "on",
+                        "schedule": "at 9:00am",
+                        "event": "Light turned on"
+                    },
+                    {
+                        "name": "off",
+                        "call": "turn_fan_off",
+                        "updateState": "off",
+                        "schedule": "at 8:30pm",
+                        "event": "Light turned off"
+                    }
+                ]
+            }
+        ]
+    },
+    "uuid": "95009b7d-5fc8-43a6-8cc8-39dfd59df77b",
+    "token": "8MCdaCyZFjn2FRvCdgDQxCHDYroN7iwt"
+}
