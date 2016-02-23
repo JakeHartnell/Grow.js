@@ -8,8 +8,6 @@ var Readable = require('stream').Readable;
 var Writable = require('stream').Writable;
 var fs = require('fs');
 var later = require('later');
-var regression = require('regression');
-var time = require('time')(Date);
 
 // Use local time.
 later.date.localTime();
