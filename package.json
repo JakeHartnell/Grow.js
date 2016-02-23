@@ -1,6 +1,6 @@
 {
   "name": "grow.js",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "dependencies": {
     "ddp": ">=0.11.0",
     "ddp-ejson": ">=0.8.1-3",
@@ -34,7 +34,7 @@
   },
   "scripts": {},
   "license": "BSD-3-Clause",
-  "main": "./index.js",
+  "main": "./grow.js",
   "bugs": {
     "url": "http://github.com/CommonGarden/grow.js/issues"
   },

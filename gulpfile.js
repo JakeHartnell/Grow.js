@@ -27,7 +27,7 @@ gulp.task('build', function() {
   	'./src/export.js'
   ])
     .pipe(concat('grow.js'))
-    .pipe(gulp.dest('./dist/'));
+    .pipe(gulp.dest('./'));
 });
 
 // Lint JS
