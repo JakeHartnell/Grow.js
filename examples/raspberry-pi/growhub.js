@@ -1,5 +1,5 @@
-var GrowInstance = require('../.././dist/grow.js');
-var growFilePath = '../examples/raspberry-pi/growhub.json';
+var GrowInstance = require(process.cwd() + '/dist/grow.js');
+var growFilePath = process.cwd() + '/examples/raspberry-pi/growhub.json';
 var raspi = require('raspi-io');
 var five = require('johnny-five');
 

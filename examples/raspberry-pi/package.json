@@ -1,0 +1,11 @@
+{
+  "name": "rasp-pi-growhub",
+  "version": "0.1.5",
+  "description": "An example for how to set up a grow hub with digital sensors and relays to control a hydroponic system.",
+  "main": "growhub.js",
+  "scripts": {
+    "test": "test"
+  },
+  "author": "Common Garden",
+  "license": "Free BSD"
+}
