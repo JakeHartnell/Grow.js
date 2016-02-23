@@ -10,7 +10,7 @@ GROWJS.prototype.sendData = function (data, callback) {
     'Device.sendData',
     [{uuid: self.uuid, token: self.token}, data],
     function (error, result) {
-      if (error) return callback(error);
+      if (error) console.log(error);
 
       if (!_.isUndefined(callback)) {
         callback(null, result);
@@ -38,21 +38,25 @@ GROWJS.prototype.emitEvent = function (eventMessage, callback) {
 
 // Maybe this function needs to be split up?
 // Maybe two functions? Update property and update component?
-GROWJS.prototype.updateProperty = function (propertyName, propertyKey, value, callback) {
+// Either way, this is really an update thing function, and exchanges
+// way too much info just to update a property.
+GROWJS.prototype.updateProperty = function (componentName, propertyKey, value, callback) {
   var self = this;
 
   var thing = self.growFile.thing;
+
+  // This is implemented on the server as well
 
   // Find properties in top level thing object
   for (var key in thing) {
     // Find properties in components 
     if (key === "components") {
-      for (var component in thing.components) {
-        if (thing.components[component].name === propertyName) {
-          thing.components[component][propertyKey] = value;
+      for (var item in thing.components) {
+        if (thing.components[item].name === componentName) {
+          thing.components[item][propertyKey] = value;
         }
       }
-    } else if (thing[key] === propertyName) {
+    } else if (thing[key] === componentName) {
       thing[key] = value;
     }
   }
@@ -62,8 +66,8 @@ GROWJS.prototype.updateProperty = function (propertyName, propertyKey, value, ca
   // Maybe this should be a callback of write changes?
   // Otherwise we have instances when state is out of sync.
   self.ddpclient.call(
-    'Device.udpateProperties',
-    [{uuid: self.uuid, token: self.token}, thing],
+    'Device.udpateProperty',
+    [{uuid: self.uuid, token: self.token}, componentName, propertyKey, value],
     function (error, result) {
       if (!_.isUndefined(callback)) {
         callback(error, result);

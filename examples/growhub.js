@@ -6,7 +6,7 @@ var board = new five.Board();
 
 board.on("ready", function start () {
 
-  // Define sensors. We are using johnny-five for this.
+  // Define sensors. We are using johnny-five.io for this.
   var hygrometer = new five.Hygrometer({
     controller: "HTU21D"
   });
@@ -16,7 +16,6 @@ board.on("ready", function start () {
   var temperature = new five.Thermometer({
     controller: "MPL3115A2"
   });
-  var ph = new five.Sensor("A1");
 
   // This vartiable holds our sensor data.
   var sensorData = {};
@@ -38,29 +37,36 @@ board.on("ready", function start () {
     };
   });
 
-  ph.on("change", function() {
-    sensorData.ph = this.value;
-  });
-
   // Define Actuators
   var fan = new five.Pin(10),
       light = new five.Pin(11),
       wateringPump = new five.Pin(12);
 
-  // Create grow instance
+  // Create grow instance, implement API as defined in growhub.json.
   var grow = GrowInstance({
-    // TODO: format sensor data!
     log_temperature: function () {
-      grow.readableStream.push(sensorData.temperature);
+      if (typeof sensorData.temperature === 'object') {
+        grow.readableStream.push({
+          type: "temperature",
+          value: sensorData.temperature.celsius
+        });
+      }
     },
     log_humidity: function () {
-      grow.readableStream.push(sensorData.humidty);
-    },
-    log_ph: function () {
-      grow.readableStream.push(sensorData.ph);
+      if (typeof sensorData.humidty === 'number') {
+        grow.readableStream.push({
+          type: "humidty",
+          value: sensorData.humidty
+        });
+      }
     },
     log_pressure: function () {
-      grow.readableStream.push(sensorData.pressure);
+      if (typeof sensorData.pressure === 'number') {
+        grow.readableStream.push({
+          type: "pressure",
+          value: sensorData.pressure
+        });
+      }
     },
     water: function (options) {
       // Needs duration argument.

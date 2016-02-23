@@ -25,7 +25,7 @@ GROWJS.prototype.ph = {
   },
 
   // Log ph and clear short term data store.
-  log_ph: function () {
+  log: function () {
     var ph = this.calcpH();
     // We reset phData after calculating.
     // delete phData;

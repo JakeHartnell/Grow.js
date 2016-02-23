@@ -8,15 +8,12 @@ var Readable = require('stream').Readable;
 var Writable = require('stream').Writable;
 var fs = require('fs');
 var later = require('later');
-var regression = require('regression');
-var time = require('time')(Date);
 
 // Use local time.
 later.date.localTime();
 
 function GROWJS(implementation, growFile, callback) {
   var self = this;
-
 
   if (!implementation) {
     throw new Error("Grow.js requires an implementation.");
@@ -66,11 +63,11 @@ function GROWJS(implementation, growFile, callback) {
     self.registerActions(implementation);
 
     self.pipeInstance();
-
-    if (!_.isUndefined(callback)) {
-      callback(null, self);
-    }
   });
+
+  if (!_.isUndefined(callback)) {
+    callback(null, self);
+  }
 }
 
 util.inherits(GROWJS, Duplex);

@@ -8,15 +8,12 @@ var Readable = require('stream').Readable;
 var Writable = require('stream').Writable;
 var fs = require('fs');
 var later = require('later');
-var regression = require('regression');
-var time = require('time')(Date);
 
 // Use local time.
 later.date.localTime();
 
 function GROWJS(implementation, growFile, callback) {
   var self = this;
-
 
   if (!implementation) {
     throw new Error("Grow.js requires an implementation.");
@@ -66,11 +63,11 @@ function GROWJS(implementation, growFile, callback) {
     self.registerActions(implementation);
 
     self.pipeInstance();
-
-    if (!_.isUndefined(callback)) {
-      callback(null, self);
-    }
   });
+
+  if (!_.isUndefined(callback)) {
+    callback(null, self);
+  }
 }
 
 util.inherits(GROWJS, Duplex);
@@ -138,14 +135,12 @@ GROWJS.prototype._afterConnect = function (callback, result) {
     }
   );
 
-
   /* Now check to see if we have a stored UUID.
    * If no UUID is specified, store a new UUID. */
   if (_.isUndefined(self.growFile.uuid) || _.isUndefined(self.growFile.token)) {
     self.growFile.uuid = result.uuid;
     self.growFile.token = result.token;
-    
-    // THIS PART SUCKS. For some reason when it runs, it alters the callback.
+
     self.writeChangesToGrowFile();
   }
 
@@ -191,7 +186,6 @@ GROWJS.prototype._read = function (size) {
   var self = this;
 };
 
-
 GROWJS.prototype.writeChangesToGrowFile = function () {
   var self = this;
 
@@ -213,27 +207,42 @@ GROWJS.prototype.writeChangesToGrowFile = function () {
 GROWJS.prototype.callAction = function (functionName, options) {
   var self = this;
 
+
   var meta = self.getActionMetaByCall(functionName);
 
-  if (options) {
-    self.actions[functionName](options);
-    self.emitEvent({
-      name: meta.name,
-      message: meta["event-message"],
-      options: options
-    });
+  // If the actions "event" property is set to null or is undefined,
+  // No event is logged.
+  if (meta.event === null || _.isUndefined(meta.event)) {
+    if (options) {
+      self.actions[functionName](options);
+    }
+    else {
+      self.actions[functionName]();
+    }
   }
+  // Otherwise we log an event.
   else {
-    self.actions[functionName]();
-    self.emitEvent({
-      name: meta.name,
-      message: meta["event-message"]
-    });
+    if (options) {
+      self.actions[functionName](options);
+      self.emitEvent({
+        name: meta.name,
+        message: meta.event,
+        options: options
+      });
+    }
+    else {
+      self.actions[functionName]();
+      self.emitEvent({
+        name: meta.name,
+        message: meta.event
+      });
+    }
   }
 
-  // TODO: If the action has a state property, we update the state.
-  if (meta.state) {
-    self.updateProperty(meta.name, "state", meta.state);
+  var component = self.getComponentByActionCall(functionName);
+
+  if (meta.updateState) {
+    self.updateProperty(component.name, "state", meta.updateState);
   }
 };
 
@@ -242,9 +251,10 @@ GROWJS.prototype.registerActions = function (implementation) {
   self.actions = _.clone(implementation || {});
 
   // TODO: make sure the implementation matches the growfile.
+  // If not, we throw some helpful errors.
 
   // Start actions that have a schedule property.
-  // self.startScheduledActions();
+  self.startScheduledActions();
 
   // Sets up listening for actions on the writeable stream.
   self.writableStream._write = function (command, encoding, callback) {
@@ -263,18 +273,98 @@ GROWJS.prototype.registerActions = function (implementation) {
   };
 };
 
+// TODO: stop actions, restart action with new schedule, etc.
 GROWJS.prototype.startScheduledActions = function () {
+  var self = this;
+  self.scheduledActions = [];
+
   if (_.isUndefined(self.actions)) {
     throw new Error("No actions registered.");
   }
 
-  return;
+  for (var action in self.actions) {
+    var meta = self.getActionMetaByCall(action);
+
+    // Actions can optionally log an event when they run.
+    // Some actions like logging data from sensors are already posting
+    // data so they can leave event undefined or set it to null.
+    if (meta.event === null || _.isUndefined(meta.event)) {
+      self.startAction(action);
+    } else {
+      self.startActionWithEventLog(action);
+    }
+  }
+
+};
+
+// TODO: Support options.
+GROWJS.prototype.startActionWithEventLog = function (action) {
+  var self = this;
+  var meta = self.getActionMetaByCall(action);
+  if (!_.isUndefined(meta.schedule)) {
+    var schedule = later.parse.text(meta.schedule);
+    var scheduledAction = later.setInterval(function() {self.callAction(action);}, schedule);
+    // TODO: extend scheduled action so that they have a name.
+    self.scheduledActions.push(scheduledAction);
+    return scheduledAction;
+  }
+};
+
+// TODO: Support options.
+GROWJS.prototype.startAction = function (action) {
+  var self = this;
+  var meta = self.getActionMetaByCall(action);
+  if (!_.isUndefined(meta.schedule)) {
+    var schedule = later.parse.text(meta.schedule);
+    var scheduledAction = later.setInterval(function() {self.callAction(action);}, schedule);
+    self.scheduledActions.push(scheduledAction);
+    return scheduledAction;
+  }
+};
+
+// Maybe there should be a get action component function?
+GROWJS.prototype.getComponentByActionCall = function (functionName) {
+  var self = this;
+  var thing = self.growFile.thing;
+
+  var actionComponent = {};
+
+  for (var key in thing) {
+    if (key === "components") {
+      // We loop through the list of component objects
+      for (var component in thing.components) {
+        component = thing.components[component];
+        for (var property in component) {
+          if (property === "actions") {
+            // Loop through actions list
+            for (var action in component[property]) {
+              // Check the action call to see if it is the same, return component
+              if (component[property][action].call === functionName) {
+                actionComponent = component;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // The top level thing object can also have actions, we check that here.
+    if (key === "actions") {
+      for (var actionItem in thing[key]) {
+        if (thing[key][actionItem].call === functionName) {
+          actionComponent = thing;
+        }
+      }
+    }
+  }
+
+  return actionComponent;
 };
 
 // Returns an object of action metadata based on function name.
 GROWJS.prototype.getActionMetaByCall = function (functionName) {
   var self = this;
-  var actionsMeta = self.getActions();
+  var actionsMeta = self.getActionsList();
   for (var i = actionsMeta.length - 1; i >= 0; i--) {
     if (actionsMeta[i].call === functionName) {
       return actionsMeta[i];
@@ -282,12 +372,11 @@ GROWJS.prototype.getActionMetaByCall = function (functionName) {
   }
 };
 
-// Returns a list of actions in the grow file.
-GROWJS.prototype.getActions = function () {
+// Returns a list of action objects in the grow file.
+GROWJS.prototype.getActionsList = function () {
   var self = this;
   var thing = self.growFile.thing;
   var actionMetaData = [];
-
 
   for (var key in thing) {
     // Check top level thing model for actions.
@@ -317,6 +406,70 @@ GROWJS.prototype.getActions = function () {
 };
 
 
+// TODO: define sensor function and use it to init 
+GROWJS.prototype.Sensor = function () {
+	var self = this;
+
+	// TODO: get useful info from component.
+	// Like type.
+
+
+	// console.log(component);
+
+	self.log = function () {
+		self.readableStream.push({
+			'type': 'type',
+			'value': 1
+		});
+	};
+
+	self.data = [];
+
+	self.calibration = {};
+
+	self.addReading = function (reading) {
+	      this.data = [];
+	      this.data.push([Date.now(), reading]);
+	      this.data.push([Date.now(), reading]);
+	};
+
+	self.averageData = function () {
+		var total = 0;
+		if (!_.isUndefined(this.data)) {
+		  for (var i = this.data.length - 1; i >= 0; i--) {
+		    total = total + this.phData[i][1];
+		  }
+		  return total / this.data.length;
+		}
+	};
+
+	// TODO
+	// The calibration function could be very simple and utilized for 
+	// multiple sensors.
+	// Correct reading is optional, if left out, it returns a calibrated reading
+	// based on current calibration data.
+	self.calibrate = function (reading, correctReading) {
+	  // return;
+	};
+
+	return self;
+};
+
+GROWJS.prototype.registerSensor = function (component) {
+	var self = this;
+
+	// TODO: get component type and register as it.
+	
+
+	// TODO: if there is already one type of commont we start appending numbers
+	/*
+		self.ph
+		self.ph1
+		self.ph2
+	*/
+
+};
+
 GROWJS.prototype.sendData = function (data, callback) {
   var self = this;
 
@@ -329,7 +482,7 @@ GROWJS.prototype.sendData = function (data, callback) {
     'Device.sendData',
     [{uuid: self.uuid, token: self.token}, data],
     function (error, result) {
-      if (error) return callback(error);
+      if (error) console.log(error);
 
       if (!_.isUndefined(callback)) {
         callback(null, result);
@@ -357,21 +510,25 @@ GROWJS.prototype.emitEvent = function (eventMessage, callback) {
 
 // Maybe this function needs to be split up?
 // Maybe two functions? Update property and update component?
-GROWJS.prototype.updateProperty = function (propertyName, propertyKey, value, callback) {
+// Either way, this is really an update thing function, and exchanges
+// way too much info just to update a property.
+GROWJS.prototype.updateProperty = function (componentName, propertyKey, value, callback) {
   var self = this;
 
   var thing = self.growFile.thing;
+
+  // This is implemented on the server as well
 
   // Find properties in top level thing object
   for (var key in thing) {
     // Find properties in components 
     if (key === "components") {
-      for (var component in thing.components) {
-        if (thing.components[component].name === propertyName) {
-          thing.components[component][propertyKey] = value;
+      for (var item in thing.components) {
+        if (thing.components[item].name === componentName) {
+          thing.components[item][propertyKey] = value;
         }
       }
-    } else if (thing[key] === propertyName) {
+    } else if (thing[key] === componentName) {
       thing[key] = value;
     }
   }
@@ -381,8 +538,8 @@ GROWJS.prototype.updateProperty = function (propertyName, propertyKey, value, ca
   // Maybe this should be a callback of write changes?
   // Otherwise we have instances when state is out of sync.
   self.ddpclient.call(
-    'Device.udpateProperties',
-    [{uuid: self.uuid, token: self.token}, thing],
+    'Device.udpateProperty',
+    [{uuid: self.uuid, token: self.token}, componentName, propertyKey, value],
     function (error, result) {
       if (!_.isUndefined(callback)) {
         callback(error, result);

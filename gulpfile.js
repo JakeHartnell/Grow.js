@@ -14,7 +14,7 @@ var babel = require('gulp-babel');
 var eslint = require('gulp-eslint');
 
 // Default
-gulp.task('default', ['lint', 'build', 'minify']);
+gulp.task('default', ['lint', 'build']);
 
 gulp.task('build', function() {
   return gulp.src([
@@ -22,7 +22,8 @@ gulp.task('build', function() {
   	'./src/connect.js', 
   	'./src/growfile.js',
   	'./src/actions.js',
-  	'./src/grow-api.js',
+    './src/sensors.js',
+    './src/api.js',
   	'./src/export.js'
   ])
     .pipe(concat('grow.js'))
@@ -53,7 +54,7 @@ gulp.task('minify', function(){
 });
  
 // Run tests
-gulp.task('test', function () {
+gulp.task('test', ['build'], function () {
 	return gulp.src('test/*.js', {read: false})
 		// gulp-mocha needs filepaths so you can't have any plugins before it 
 		.pipe(mocha({reporter: 'nyan'}));
