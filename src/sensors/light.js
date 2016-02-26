@@ -1,6 +1,8 @@
 /*
 	This object contains methods for working with data from light sensors.
 */
+
+// TODO: extend Sensor prototype with extra needed methods.
 GROWJS.prototype.light = {
 	data: [],
 	params: {

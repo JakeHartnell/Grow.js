@@ -7,6 +7,7 @@ var Duplex = require('stream').Duplex;
 var Readable = require('stream').Readable;
 var Writable = require('stream').Writable;
 var fs = require('fs');
+var RSVP = require('rsvp');
 var later = require('later');
 
 // Use local time.
@@ -57,17 +58,34 @@ function GROWJS(implementation, growFile, callback) {
     maintainCollections: false
   }));
 
+// var promise = new RSVP.Promise(function(resolve, reject) {
+//   // succeed
+//   resolve(value);
+//   // or reject
+//   reject(error);
+// });
+
+// promise.then(function(value) {
+//   // success
+// }, function(value) {
+//   // failure
+// });
+
   self.connect(function(error, data) {
     if (error) {console.log(error);}
 
-    self.registerActions(implementation);
+    var actionsRegistered = new RSVP.Promise(function(resolve, reject) {
+      resolve(self.registerActions(implementation));
+    })
 
-    self.pipeInstance();
+    actionsRegistered.then(function(value) {
+      self.pipeInstance();
+
+      if (!_.isUndefined(callback)) {
+        callback(null, self);
+      }
+    })
   });
-
-  if (!_.isUndefined(callback)) {
-    callback(null, self);
-  }
 }
 
 util.inherits(GROWJS, Duplex);
@@ -200,7 +218,7 @@ GROWJS.prototype.writeChangesToGrowFile = function () {
     });
   }
 
-  
+  // TODO: implement optional callback.
 };
 
 // Calls action, emits event, and updates state (if applicable).
@@ -288,13 +306,14 @@ GROWJS.prototype.startScheduledActions = function () {
     // Actions can optionally log an event when they run.
     // Some actions like logging data from sensors are already posting
     // data so they can leave event undefined or set it to null.
-    if (meta.event === null || _.isUndefined(meta.event)) {
-      self.startAction(action);
+    if (!_.isUndefined(meta)) {
+      if (!_.isUndefined(meta.event) || !_.isNull(meta.event)) {
+        self.startActionWithEventLog(action);
+      }
     } else {
-      self.startActionWithEventLog(action);
+      self.startAction(action);
     }
   }
-
 };
 
 // TODO: Support options.
@@ -407,19 +426,16 @@ GROWJS.prototype.getActionsList = function () {
 
 
 // TODO: define sensor function and use it to init 
-GROWJS.prototype.Sensor = function () {
+GROWJS.prototype.Sensor = function (component) {
 	var self = this;
 
 	// TODO: get useful info from component.
 	// Like type.
 
-
-	// console.log(component);
-
 	self.log = function () {
 		self.readableStream.push({
-			'type': 'type',
-			'value': 1
+			'type': component.type,
+			'value': self.averageData()
 		});
 	};
 
@@ -457,6 +473,9 @@ GROWJS.prototype.Sensor = function () {
 
 GROWJS.prototype.registerSensor = function (component) {
 	var self = this;
+
+	// How do we want to register this?
+	self.sensors = self.sensors || {};
 
 	// TODO: get component type and register as it.
 	

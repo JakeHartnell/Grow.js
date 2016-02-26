@@ -44,7 +44,7 @@ gulp.task('minify', function(){
       mangle: true,
       preserveComments : "license"
   };
-  return gulp.src('dist/grow.js')
+  return gulp.src('grow.js')
     .pipe(plumber({ errorHandler: onError }))
     .pipe(rename('grow.min.js'))
     .pipe(sourcemaps.init({loadMaps: true}))
@@ -60,6 +60,8 @@ gulp.task('test', ['build'], function () {
 		.pipe(mocha({reporter: 'nyan'}));
 });
  
+// EXPERIMENTAL... don't use, unless you're good with ES6 and can help
+// convert this library over to it.
 gulp.task('es6', function () {
   return gulp.src([
     './src/base.js',

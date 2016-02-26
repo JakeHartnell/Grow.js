@@ -1,17 +1,14 @@
 // TODO: define sensor function and use it to init 
-GROWJS.prototype.Sensor = function () {
+GROWJS.prototype.Sensor = function (component) {
 	var self = this;
 
 	// TODO: get useful info from component.
 	// Like type.
 
-
-	// console.log(component);
-
 	self.log = function () {
 		self.readableStream.push({
-			'type': 'type',
-			'value': 1
+			'type': component.type,
+			'value': self.averageData()
 		});
 	};
 
@@ -49,6 +46,9 @@ GROWJS.prototype.Sensor = function () {
 
 GROWJS.prototype.registerSensor = function (component) {
 	var self = this;
+
+	// How do we want to register this?
+	self.sensors = self.sensors || {};
 
 	// TODO: get component type and register as it.
 	
