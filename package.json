@@ -26,10 +26,6 @@
     "gulp-uglify": "^0.3.1",
     "gulp-util": "^3.0.0",
     "johnny-five": "^0.9.19",
-    "raspi-io": "^5.2.0"
-  },
-  "engines": {
-    "node": ">=0.10.38"
   },
   "scripts": {},
   "license": "BSD-3-Clause",

@@ -75,7 +75,12 @@ function GROWJS(implementation, growFile, callback) {
     if (error) {console.log(error);}
 
     var actionsRegistered = new RSVP.Promise(function(resolve, reject) {
-      resolve(self.registerActions(implementation));
+      try {
+        resolve(self.registerActions(implementation));
+      }
+      catch (error) {
+        reject(error);
+      }
     })
 
     actionsRegistered.then(function(value) {
