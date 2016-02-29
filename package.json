@@ -1,6 +1,6 @@
 {
   "name": "grow.js",
-  "version": "0.1.32",
+  "version": "0.1.33",
   "dependencies": {
     "ddp": ">=0.11.0",
     "ddp-ejson": ">=0.8.1-3",
