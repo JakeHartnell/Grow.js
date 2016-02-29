@@ -25,10 +25,9 @@ function GROWJS(implementation, growFile, callback) {
   }
 
   // The grow file is needed to maintain state in case our IoT device looses power or resets.
-  // This part could be better...
-  if (typeof growFile === "string") {
-    self.pathToGrowFile = growFile;
-    self.growFile = require(growFile);
+  if (typeof growFile === "object") {
+    // TODO: validate and check this.
+    self.growFile = growfile;
   } else {
     self.growFile = require('../../grow.json');
   }
@@ -58,19 +57,6 @@ function GROWJS(implementation, growFile, callback) {
     maintainCollections: false
   }));
 
-// var promise = new RSVP.Promise(function(resolve, reject) {
-//   // succeed
-//   resolve(value);
-//   // or reject
-//   reject(error);
-// });
-
-// promise.then(function(value) {
-//   // success
-// }, function(value) {
-//   // failure
-// });
-
   self.connect(function(error, data) {
     if (error) {console.log(error);}
 
@@ -81,7 +67,7 @@ function GROWJS(implementation, growFile, callback) {
       catch (error) {
         reject(error);
       }
-    })
+    });
 
     actionsRegistered.then(function(value) {
       self.pipeInstance();
@@ -89,7 +75,7 @@ function GROWJS(implementation, growFile, callback) {
       if (!_.isUndefined(callback)) {
         callback(null, self);
       }
-    })
+    });
   });
 }
 

@@ -61,7 +61,7 @@ GROWJS.prototype.updateProperty = function (componentName, propertyKey, value, c
     }
   }
 
-  // self.writeChangesToGrowFile();
+  self.writeChangesToGrowFile();
 
   // Maybe this should be a callback of write changes?
   // Otherwise we have instances when state is out of sync.
