@@ -7,6 +7,7 @@ var Duplex = require('stream').Duplex;
 var Readable = require('stream').Readable;
 var Writable = require('stream').Writable;
 var fs = require('fs');
+var RSVP = require('rsvp');
 var later = require('later');
 
 // Use local time.
@@ -24,10 +25,9 @@ function GROWJS(implementation, growFile, callback) {
   }
 
   // The grow file is needed to maintain state in case our IoT device looses power or resets.
-  // This part could be better...
-  if (typeof growFile === "string") {
-    self.pathToGrowFile = growFile;
-    self.growFile = require(growFile);
+  if (typeof growFile === "object") {
+    // TODO: validate and check this.
+    self.growFile = growFile;
   } else {
     self.growFile = require('../../grow.json');
   }
@@ -60,14 +60,23 @@ function GROWJS(implementation, growFile, callback) {
   self.connect(function(error, data) {
     if (error) {console.log(error);}
 
-    self.registerActions(implementation);
+    var actionsRegistered = new RSVP.Promise(function(resolve, reject) {
+      try {
+        resolve(self.registerActions(implementation));
+      }
+      catch (error) {
+        reject(error);
+      }
+    });
 
-    self.pipeInstance();
+    actionsRegistered.then(function(value) {
+      self.pipeInstance();
+
+      if (!_.isUndefined(callback)) {
+        callback(null, self);
+      }
+    });
   });
-
-  if (!_.isUndefined(callback)) {
-    callback(null, self);
-  }
 }
 
 util.inherits(GROWJS, Duplex);
@@ -189,18 +198,9 @@ GROWJS.prototype._read = function (size) {
 GROWJS.prototype.writeChangesToGrowFile = function () {
   var self = this;
 
-  if (typeof self.pathToGrowFile === 'string') {
-    // Stupid hack.
-    fs.writeFile(self.pathToGrowFile.slice(1), JSON.stringify(self.growFile, null, 4), function (error) {
-      if (error) return console.log("Error", error);
-    });
-  } else {
-    fs.writeFile('./grow.json', JSON.stringify(self.growFile, null, 4), function (error) {
-      if (error) return console.log("Error", error);
-    });
-  }
-
-  
+  fs.writeFile('./grow.json', JSON.stringify(self.growFile, null, 4), function (error) {
+    if (error) return console.log("Error", error);
+  });
 };
 
 // Calls action, emits event, and updates state (if applicable).
@@ -288,13 +288,14 @@ GROWJS.prototype.startScheduledActions = function () {
     // Actions can optionally log an event when they run.
     // Some actions like logging data from sensors are already posting
     // data so they can leave event undefined or set it to null.
-    if (_.isUndefined(meta.event) || meta.event === null) {
-      self.startAction(action);
+    if (!_.isUndefined(meta)) {
+      if (!_.isUndefined(meta.event) || !_.isNull(meta.event)) {
+        self.startActionWithEventLog(action);
+      }
     } else {
-      self.startActionWithEventLog(action);
+      self.startAction(action);
     }
   }
-
 };
 
 // TODO: Support options.
@@ -407,19 +408,16 @@ GROWJS.prototype.getActionsList = function () {
 
 
 // TODO: define sensor function and use it to init 
-GROWJS.prototype.Sensor = function () {
+GROWJS.prototype.Sensor = function (component) {
 	var self = this;
 
 	// TODO: get useful info from component.
 	// Like type.
 
-
-	// console.log(component);
-
 	self.log = function () {
 		self.readableStream.push({
-			'type': 'type',
-			'value': 1
+			'type': component.type,
+			'value': self.averageData()
 		});
 	};
 
@@ -457,6 +455,9 @@ GROWJS.prototype.Sensor = function () {
 
 GROWJS.prototype.registerSensor = function (component) {
 	var self = this;
+
+	// How do we want to register this?
+	self.sensors = self.sensors || {};
 
 	// TODO: get component type and register as it.
 	

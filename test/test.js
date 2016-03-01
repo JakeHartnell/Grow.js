@@ -1,50 +1,45 @@
-// var assert = require('assert');
-var GrowInstance = require('../dist/grow.js');
-var growFile = '../test/testgrow.json';
+var assert = require('assert');
+var GrowInstance = require('.././grow.js');
+var growFile = './test/testgrow.json';
 
-// Note: we still need to write proper tests.
-var grow = new GrowInstance({
-      start: function () {
-        console.log("Started.")
-      },
-      waterPlant: function (options) {
-        console.log(options);
-      },
-      light_on: function () {
-        console.log("light on");
-        // return true;
-      },
-      light_off: function () {
-        console.log("light off");
-      },
-      check_water_level: function () {
-        console.log("Water level good");
-        return true;
-      },
-      log_light: function () {
-        return true;
-      },
-      log_temperature: function () {
-        return true;
-      },
-      log_ph: function () {
-        return true;
-      }
-  }, 
-  growFile, 
-  function (error, grow) {
-    // console.log(grow.getActionMetaByCall("light_on"));
-    // setTimeout(function(){grow.callAction("light_off");}, 10000)
-    // grow.callAction("light_off");
-    // // Not working...
-    setTimeout(function () {
-      grow.callAction("light_off");
-      // grow.getComponentByActionCall('light_off');
-      console.log("ran");
-    }, 5000);
-    // var sensor = new grow.Sensor();
-    // console.log(sensor);
-  }
-);
+describe('Actions', function () {
+  // Note: we still need to write proper tests.
+  // Need some work to be done with promises so that the actions
+  // are registered by the time the code runs.
+  before(function() {
+    var grow = new GrowInstance({
+          waterPlant: function (options) {
+            return true;
+          },
+          light_on: function () {
+            return true;
+          },
+          light_off: function () {
+            return true;
+          },
+          check_water_level: function () {
+            return true;
+          },
+          log_light: function () {
+            return true;
+          },
+          log_temperature: function () {
+            return true;
+          },
+          log_ph: function () {
+            return true;
+          }
+      }, 
+      growFile
+    );
+  });
+
+
+  // TODO: figure out why grow is not defined. Once we get some basic 
+  // tests working, it will be easier to write more.
+  it('should return true when calling log_ph', function () {
+    assert.equal(grow.callAction('log_ph'), true);
+  });
+});
 
 

@@ -7,6 +7,7 @@ var Duplex = require('stream').Duplex;
 var Readable = require('stream').Readable;
 var Writable = require('stream').Writable;
 var fs = require('fs');
+var RSVP = require('rsvp');
 var later = require('later');
 
 // Use local time.
@@ -24,10 +25,9 @@ function GROWJS(implementation, growFile, callback) {
   }
 
   // The grow file is needed to maintain state in case our IoT device looses power or resets.
-  // This part could be better...
-  if (typeof growFile === "string") {
-    self.pathToGrowFile = growFile;
-    self.growFile = require(growFile);
+  if (typeof growFile === "object") {
+    // TODO: validate and check this.
+    self.growFile = growFile;
   } else {
     self.growFile = require('../../grow.json');
   }
@@ -60,14 +60,23 @@ function GROWJS(implementation, growFile, callback) {
   self.connect(function(error, data) {
     if (error) {console.log(error);}
 
-    self.registerActions(implementation);
+    var actionsRegistered = new RSVP.Promise(function(resolve, reject) {
+      try {
+        resolve(self.registerActions(implementation));
+      }
+      catch (error) {
+        reject(error);
+      }
+    });
 
-    self.pipeInstance();
+    actionsRegistered.then(function(value) {
+      self.pipeInstance();
+
+      if (!_.isUndefined(callback)) {
+        callback(null, self);
+      }
+    });
   });
-
-  if (!_.isUndefined(callback)) {
-    callback(null, self);
-  }
 }
 
 util.inherits(GROWJS, Duplex);

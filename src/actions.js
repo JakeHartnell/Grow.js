@@ -83,13 +83,14 @@ GROWJS.prototype.startScheduledActions = function () {
     // Actions can optionally log an event when they run.
     // Some actions like logging data from sensors are already posting
     // data so they can leave event undefined or set it to null.
-    if (meta.event === null || _.isUndefined(meta.event)) {
-      self.startAction(action);
+    if (!_.isUndefined(meta)) {
+      if (!_.isUndefined(meta.event) || !_.isNull(meta.event)) {
+        self.startActionWithEventLog(action);
+      }
     } else {
-      self.startActionWithEventLog(action);
+      self.startAction(action);
     }
   }
-
 };
 
 // TODO: Support options.
