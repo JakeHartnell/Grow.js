@@ -1,12 +1,18 @@
-// Calls action, emits event, and updates state (if applicable).
+/**
+ * Calls a registered action, emits event if the the action has an 'event'
+ * property defined. Updates the state if the action has an 'updateState'
+ * property specified.
+ * @param      {String}  functionName The name of the function to call.
+ * @param      {Object}  options Any options to call with the function.
+ */
 GROWJS.prototype.callAction = function (functionName, options) {
   var self = this;
-
 
   var meta = self.getActionMetaByCall(functionName);
 
   // If the actions "event" property is set to null or is undefined,
-  // No event is logged.
+  // No event is logged. This is used for sensors which are posting data
+  // and events would be redundant.
   if (meta.event === null || _.isUndefined(meta.event)) {
     if (options) {
       self.actions[functionName](options);
@@ -41,12 +47,20 @@ GROWJS.prototype.callAction = function (functionName, options) {
   }
 };
 
+/**
+ * Registers the implmentation, starts any scheduled actions and sets up 
+ * the writeable stream to listen for commands.
+ * @param {Object}  implementation  
+ */
 GROWJS.prototype.registerActions = function (implementation) {
   var self = this;
   self.actions = _.clone(implementation || {});
 
   // TODO: make sure the implementation matches the growfile.
   // If not, we throw some helpful errors.
+
+  // Bug actions fail to start properly if there are functions not
+  // mentioned in grow file.
 
   // Start actions that have a schedule property.
   self.startScheduledActions();
@@ -68,7 +82,9 @@ GROWJS.prototype.registerActions = function (implementation) {
   };
 };
 
-// TODO: stop actions, restart action with new schedule, etc.
+/**
+ * Loops through registered actions and calls startAction.
+ */
 GROWJS.prototype.startScheduledActions = function () {
   var self = this;
   self.scheduledActions = [];
@@ -80,33 +96,17 @@ GROWJS.prototype.startScheduledActions = function () {
   for (var action in self.actions) {
     var meta = self.getActionMetaByCall(action);
 
-    // Actions can optionally log an event when they run.
-    // Some actions like logging data from sensors are already posting
-    // data so they can leave event undefined or set it to null.
     if (!_.isUndefined(meta)) {
-      if (!_.isUndefined(meta.event) || !_.isNull(meta.event)) {
-        self.startActionWithEventLog(action);
-      }
-    } else {
       self.startAction(action);
     }
   }
 };
 
-// TODO: Support options.
-GROWJS.prototype.startActionWithEventLog = function (action) {
-  var self = this;
-  var meta = self.getActionMetaByCall(action);
-  if (!_.isUndefined(meta.schedule)) {
-    var schedule = later.parse.text(meta.schedule);
-    var scheduledAction = later.setInterval(function() {self.callAction(action);}, schedule);
-    // TODO: extend scheduled action so that they have a name.
-    self.scheduledActions.push(scheduledAction);
-    return scheduledAction;
-  }
-};
 
-// TODO: Support options.
+/**
+ * Starts a reoccurring action if a schedule property is defined.
+ * @param {Object} action An action object.
+ */
 GROWJS.prototype.startAction = function (action) {
   var self = this;
   var meta = self.getActionMetaByCall(action);
@@ -118,7 +118,9 @@ GROWJS.prototype.startAction = function (action) {
   }
 };
 
-// Maybe there should be a get action component function?
+/**
+ * Gets the a component by the action it calls.  
+ */
 GROWJS.prototype.getComponentByActionCall = function (functionName) {
   var self = this;
   var thing = self.growFile.thing;

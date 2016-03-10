@@ -5,17 +5,8 @@ Install with:
 
     npm install grow.js
 
-# Developing
-```
-git clone https://github.com/CommonGarden/grow.js
-cd grow.js
-npm install
-```
+# Examples
 
-#### Build grow.js with Gulp
-We use [gulp](http://gulpjs.com/) as our build system, to run the examples or tests, be sure to buld the files in the `/dist/` folder. You can do so with a simple command.
-
-`gulp`
 
 ## grow.json
 
@@ -33,14 +24,12 @@ Here is an example for a simple Ph sensor:
         "name": "Ph sensor",
         "description": "An ph sensor.",
         "type": "ph",
-        "class": "sensor",
-        "unit": "ph",
+        "template": "sensor",
         "actions": [
             {
                 "name": "Log ph data",
                 "call": "log_ph",
                 "schedule": "every 1 minute",
-                "event-message": "Watered plant for 20 seconds"
             }
         ]
     }
@@ -221,5 +210,21 @@ Likewise if you are hosting in the cloud, it should be set to the instance IP ad
 * Simple LED light example: https://github.com/CommonGarden/cg-led-light-arduino
 * Arduino Growkit: https://github.com/CommonGarden/growkit-arduino
 * See the examples folder.
+
+# Developing
+```
+git clone https://github.com/CommonGarden/grow.js
+cd grow.js
+npm install
+```
+
+#### Build grow.js with Gulp
+We use [gulp](http://gulpjs.com/) as our build system, to run the examples or tests, be sure to buld the files in the `/dist/` folder. You can do so with a simple command.
+
+`gulp`
+
+##### Build docs
+
+`gulp docs`
 
 

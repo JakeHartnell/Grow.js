@@ -1,3 +1,8 @@
+/**
+ * Connect to the Grow-IoT server over DDP.
+ * @param {Function} callback  An optional callback.
+ * @return     A new grow instance.
+ */
 GROWJS.prototype.connect = function (callback) {
   var self = this;
 
@@ -36,6 +41,12 @@ GROWJS.prototype.connect = function (callback) {
   });
 };
 
+/**
+ * Runs imediately after a successful connection.
+ * @param {Function} callback  An optional callback.
+ * @param {Object} result  The response from the server after connection.
+ * @return     A new grow instance.
+ */
 GROWJS.prototype._afterConnect = function (callback, result) {
   var self = this;
 
@@ -61,8 +72,8 @@ GROWJS.prototype._afterConnect = function (callback, result) {
     }
   );
 
-  /* Now check to see if we have a stored UUID.
-   * If no UUID is specified, store a new UUID. */
+  // Now check to see if we have a stored UUID.
+  // If no UUID is specified, store a new UUID.
   if (_.isUndefined(self.growFile.uuid) || _.isUndefined(self.growFile.token)) {
     self.growFile.uuid = result.uuid;
     self.growFile.token = result.token;
@@ -72,7 +83,7 @@ GROWJS.prototype._afterConnect = function (callback, result) {
 
   /////////// Setup Streams /////////////////////
   // Documentation: https://nodejs.org/api/stream.html
-
+  
   // Readable Stream: this is "readable" from the server perspective.
   // The device publishes it's data to the readable stream.
   self.readableStream = new Readable({objectMode: true});
@@ -92,7 +103,9 @@ GROWJS.prototype._afterConnect = function (callback, result) {
   callback(null, result);
 };
 
-// We pipe our readable and writable streams to the instance.
+/**
+ * Pipes readable and writeable streams.
+ */
 GROWJS.prototype.pipeInstance = function () {
   var self = this;
 
@@ -100,14 +113,18 @@ GROWJS.prototype.pipeInstance = function () {
   self.readableStream.pipe(this);
 };
 
+
 GROWJS.prototype._write = function (chunk, encoding, callback) {
   var self = this;
 
   self.sendData(chunk, callback);
 };
 
-// We are pushing data to a stream as commands are arriving and are leaving
-// to the stream to buffer them. So we simply ignore requests for more data.
+
+/**
+ * We are pushing data to a stream as commands are arriving and are leaving
+ * to the stream to buffer them. So we simply ignore requests for more data.
+ */
 GROWJS.prototype._read = function (size) {
   var self = this;
 };

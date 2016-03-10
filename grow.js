@@ -13,6 +13,15 @@ var later = require('later');
 // Use local time.
 later.date.localTime();
 
+/**
+ * Construct a new grow instance
+ * @constructor
+ * @param {Object} implementation  An object that contains keys and functions that fullfill
+ * the api described in the growFile.
+ * @param {Object} growFile  A JSON object which describes the device and it's API
+ * @param {Function} callback  An optional callback.
+ * @return     A new grow instance.
+ */
 function GROWJS(implementation, growFile, callback) {
   var self = this;
 
@@ -58,8 +67,15 @@ function GROWJS(implementation, growFile, callback) {
   }));
 
   self.connect(function(error, data) {
-    if (error) {console.log(error);}
+    if (error) {
+      console.log(error);
 
+      // TODO: register actions and make attempt to make reconnection.
+      // The idea is that if connection is lost the program shouldn't stop,
+      // but should also try to reconnect.
+    }
+
+    // These should register reguardless of whether device connects.
     var actionsRegistered = new RSVP.Promise(function(resolve, reject) {
       try {
         resolve(self.registerActions(implementation));
@@ -81,6 +97,11 @@ function GROWJS(implementation, growFile, callback) {
 
 util.inherits(GROWJS, Duplex);
 
+/**
+ * Connect to the Grow-IoT server over DDP.
+ * @param {Function} callback  An optional callback.
+ * @return     A new grow instance.
+ */
 GROWJS.prototype.connect = function (callback) {
   var self = this;
 
@@ -119,6 +140,12 @@ GROWJS.prototype.connect = function (callback) {
   });
 };
 
+/**
+ * Runs imediately after a successful connection.
+ * @param {Function} callback  An optional callback.
+ * @param {Object} result  The response from the server after connection.
+ * @return     A new grow instance.
+ */
 GROWJS.prototype._afterConnect = function (callback, result) {
   var self = this;
 
@@ -144,8 +171,8 @@ GROWJS.prototype._afterConnect = function (callback, result) {
     }
   );
 
-  /* Now check to see if we have a stored UUID.
-   * If no UUID is specified, store a new UUID. */
+  // Now check to see if we have a stored UUID.
+  // If no UUID is specified, store a new UUID.
   if (_.isUndefined(self.growFile.uuid) || _.isUndefined(self.growFile.token)) {
     self.growFile.uuid = result.uuid;
     self.growFile.token = result.token;
@@ -155,7 +182,7 @@ GROWJS.prototype._afterConnect = function (callback, result) {
 
   /////////// Setup Streams /////////////////////
   // Documentation: https://nodejs.org/api/stream.html
-
+  
   // Readable Stream: this is "readable" from the server perspective.
   // The device publishes it's data to the readable stream.
   self.readableStream = new Readable({objectMode: true});
@@ -175,7 +202,9 @@ GROWJS.prototype._afterConnect = function (callback, result) {
   callback(null, result);
 };
 
-// We pipe our readable and writable streams to the instance.
+/**
+ * Pipes readable and writeable streams.
+ */
 GROWJS.prototype.pipeInstance = function () {
   var self = this;
 
@@ -183,18 +212,25 @@ GROWJS.prototype.pipeInstance = function () {
   self.readableStream.pipe(this);
 };
 
+
 GROWJS.prototype._write = function (chunk, encoding, callback) {
   var self = this;
 
   self.sendData(chunk, callback);
 };
 
-// We are pushing data to a stream as commands are arriving and are leaving
-// to the stream to buffer them. So we simply ignore requests for more data.
+
+/**
+ * We are pushing data to a stream as commands are arriving and are leaving
+ * to the stream to buffer them. So we simply ignore requests for more data.
+ */
 GROWJS.prototype._read = function (size) {
   var self = this;
 };
 
+/**
+ * Writes any changes to the grow.json file.
+ */
 GROWJS.prototype.writeChangesToGrowFile = function () {
   var self = this;
 
@@ -203,15 +239,21 @@ GROWJS.prototype.writeChangesToGrowFile = function () {
   });
 };
 
-// Calls action, emits event, and updates state (if applicable).
+/**
+ * Calls a registered action, emits event if the the action has an 'event'
+ * property defined. Updates the state if the action has an 'updateState'
+ * property specified.
+ * @param      {String}  functionName The name of the function to call.
+ * @param      {Object}  options Any options to call with the function.
+ */
 GROWJS.prototype.callAction = function (functionName, options) {
   var self = this;
-
 
   var meta = self.getActionMetaByCall(functionName);
 
   // If the actions "event" property is set to null or is undefined,
-  // No event is logged.
+  // No event is logged. This is used for sensors which are posting data
+  // and events would be redundant.
   if (meta.event === null || _.isUndefined(meta.event)) {
     if (options) {
       self.actions[functionName](options);
@@ -246,12 +288,20 @@ GROWJS.prototype.callAction = function (functionName, options) {
   }
 };
 
+/**
+ * Registers the implmentation, starts any scheduled actions and sets up 
+ * the writeable stream to listen for commands.
+ * @param {Object}  implementation  
+ */
 GROWJS.prototype.registerActions = function (implementation) {
   var self = this;
   self.actions = _.clone(implementation || {});
 
   // TODO: make sure the implementation matches the growfile.
   // If not, we throw some helpful errors.
+
+  // Bug actions fail to start properly if there are functions not
+  // mentioned in grow file.
 
   // Start actions that have a schedule property.
   self.startScheduledActions();
@@ -273,7 +323,9 @@ GROWJS.prototype.registerActions = function (implementation) {
   };
 };
 
-// TODO: stop actions, restart action with new schedule, etc.
+/**
+ * Loops through registered actions and calls startAction.
+ */
 GROWJS.prototype.startScheduledActions = function () {
   var self = this;
   self.scheduledActions = [];
@@ -285,33 +337,17 @@ GROWJS.prototype.startScheduledActions = function () {
   for (var action in self.actions) {
     var meta = self.getActionMetaByCall(action);
 
-    // Actions can optionally log an event when they run.
-    // Some actions like logging data from sensors are already posting
-    // data so they can leave event undefined or set it to null.
     if (!_.isUndefined(meta)) {
-      if (!_.isUndefined(meta.event) || !_.isNull(meta.event)) {
-        self.startActionWithEventLog(action);
-      }
-    } else {
       self.startAction(action);
     }
   }
 };
 
-// TODO: Support options.
-GROWJS.prototype.startActionWithEventLog = function (action) {
-  var self = this;
-  var meta = self.getActionMetaByCall(action);
-  if (!_.isUndefined(meta.schedule)) {
-    var schedule = later.parse.text(meta.schedule);
-    var scheduledAction = later.setInterval(function() {self.callAction(action);}, schedule);
-    // TODO: extend scheduled action so that they have a name.
-    self.scheduledActions.push(scheduledAction);
-    return scheduledAction;
-  }
-};
 
-// TODO: Support options.
+/**
+ * Starts a reoccurring action if a schedule property is defined.
+ * @param {Object} action An action object.
+ */
 GROWJS.prototype.startAction = function (action) {
   var self = this;
   var meta = self.getActionMetaByCall(action);
@@ -323,7 +359,9 @@ GROWJS.prototype.startAction = function (action) {
   }
 };
 
-// Maybe there should be a get action component function?
+/**
+ * Gets the a component by the action it calls.  
+ */
 GROWJS.prototype.getComponentByActionCall = function (functionName) {
   var self = this;
   var thing = self.growFile.thing;
@@ -407,70 +445,11 @@ GROWJS.prototype.getActionsList = function () {
 };
 
 
-// TODO: define sensor function and use it to init 
-GROWJS.prototype.Sensor = function (component) {
-	var self = this;
-
-	// TODO: get useful info from component.
-	// Like type.
-
-	self.log = function () {
-		self.readableStream.push({
-			'type': component.type,
-			'value': self.averageData()
-		});
-	};
-
-	self.data = [];
-
-	self.calibration = {};
-
-	self.addReading = function (reading) {
-	      this.data = [];
-	      this.data.push([Date.now(), reading]);
-	      this.data.push([Date.now(), reading]);
-	};
-
-	self.averageData = function () {
-		var total = 0;
-		if (!_.isUndefined(this.data)) {
-		  for (var i = this.data.length - 1; i >= 0; i--) {
-		    total = total + this.phData[i][1];
-		  }
-		  return total / this.data.length;
-		}
-	};
-
-	// TODO
-	// The calibration function could be very simple and utilized for 
-	// multiple sensors.
-	// Correct reading is optional, if left out, it returns a calibrated reading
-	// based on current calibration data.
-	self.calibrate = function (reading, correctReading) {
-	  // return;
-	};
-
-	return self;
-};
-
-GROWJS.prototype.registerSensor = function (component) {
-	var self = this;
-
-	// How do we want to register this?
-	self.sensors = self.sensors || {};
-
-	// TODO: get component type and register as it.
-	
-
-	// TODO: if there is already one type of commont we start appending numbers
-	/*
-		self.ph
-		self.ph1
-		self.ph2
-	*/
-
-};
-
+/**
+ * Send data to Grow-IoT server.
+ * @param      {Object}  data
+ * @param      {Function} callback
+ */
 GROWJS.prototype.sendData = function (data, callback) {
   var self = this;
 
@@ -492,6 +471,11 @@ GROWJS.prototype.sendData = function (data, callback) {
   );
 };
 
+/**
+ * Emit device event to Grow-IoT server.
+ * @param      {Object}  event
+ * @param      {Function} callback
+ */
 GROWJS.prototype.emitEvent = function (eventMessage, callback) {
   var self = this;
 
@@ -509,10 +493,14 @@ GROWJS.prototype.emitEvent = function (eventMessage, callback) {
   );
 };
 
-// Maybe this function needs to be split up?
-// Maybe two functions? Update property and update component?
-// Either way, this is really an update thing function, and exchanges
-// way too much info just to update a property.
+
+/**
+ * Update device property on Grow-IoT server.
+ * @param {String} componentName  Name of the component you want to update.
+ * @param {String} propertyKey  Name of the of the property you wish to update
+ * @param {Object|List|String|Number|Boolean} value The new value to set the property to.
+ * @param {Function} callback  An optional callback.
+ */
 GROWJS.prototype.updateProperty = function (componentName, propertyKey, value, callback) {
   var self = this;
 

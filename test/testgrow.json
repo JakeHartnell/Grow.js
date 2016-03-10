@@ -1,4 +1,7 @@
 {
+    "host":"grow.commongarden.org",
+    "port": 443,
+    "ssl": "true",
     "thing": {
         "name": "value",
         "version": "0.1.5",
