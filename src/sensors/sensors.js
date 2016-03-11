@@ -1,5 +1,7 @@
-// TODO: define sensor function and use it to init 
-GROWJS.prototype.Sensor = function (component) {
+/**
+ * Pipes readable and writeable streams.
+ */
+ GROWJS.prototype.Sensor = function (component) {
 	var self = this;
 
 	// TODO: get useful info from component.

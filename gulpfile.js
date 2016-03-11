@@ -12,6 +12,7 @@ var sourcemaps = require('gulp-sourcemaps');
 var mocha = require('gulp-mocha');
 var babel = require('gulp-babel');
 var eslint = require('gulp-eslint');
+var gulpDoxx = require('gulp-doxx');
 
 // Default
 gulp.task('default', ['lint', 'build']);
@@ -20,10 +21,9 @@ gulp.task('build', function() {
   return gulp.src([
   	'./src/base.js',
   	'./src/connect.js', 
-  	'./src/growfile.js',
   	'./src/actions.js',
-    './src/sensors.js',
     './src/api.js',
+    './src/growfile.js',
   	'./src/export.js'
   ])
     .pipe(concat('grow.js'))
@@ -36,6 +36,19 @@ gulp.task('lint', function() {
   return gulp.src('src/*.js')
     .pipe(jshint())
     .pipe(jshint.reporter('default'));
+});
+
+// Build documentation using mr-doc
+// https://github.com/mr-doc/mr-doc
+gulp.task('docs', function() {
+
+  gulp.src(['grow.js', 'README.md'], {base: '.'})
+    .pipe(gulpDoxx({
+      title: 'Grow.js',
+      urlPrefix: '/docs'
+    }))
+    .pipe(gulp.dest('docs'));
+
 });
 
 // Minify JS

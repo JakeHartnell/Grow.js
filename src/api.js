@@ -1,3 +1,8 @@
+/**
+ * Send data to Grow-IoT server.
+ * @param      {Object}  data
+ * @param      {Function} callback
+ */
 GROWJS.prototype.sendData = function (data, callback) {
   var self = this;
 
@@ -19,6 +24,11 @@ GROWJS.prototype.sendData = function (data, callback) {
   );
 };
 
+/**
+ * Emit device event to Grow-IoT server.
+ * @param      {Object}  event
+ * @param      {Function} callback
+ */
 GROWJS.prototype.emitEvent = function (eventMessage, callback) {
   var self = this;
 
@@ -36,10 +46,14 @@ GROWJS.prototype.emitEvent = function (eventMessage, callback) {
   );
 };
 
-// Maybe this function needs to be split up?
-// Maybe two functions? Update property and update component?
-// Either way, this is really an update thing function, and exchanges
-// way too much info just to update a property.
+
+/**
+ * Update device property on Grow-IoT server.
+ * @param {String} componentName  Name of the component you want to update.
+ * @param {String} propertyKey  Name of the of the property you wish to update
+ * @param {Object|List|String|Number|Boolean} value The new value to set the property to.
+ * @param {Function} callback  An optional callback.
+ */
 GROWJS.prototype.updateProperty = function (componentName, propertyKey, value, callback) {
   var self = this;
 

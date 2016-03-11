@@ -1,3 +1,6 @@
+/**
+ * Writes any changes to the grow.json file.
+ */
 GROWJS.prototype.writeChangesToGrowFile = function () {
   var self = this;
 

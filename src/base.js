@@ -13,6 +13,17 @@ var later = require('later');
 // Use local time.
 later.date.localTime();
 
+/**
+ * Constructs a new grow instance, connects to the Grow-IoT server specified in the growFile,
+   registers the device with the Server (if it's the first time connecting it saves a new
+   uuid and token), and sets up readable and writable streams.
+ * @constructor
+ * @param {Object} implementation  An object that contains keys and functions that fullfill
+ * the api described in the growFile.
+ * @param {Object} growFile  A JSON object which describes the device and it's API
+ * @param {Function} callback  An optional callback.
+ * @return     A new grow instance.
+ */
 function GROWJS(implementation, growFile, callback) {
   var self = this;
 
@@ -58,8 +69,15 @@ function GROWJS(implementation, growFile, callback) {
   }));
 
   self.connect(function(error, data) {
-    if (error) {console.log(error);}
+    if (error) {
+      console.log(error);
 
+      // TODO: register actions and make attempt to make reconnection.
+      // The idea is that if connection is lost the program shouldn't stop,
+      // but should also try to reconnect.
+    }
+
+    // These should register reguardless of whether device connects.
     var actionsRegistered = new RSVP.Promise(function(resolve, reject) {
       try {
         resolve(self.registerActions(implementation));
