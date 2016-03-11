@@ -14,7 +14,9 @@ var later = require('later');
 later.date.localTime();
 
 /**
- * Construct a new grow instance
+ * Constructs a new grow instance, connects to the Grow-IoT server specified in the growFile,
+   registers the device with the Server (if it's the first time connecting it saves a new
+   uuid and token), and sets up readable and writable streams.
  * @constructor
  * @param {Object} implementation  An object that contains keys and functions that fullfill
  * the api described in the growFile.

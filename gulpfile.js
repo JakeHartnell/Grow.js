@@ -21,9 +21,9 @@ gulp.task('build', function() {
   return gulp.src([
   	'./src/base.js',
   	'./src/connect.js', 
-  	'./src/growfile.js',
   	'./src/actions.js',
     './src/api.js',
+    './src/growfile.js',
   	'./src/export.js'
   ])
     .pipe(concat('grow.js'))

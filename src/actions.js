@@ -119,7 +119,7 @@ GROWJS.prototype.startAction = function (action) {
 };
 
 /**
- * Gets the a component by the action it calls.  
+ * Gets the a component by the action it calls.
  */
 GROWJS.prototype.getComponentByActionCall = function (functionName) {
   var self = this;
@@ -159,7 +159,11 @@ GROWJS.prototype.getComponentByActionCall = function (functionName) {
   return actionComponent;
 };
 
-// Returns an object of action metadata based on function name.
+/**
+ * Get action metadata based on the function name
+ * @param {String} functionName  The name of the function you want metadata for.
+ * @returns {Object}
+ */
 GROWJS.prototype.getActionMetaByCall = function (functionName) {
   var self = this;
   var actionsMeta = self.getActionsList();
@@ -170,8 +174,10 @@ GROWJS.prototype.getActionMetaByCall = function (functionName) {
   }
 };
 
-// Returns a list of action objects in the grow file.
-GROWJS.prototype.getActionsList = function () {
+/**
+ * Get list of action objects in growFile.
+ * @returns {List}
+ */GROWJS.prototype.getActionsList = function () {
   var self = this;
   var thing = self.growFile.thing;
   var actionMetaData = [];

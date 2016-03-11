@@ -1,20 +1,17 @@
 # Grow.js
-An npm packagle of useful functions for working with the [Grow-IoT app](https://github.com/CommonGarden/Grow-IoT).
+An npm packagle of useful functions for working with the [Grow-IoT app](https://github.com/CommonGarden/Grow-IoT). It works with most devices that can run node, and plays very well with the [Johnny-Five robotics library](http://johnny-five.io/) which supports a large number of devices, including various Raspberry Pis, various arduinos, Beaglebone, the Tessel 2, Chip (the $9 computer), and more!
 
 Install with:
 
     npm install grow.js
 
-# Examples
+## Examples:
+Here are a few example drivers you can take a look at.
+* Simple LED light example: https://github.com/CommonGarden/cg-led-light-arduino
+* Arduino Growkit: https://github.com/CommonGarden/growkit-arduino
 
-
-## grow.json
-
-Grow.js uses a `grow.json` file by default to describe itself and its api. 
-
-You will need to create a `grow.json` file to connect to a Common Garden Grow app instance (local or in the cloud). When connecting to the Grow-IoT server, grow.js prvodes info in the grow.json file so that the server and uses this to create both the UI and API.
-
-The grow file is also used for state, in case the device looses internet connnection or power, and needs to reset.
+## Describing Devices
+Grow.js uses a `grow.json` file by default to describe itself and its api. This basic data model means that you can connect many different kinds of devices and even build your own. You will need to create a `grow.json` file to connect to a Common Garden Grow app instance (local or in the cloud).
 
 Here is an example for a simple Ph sensor:
 
@@ -24,93 +21,51 @@ Here is an example for a simple Ph sensor:
         "name": "Ph sensor",
         "description": "An ph sensor.",
         "type": "ph",
-        "template": "sensor",
+        "owner": "jake@commongarden.org",
         "actions": [
             {
                 "name": "Log ph data",
                 "call": "log_ph",
                 "schedule": "every 1 minute",
             }
-        ]
+        ],
     }
 }
 ```
 
-### The 'thing' object
-Note the "thing" object. This is where we are defining what the device or thing (as in Internet of Things) *is*.
+The grow file is also used for state. In case the device looses internet connnection or power and needs to reset, the grow file contains the instructions such as schedules, where the device is supposed to connect to.
 
-Things can support properties, events, actions. Things can also have `components`, or a list thing objects that comprise a thing.
+### The 'thing' object
+A 'thing' in the Grow-IoT sense is a simple data model for describing an IoT device. Things can have the following properties:
+
+**name**: *(required)* The name of the thing. Must not be shared with any components or actions in the grow.json file.
+**owner**: *(required)* The email address of the account the device will be added to when it connects. Note: this is temporary as we're going to working on UI for connecting and confirguring devices over bluetooth or wifi.
+**state**: the current state of the thing. For example, 'on' or 'off'.
+**type**: The type of thing, eventually we are going to fine tune the UI for common components like temperature sensors, etc.
+**description**: A description for the thing.
+**actions**: A list of action objects.
+**events**: A list of event objects.
+
+The cool thing is that things can contain other things! The `components` property takes list of thing objects.
+
+**components**: A list of thing objects.
+
+For example: 
 
 ```
 "thing": {
-        "name": "Smart Pot",
-        "description": "An example growkit.",
-        "type": "growkit",
+        "name": "Plant waterer",
+        "description": "Waters a plant and logs moisture data.",
         "components": [
             {
-                "name": "Light sensor",
-                "type": "light-sensor",
-                "class": "sensor",
-                "vRef": 4.96,
-                "unit": "milivolts",
+                "name": "Moisture sensor",
+                "type": "moisture",
+                "template": "sensor",
                 "actions": [
                     {
-                        "name": "Log light data",
-                        "call": "log_light",
+                        "name": "Log moisture data",
+                        "call": "log_moisture",
                         "sechedule": "every 1 second"
-                    }
-                ]
-            },
-            {
-                "name": "Water level sensor",
-                "type": "liquid-level",
-                "class": "sensor",
-                "vRef": 3.3,
-                "unit": "milivolts",
-                "events": [
-                    {
-                        "name": "Water level low",
-                        "message": "Refill the water resevoir. You can water the plant like you would any other, the water will drain into the resevoir and this notification will go away."
-                    }
-                ],
-                "actions": [
-                    {
-                        "name": "Check water level",
-                        "call": "check_water_level",
-                        "options": {
-                            "threshold": 3
-                        },
-                        "schedule": "every 1 second"
-                    }
-                ]
-            },
-            {
-                "name": "Temperature sensor",
-                "type": "temperature",
-                "class": "sensor",
-                "unit": "Celcius",
-                "actions": [
-                    {
-                        "name": "Log temperature data",
-                        "call": "log_temperature",
-                        "options": {
-                            "unit": "C"
-                        },
-                        "schedule": "every 1 minute"
-                    }
-                ]
-            },
-            {
-                "name": "pH sensor",
-                "type": "ph",
-                "unit": "ph",
-                "class": "sensor",
-                "actions": [
-                    {
-                        "name": "Log ph data",
-                        "call": "log_ph",
-                        "schedule": "every 1 minute",
-                        "event-message": "Watered plant for 20 seconds"
                     }
                 ]
             },
@@ -127,29 +82,7 @@ Things can support properties, events, actions. Things can also have `components
                             "duration": "20 seconds"
                         },
                         "schedule": "at 10:15am",
-                        "event-message": "Watered plant for 20 seconds"
-                    }
-                ]
-            },
-            {
-                "name": "Light",
-                "type": "relay",
-                "class": "actuator",
-                "state": "on",
-                "actions": [
-                    {
-                        "name": "On",
-                        "call": "light_on",
-                        "state": "on",
-                        "schedule": "at 9:00am",
-                        "event-message": "Light turned on"
-                    },
-                    {
-                        "name": "off",
-                        "call": "light_off",
-                        "state": "off",
-                        "schedule": "at 8:30pm",
-                        "event-message": "Light turned off"
+                        "event": "Watered plant for 20 seconds"
                     }
                 ]
             }
@@ -158,58 +91,82 @@ Things can support properties, events, actions. Things can also have `components
 }
 ```
 
+Currently, we don't allow components to have a `components` property.
+
+### Actions
+The `actions` property of a thing or component has it's own structure.
+
+**name**: *(required)* the name of the action. For example, "water plant".
+**call**: *(required)* the name of the function to call. This much match what is in the implementation.
+**options**: an additional arguments or parameters for the function.
+**schedule**: a valid later.js text experession that sets up a recurring action, see the [later.js documentation](http://bunkat.github.io/later/) for more info.
+**event**: setting this logs an event when the action is called.
+
 ## Implementation
 
-In addition to the `grow.json` file you will need an implementation. This is where you define the functions that are referenced in the grow file. In the above example, in the list of actions, `log_ph` is the call for the action. Grow.js will expect that function to be defined in the implementation.
+In addition to the `grow.json` file you will need an implementation. **This is where you define the functions that are referenced in the `grow.json` file.** Take for example this simple ph sensor:
+
+    "thing": {
+        "name": "Ph sensor",
+        "description": "An ph sensor.",
+        "type": "ph",
+        "owner": "jake@commongarden.org",
+        "actions": [
+            {
+                "name": "Log ph data",
+                "call": "log_ph",
+                "schedule": "every 1 minute",
+            }
+        ],
+    }
+
+In the above example, in the list of actions, `log_ph` is the call for the action. Grow.js will expect that function to be defined in the implementation.
 
 ```
 
 var GrowInstance = require('grow.js');
-var five = require('johnny-five');
-var growfile = require('./ph-sensor.json');
-var board = new five.Board();
 
-// When the board is ready we run the callback function start()
-board.on("ready", function start() {
-  var phSensor = new five.Sensor("A0");
-
-  // On Johnny-five's change event we add the reading to grow.js's
-  // sensor utilities.
-  phSensor.on("change", function() {
-    grow.ph.addReading(this.value);
-  });
-
-  // Here we create the grow instance and pass in the implemnetation and 
-  // growfile.
-  var grow = new GrowInstance({
-    log_ph: function () {
-      reading = grow.ph.log_ph();
-      grow.readableStream.push(reading);
-    }
-  }, growfile);
+var grow = new GrowInstance({
+  log_ph: function () {
+    // Code to get ph and log it
+  }
 });
 
 ```
 
+Check out the driver examples for more code.
 
 ### Host / Port
 The host is where the device will be looking for a CommonGarden-IoT instance. By default the host is set to `localhost` and the port is set to Meteor's standard of `3000`. This will work nicely for usb devices like Arduino.
 
-If connecting over wifi this needs to be set to your computer's IP address. Simply specify it in your grow.json file.
+#### Connecting over wifi
+Set the `host` to your computer's IP address where the Grow-IoT instance is running. Simply specify it in your grow.json file.
 
 ```
-    "host": "localhost",
-    "port": "3000",
+    "host": "YOUR_IP_HERE",
     "thing": {...}
 ```
 
-Likewise if you are hosting in the cloud, it should be set to the instance IP address.
+Likewise if you are hosting in the cloud, it should be set to the instance IP address, you can also override the default port by specifiying the `port` option.
 
-### Example drivers:
+#### Connecting over SSL
+SSL is supported though will require a bit more setup. If you are hosting your instance off a computer with a dedicated IP address include the following info in your grow.json file.
 
-* Simple LED light example: https://github.com/CommonGarden/cg-led-light-arduino
-* Arduino Growkit: https://github.com/CommonGarden/growkit-arduino
-* See the examples folder.
+    "host": "YOUR_IP_HERE",
+    "port": 443,
+    "ssl": true,
+
+If you are hosting on a cloud instance, you might need specify the servername. The example below shows you how to connect securely to the instance at [grow.commongarden.org](https://grow.commongarden.org):
+
+    "host": "grow.commongarden.org",
+    "tlsOpts": {
+        "tls": {
+            "servername": "galaxy.meteor.com"
+        }
+    },
+    "port": 443,
+    "ssl": true,
+    "thing": { ... }
 
 # Developing
 ```
@@ -218,13 +175,10 @@ cd grow.js
 npm install
 ```
 
-#### Build grow.js with Gulp
-We use [gulp](http://gulpjs.com/) as our build system, to run the examples or tests, be sure to buld the files in the `/dist/` folder. You can do so with a simple command.
+We use [gulp](http://gulpjs.com/) as our task runner. We use it to run tests, build docs, minify the code, lint things, etc.
 
-`gulp`
-
-##### Build docs
-
-`gulp docs`
+`gulp build` concatonates the files in the `src` folder into one grow.js file.
+`gulp test` runs tests in the test folder.
+`gulp docs` builds the documentation in the docs folder.
 
 

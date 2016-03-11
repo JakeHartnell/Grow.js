@@ -78,16 +78,6 @@
             <ul class="nav nav-list bs-docs-sidenav affix-top">
               <li><a href="#GROWJS"><i class="alert alert-success"></i><span>GROWJS</span></a>
               </li>
-              <li><a href="#connect"><i class="alert alert-info"></i><span>connect</span></a>
-              </li>
-              <li><a href="#_afterConnect"><i class="alert alert-info"></i><span>_afterConnect</span></a>
-              </li>
-              <li><a href="#pipeInstance"><i class="alert alert-info"></i><span>pipeInstance</span></a>
-              </li>
-              <li><a href="#_read"><i class="alert alert-info"></i><span>_read</span></a>
-              </li>
-              <li><a href="#writeChangesToGrowFile"><i class="alert alert-info"></i><span>writeChangesToGrowFile</span></a>
-              </li>
               <li><a href="#callAction"><i class="alert alert-info"></i><span>callAction</span></a>
               </li>
               <li><a href="#registerActions"><i class="alert alert-info"></i><span>registerActions</span></a>
@@ -98,11 +88,17 @@
               </li>
               <li><a href="#getComponentByActionCall"><i class="alert alert-info"></i><span>getComponentByActionCall</span></a>
               </li>
+              <li><a href="#getActionMetaByCall"><i class="alert alert-info"></i><span>getActionMetaByCall</span></a>
+              </li>
+              <li><a href="#getActionsList"><i class="alert alert-info"></i><span>getActionsList</span></a>
+              </li>
               <li><a href="#sendData"><i class="alert alert-info"></i><span>sendData</span></a>
               </li>
               <li><a href="#emitEvent"><i class="alert alert-info"></i><span>emitEvent</span></a>
               </li>
               <li><a href="#updateProperty"><i class="alert alert-info"></i><span>updateProperty</span></a>
+              </li>
+              <li><a href="#writeChangesToGrowFile"><i class="alert alert-info"></i><span>writeChangesToGrowFile</span></a>
               </li>
             </ul>
           </div>
@@ -146,7 +142,7 @@
               </tr>
             </tbody>
           </table>
-          <div class="description"><p>Construct a new grow instance</p> </div>
+          <div class="description"><p>Constructs a new grow instance, connects to the Grow-IoT server specified in the growFile,<br />   registers the device with the Server (if it&#39;s the first time connecting it saves a new<br />   uuid and token), and sets up readable and writable streams.</p> </div>
           <pre><code class="language-javascript">function GROWJS(implementation, growFile, callback) {
   var self = this;
 
@@ -220,37 +216,10 @@
   });
 }
 
-util.inherits(GROWJS, Duplex);</code></pre>
-          <section id="connect">
-            <h1>connect</h1>
-            <h5 class="subheader"></h5>
-            <p>
-              <div class="label label-info radius ctx-type">method</div><span>GROWJS.prototype.connect()</span>
-            </p>
-          </section>
-          <table class="table table-bordered table-striped">
-            <thead>
-              <tr>
-                <th style="width:20%">Option name</th>
-                <th style="width:20%">Type</th>
-                <th>Description</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>callback</td>
-                <td>Function</td>
-                <td><p>An optional callback.</p></td>
-              </tr>
-              <tr>
-                <td>return</td>
-                <td></td>
-                <td><p>A new grow instance.</p></td>
-              </tr>
-            </tbody>
-          </table>
-          <div class="description"><p>Connect to the Grow-IoT server over DDP.</p> </div>
-          <pre><code class="language-javascript">GROWJS.prototype.connect = function (callback) {
+util.inherits(GROWJS, Duplex);
+
+// Connects to the Grow-IoT server over DDP.
+GROWJS.prototype.connect = function (callback) {
   var self = this;
 
   self.ddpclient.connect(function (error, wasReconnect) {
@@ -286,42 +255,11 @@ util.inherits(GROWJS, Duplex);</code></pre>
       }
     );
   });
-};</code></pre>
-          <section id="_afterConnect">
-            <h1>_afterConnect</h1>
-            <h5 class="subheader"></h5>
-            <p>
-              <div class="label label-info radius ctx-type">method</div><span>GROWJS.prototype._afterConnect()</span>
-            </p>
-          </section>
-          <table class="table table-bordered table-striped">
-            <thead>
-              <tr>
-                <th style="width:20%">Option name</th>
-                <th style="width:20%">Type</th>
-                <th>Description</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>callback</td>
-                <td>Function</td>
-                <td><p>An optional callback.</p></td>
-              </tr>
-              <tr>
-                <td>result</td>
-                <td>Object</td>
-                <td><p>The response from the server after connection.</p></td>
-              </tr>
-              <tr>
-                <td>return</td>
-                <td></td>
-                <td><p>A new grow instance.</p></td>
-              </tr>
-            </tbody>
-          </table>
-          <div class="description"><p>Runs imediately after a successful connection.</p> </div>
-          <pre><code class="language-javascript">GROWJS.prototype._afterConnect = function (callback, result) {
+};
+
+// Runs imediately after a successful connection. Makes sure a UUID and
+// token are set.
+GROWJS.prototype._afterConnect = function (callback, result) {
   var self = this;
 
   self.ddpclient.subscribe(
@@ -375,53 +313,27 @@ util.inherits(GROWJS, Duplex);</code></pre>
   self.writableStream = new Writable({objectMode: true});
 
   callback(null, result);
-};</code></pre>
-          <section id="pipeInstance">
-            <h1>pipeInstance</h1>
-            <h5 class="subheader"></h5>
-            <p>
-              <div class="label label-info radius ctx-type">method</div><span>GROWJS.prototype.pipeInstance()</span>
-            </p>
-          </section>
-          <div class="description"><p>Pipes readable and writeable streams.</p> </div>
-          <pre><code class="language-javascript">GROWJS.prototype.pipeInstance = function () {
+};
+
+// Pipes readable and writeable streams.
+GROWJS.prototype.pipeInstance = function () {
   var self = this;
 
   this.pipe(self.writableStream);
   self.readableStream.pipe(this);
 };
 
-
+// On _write, call this.sendData()
 GROWJS.prototype._write = function (chunk, encoding, callback) {
   var self = this;
 
   self.sendData(chunk, callback);
-};</code></pre>
-          <section id="_read">
-            <h1>_read</h1>
-            <h5 class="subheader"></h5>
-            <p>
-              <div class="label label-info radius ctx-type">method</div><span>GROWJS.prototype._read()</span>
-            </p>
-          </section>
-          <div class="description"><p>We are pushing data to a stream as commands are arriving and are leaving<br />to the stream to buffer them. So we simply ignore requests for more data.</p> </div>
-          <pre><code class="language-javascript">GROWJS.prototype._read = function (size) {
-  var self = this;
-};</code></pre>
-          <section id="writeChangesToGrowFile">
-            <h1>writeChangesToGrowFile</h1>
-            <h5 class="subheader"></h5>
-            <p>
-              <div class="label label-info radius ctx-type">method</div><span>GROWJS.prototype.writeChangesToGrowFile()</span>
-            </p>
-          </section>
-          <div class="description"><p>Writes any changes to the grow.json file.</p> </div>
-          <pre><code class="language-javascript">GROWJS.prototype.writeChangesToGrowFile = function () {
-  var self = this;
+};
 
-  fs.writeFile('./grow.json', JSON.stringify(self.growFile, null, 4), function (error) {
-    if (error) return console.log(&quot;Error&quot;, error);
-  });
+// We are pushing data to a stream as commands are arriving and are leaving
+// to the stream to buffer them. So we simply ignore requests for more data.
+GROWJS.prototype._read = function (size) {
+  var self = this;
 };</code></pre>
           <section id="callAction">
             <h1>callAction</h1>
@@ -648,10 +560,32 @@ GROWJS.prototype._write = function (chunk, encoding, callback) {
   }
 
   return actionComponent;
-};
-
-// Returns an object of action metadata based on function name.
-GROWJS.prototype.getActionMetaByCall = function (functionName) {
+};</code></pre>
+          <section id="getActionMetaByCall">
+            <h1>getActionMetaByCall</h1>
+            <h5 class="subheader"></h5>
+            <p>
+              <div class="label label-info radius ctx-type">method</div><span>GROWJS.prototype.getActionMetaByCall()</span>
+            </p>
+          </section>
+          <table class="table table-bordered table-striped">
+            <thead>
+              <tr>
+                <th style="width:20%">Option name</th>
+                <th style="width:20%">Type</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>functionName</td>
+                <td>String</td>
+                <td><p>The name of the function you want metadata for.</p></td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="description"><p>Get action metadata based on the function name</p> </div>
+          <pre><code class="language-javascript">GROWJS.prototype.getActionMetaByCall = function (functionName) {
   var self = this;
   var actionsMeta = self.getActionsList();
   for (var i = actionsMeta.length - 1; i &gt;= 0; i--) {
@@ -659,10 +593,16 @@ GROWJS.prototype.getActionMetaByCall = function (functionName) {
       return actionsMeta[i];
     }
   }
-};
-
-// Returns a list of action objects in the grow file.
-GROWJS.prototype.getActionsList = function () {
+};</code></pre>
+          <section id="getActionsList">
+            <h1>getActionsList</h1>
+            <h5 class="subheader"></h5>
+            <p>
+              <div class="label label-info radius ctx-type">method</div><span>ROWJS.prototype.getActionsList()</span>
+            </p>
+          </section>
+          <div class="description"><p>Get list of action objects in growFile.</p> </div>
+          <pre><code class="language-javascript">ROWJS.prototype.getActionsList = function () {
   var self = this;
   var thing = self.growFile.thing;
   var actionMetaData = [];
@@ -860,6 +800,21 @@ GROWJS.prototype.getActionsList = function () {
       }
     }
   );
+};</code></pre>
+          <section id="writeChangesToGrowFile">
+            <h1>writeChangesToGrowFile</h1>
+            <h5 class="subheader"></h5>
+            <p>
+              <div class="label label-info radius ctx-type">method</div><span>GROWJS.prototype.writeChangesToGrowFile()</span>
+            </p>
+          </section>
+          <div class="description"><p>Writes any changes to the grow.json file.</p> </div>
+          <pre><code class="language-javascript">GROWJS.prototype.writeChangesToGrowFile = function () {
+  var self = this;
+
+  fs.writeFile('./grow.json', JSON.stringify(self.growFile, null, 4), function (error) {
+    if (error) return console.log(&quot;Error&quot;, error);
+  });
 };
 
 // Export Grow.js as npm module. Be sure to include last in gulpfile concatonation.

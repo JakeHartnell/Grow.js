@@ -1,8 +1,4 @@
-/**
- * Connect to the Grow-IoT server over DDP.
- * @param {Function} callback  An optional callback.
- * @return     A new grow instance.
- */
+// Connects to the Grow-IoT server over DDP.
 GROWJS.prototype.connect = function (callback) {
   var self = this;
 
@@ -41,12 +37,8 @@ GROWJS.prototype.connect = function (callback) {
   });
 };
 
-/**
- * Runs imediately after a successful connection.
- * @param {Function} callback  An optional callback.
- * @param {Object} result  The response from the server after connection.
- * @return     A new grow instance.
- */
+// Runs imediately after a successful connection. Makes sure a UUID and
+// token are set.
 GROWJS.prototype._afterConnect = function (callback, result) {
   var self = this;
 
@@ -103,9 +95,7 @@ GROWJS.prototype._afterConnect = function (callback, result) {
   callback(null, result);
 };
 
-/**
- * Pipes readable and writeable streams.
- */
+// Pipes readable and writeable streams.
 GROWJS.prototype.pipeInstance = function () {
   var self = this;
 
@@ -113,18 +103,15 @@ GROWJS.prototype.pipeInstance = function () {
   self.readableStream.pipe(this);
 };
 
-
+// On _write, call this.sendData()
 GROWJS.prototype._write = function (chunk, encoding, callback) {
   var self = this;
 
   self.sendData(chunk, callback);
 };
 
-
-/**
- * We are pushing data to a stream as commands are arriving and are leaving
- * to the stream to buffer them. So we simply ignore requests for more data.
- */
+// We are pushing data to a stream as commands are arriving and are leaving
+// to the stream to buffer them. So we simply ignore requests for more data.
 GROWJS.prototype._read = function (size) {
   var self = this;
 };

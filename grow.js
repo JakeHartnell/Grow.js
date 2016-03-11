@@ -14,7 +14,9 @@ var later = require('later');
 later.date.localTime();
 
 /**
- * Construct a new grow instance
+ * Constructs a new grow instance, connects to the Grow-IoT server specified in the growFile,
+   registers the device with the Server (if it's the first time connecting it saves a new
+   uuid and token), and sets up readable and writable streams.
  * @constructor
  * @param {Object} implementation  An object that contains keys and functions that fullfill
  * the api described in the growFile.
@@ -97,11 +99,7 @@ function GROWJS(implementation, growFile, callback) {
 
 util.inherits(GROWJS, Duplex);
 
-/**
- * Connect to the Grow-IoT server over DDP.
- * @param {Function} callback  An optional callback.
- * @return     A new grow instance.
- */
+// Connects to the Grow-IoT server over DDP.
 GROWJS.prototype.connect = function (callback) {
   var self = this;
 
@@ -140,12 +138,8 @@ GROWJS.prototype.connect = function (callback) {
   });
 };
 
-/**
- * Runs imediately after a successful connection.
- * @param {Function} callback  An optional callback.
- * @param {Object} result  The response from the server after connection.
- * @return     A new grow instance.
- */
+// Runs imediately after a successful connection. Makes sure a UUID and
+// token are set.
 GROWJS.prototype._afterConnect = function (callback, result) {
   var self = this;
 
@@ -202,9 +196,7 @@ GROWJS.prototype._afterConnect = function (callback, result) {
   callback(null, result);
 };
 
-/**
- * Pipes readable and writeable streams.
- */
+// Pipes readable and writeable streams.
 GROWJS.prototype.pipeInstance = function () {
   var self = this;
 
@@ -212,31 +204,17 @@ GROWJS.prototype.pipeInstance = function () {
   self.readableStream.pipe(this);
 };
 
-
+// On _write, call this.sendData()
 GROWJS.prototype._write = function (chunk, encoding, callback) {
   var self = this;
 
   self.sendData(chunk, callback);
 };
 
-
-/**
- * We are pushing data to a stream as commands are arriving and are leaving
- * to the stream to buffer them. So we simply ignore requests for more data.
- */
+// We are pushing data to a stream as commands are arriving and are leaving
+// to the stream to buffer them. So we simply ignore requests for more data.
 GROWJS.prototype._read = function (size) {
   var self = this;
-};
-
-/**
- * Writes any changes to the grow.json file.
- */
-GROWJS.prototype.writeChangesToGrowFile = function () {
-  var self = this;
-
-  fs.writeFile('./grow.json', JSON.stringify(self.growFile, null, 4), function (error) {
-    if (error) return console.log("Error", error);
-  });
 };
 
 /**
@@ -360,7 +338,7 @@ GROWJS.prototype.startAction = function (action) {
 };
 
 /**
- * Gets the a component by the action it calls.  
+ * Gets the a component by the action it calls.
  */
 GROWJS.prototype.getComponentByActionCall = function (functionName) {
   var self = this;
@@ -400,7 +378,11 @@ GROWJS.prototype.getComponentByActionCall = function (functionName) {
   return actionComponent;
 };
 
-// Returns an object of action metadata based on function name.
+/**
+ * Get action metadata based on the function name
+ * @param {String} functionName  The name of the function you want metadata for.
+ * @returns {Object}
+ */
 GROWJS.prototype.getActionMetaByCall = function (functionName) {
   var self = this;
   var actionsMeta = self.getActionsList();
@@ -411,8 +393,10 @@ GROWJS.prototype.getActionMetaByCall = function (functionName) {
   }
 };
 
-// Returns a list of action objects in the grow file.
-GROWJS.prototype.getActionsList = function () {
+/**
+ * Get list of action objects in growFile.
+ * @returns {List}
+ */GROWJS.prototype.getActionsList = function () {
   var self = this;
   var thing = self.growFile.thing;
   var actionMetaData = [];
@@ -535,6 +519,17 @@ GROWJS.prototype.updateProperty = function (componentName, propertyKey, value, c
       }
     }
   );
+};
+
+/**
+ * Writes any changes to the grow.json file.
+ */
+GROWJS.prototype.writeChangesToGrowFile = function () {
+  var self = this;
+
+  fs.writeFile('./grow.json', JSON.stringify(self.growFile, null, 4), function (error) {
+    if (error) return console.log("Error", error);
+  });
 };
 
 // Export Grow.js as npm module. Be sure to include last in gulpfile concatonation.
