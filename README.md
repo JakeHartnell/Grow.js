@@ -1,5 +1,5 @@
 # Grow.js
-An npm packagle of useful functions for working with the [Grow-IoT app](https://github.com/CommonGarden/Grow-IoT). It works with most devices that can run node, and plays very well with the [Johnny-Five robotics library](http://johnny-five.io/) which supports a large number of devices, including various Raspberry Pis, various arduinos, Beaglebone, the Tessel 2, Chip (the $9 computer), and more!
+An npm packagle for creating and connecting devices to a [Grow-IoT](https://github.com/CommonGarden/Grow-IoT) instance. It works with most devices that can run node, and plays very well with the [Johnny-Five robotics library](http://johnny-five.io/).
 
 Install with:
 
@@ -28,7 +28,7 @@ Here is an example for a simple Ph sensor:
                 "call": "log_ph",
                 "schedule": "every 1 minute",
             }
-        ],
+        ]
     }
 }
 ```
@@ -39,11 +39,17 @@ The grow file is also used for state. In case the device looses internet connnec
 A 'thing' in the Grow-IoT sense is a simple data model for describing an IoT device. Things can have the following properties:
 
 **name**: *(required)* The name of the thing. Must not be shared with any components or actions in the grow.json file.
+
 **owner**: *(required)* The email address of the account the device will be added to when it connects. Note: this is temporary as we're going to working on UI for connecting and confirguring devices over bluetooth or wifi.
+
 **state**: the current state of the thing. For example, 'on' or 'off'.
+
 **type**: The type of thing, eventually we are going to fine tune the UI for common components like temperature sensors, etc.
+
 **description**: A description for the thing.
+
 **actions**: A list of action objects.
+
 **events**: A list of event objects.
 
 The cool thing is that things can contain other things! The `components` property takes list of thing objects.
@@ -97,9 +103,13 @@ Currently, we don't allow components to have a `components` property.
 The `actions` property of a thing or component has it's own structure.
 
 **name**: *(required)* the name of the action. For example, "water plant".
+
 **call**: *(required)* the name of the function to call. This much match what is in the implementation.
+
 **options**: an additional arguments or parameters for the function.
+
 **schedule**: a valid later.js text experession that sets up a recurring action, see the [later.js documentation](http://bunkat.github.io/later/) for more info.
+
 **event**: setting this logs an event when the action is called.
 
 ## Implementation
@@ -178,7 +188,26 @@ npm install
 We use [gulp](http://gulpjs.com/) as our task runner. We use it to run tests, build docs, minify the code, lint things, etc.
 
 `gulp build` concatonates the files in the `src` folder into one grow.js file.
+
 `gulp test` runs tests in the test folder.
+
 `gulp docs` builds the documentation in the docs folder.
 
 
+## Contributing
+
+Please read:
+* [Code of Conduct](https://github.com/CommonGarden/Organization/blob/master/code-of-conduct.md)
+* [Contributing info](https://github.com/CommonGarden/Organization/blob/master/contributing.md)
+
+### Reach out
+Get involved with our community in any way you are interested:
+
+* [Join us on Slack](http://slack.commongarden.org) — Collaboration and real time discussions.
+* [Forum](http://forum.commongarden.org/) — General discussion and support by the Common Garden community.
+
+### Acknowledgements
+Special thanks to @Mitar for contributing the starting point for this library. This work was also inspired by work the [W3C interest group on the internet of things](https://github.com/w3c/web-of-things-framework).
+
+## License
+Grow.js is released under the 2-Clause BSD License, sometimes referred to as the "Simplified BSD License" or the "FreeBSD License".
