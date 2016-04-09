@@ -5,11 +5,6 @@ Install with:
 
     npm install grow.js
 
-## Examples:
-Here are a few example drivers you can take a look at.
-* Simple LED light example: https://github.com/CommonGarden/cg-led-light-arduino
-* Arduino Growkit: https://github.com/CommonGarden/growkit-arduino
-
 ## Describing Devices
 Grow.js uses a `grow.json` file by default to describe itself and its api. This basic data model means that you can connect many different kinds of devices and even build your own. You will need to create a `grow.json` file to connect to a Common Garden Grow app instance (local or in the cloud).
 
