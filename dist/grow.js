@@ -23,13 +23,17 @@ function GROWJS(implementation, growFile, callback) {
     return new GROWJS(implementation, growFile, callback);
   }
 
+  console.log(JSON.stringify(implementation));
+
+  // TODO: maybe rethink this part. If you have to pass in a growfile, we need to make sure 
+  // That things always write to the same place...
   // The grow file is needed to maintain state in case our IoT device looses power or resets.
-  // This part could be better...
-  if (typeof growFile === "string") {
-    self.pathToGrowFile = growFile;
-    self.growFile = require(growFile);
+  if (typeof growFile === "object") {
+    // TODO: validate and check this.
+    self.growFile = growFile;
   } else {
-    self.growFile = require('../../grow.json');
+    // self.growFile = require('../../grow.json');
+    self.growFile = _.clone(implementation || {});
   }
 
   if (!self.growFile) {

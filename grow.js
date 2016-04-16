@@ -35,6 +35,12 @@ function GROWJS(implementation, growFile, callback) {
     return new GROWJS(implementation, growFile, callback);
   }
 
+  console.log(JSON.stringify(implementation));
+
+  // self.growFile = _.clone(implementation || {});
+
+  // TODO: maybe rethink this part. If you have to pass in a growfile, we need to make sure 
+  // That things always write to the same place...
   // The grow file is needed to maintain state in case our IoT device looses power or resets.
   if (typeof growFile === "object") {
     // TODO: validate and check this.
@@ -68,6 +74,10 @@ function GROWJS(implementation, growFile, callback) {
     maintainCollections: false
   }));
 
+  // TODO: this library is doing to many things. Break it up into seperate dependencies?
+  // For example: connecting to the Grow-IoT over DDP could be it's own library?
+
+  // TODO: test to make sure actions are registered even when there is no connection.
   self.connect(function(error, data) {
     if (error) {
       console.log(error);
@@ -97,6 +107,7 @@ function GROWJS(implementation, growFile, callback) {
   });
 }
 
+// TODO: figure out what this does...
 util.inherits(GROWJS, Duplex);
 
 // Connects to the Grow-IoT server over DDP.
@@ -277,8 +288,9 @@ GROWJS.prototype.registerActions = function (implementation) {
 
   // TODO: make sure the implementation matches the growfile.
   // If not, we throw some helpful errors.
+  // VALIDATE THIS SHIT.
 
-  // Bug actions fail to start properly if there are functions not
+  // BUG: actions fail to start properly if there are functions not
   // mentioned in grow file.
 
   // Start actions that have a schedule property.

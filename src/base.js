@@ -35,12 +35,17 @@ function GROWJS(implementation, growFile, callback) {
     return new GROWJS(implementation, growFile, callback);
   }
 
+  console.log(JSON.stringify(implementation));
+
+  // TODO: maybe rethink this part. If you have to pass in a growfile, we need to make sure 
+  // That things always write to the same place...
   // The grow file is needed to maintain state in case our IoT device looses power or resets.
   if (typeof growFile === "object") {
     // TODO: validate and check this.
     self.growFile = growFile;
   } else {
-    self.growFile = require('../../grow.json');
+    // self.growFile = require('../../grow.json');
+    self.growFile = _.clone(implementation || {});
   }
 
   if (!self.growFile) {
@@ -68,6 +73,10 @@ function GROWJS(implementation, growFile, callback) {
     maintainCollections: false
   }));
 
+  // TODO: this library is doing to many things. Break it up into seperate dependencies?
+  // For example: connecting to the Grow-IoT over DDP could be it's own library?
+
+  // TODO: test to make sure actions are registered even when there is no connection.
   self.connect(function(error, data) {
     if (error) {
       console.log(error);
@@ -97,4 +106,5 @@ function GROWJS(implementation, growFile, callback) {
   });
 }
 
+// TODO: figure out what this does...
 util.inherits(GROWJS, Duplex);

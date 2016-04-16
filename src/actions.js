@@ -58,8 +58,9 @@ GROWJS.prototype.registerActions = function (implementation) {
 
   // TODO: make sure the implementation matches the growfile.
   // If not, we throw some helpful errors.
+  // VALIDATE THIS SHIT.
 
-  // Bug actions fail to start properly if there are functions not
+  // BUG: actions fail to start properly if there are functions not
   // mentioned in grow file.
 
   // Start actions that have a schedule property.

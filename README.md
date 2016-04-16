@@ -10,7 +10,7 @@ Grow.js uses a `grow.json` file by default to describe itself and its api. This 
 
 Here is an example for a simple Ph sensor:
 
-```
+```json
 {
     "thing": {
         "name": "Ph sensor",
@@ -53,7 +53,7 @@ The cool thing is that things can contain other things! The `components` propert
 
 For example: 
 
-```
+```json
 "thing": {
         "name": "Plant waterer",
         "description": "Waters a plant and logs moisture data.",
@@ -111,6 +111,7 @@ The `actions` property of a thing or component has it's own structure.
 
 In addition to the `grow.json` file you will need an implementation. **This is where you define the functions that are referenced in the `grow.json` file.** Take for example this simple ph sensor:
 
+```json
     "thing": {
         "name": "Ph sensor",
         "description": "An ph sensor.",
@@ -124,11 +125,11 @@ In addition to the `grow.json` file you will need an implementation. **This is w
             }
         ],
     }
+```
 
 In the above example, in the list of actions, `log_ph` is the call for the action. Grow.js will expect that function to be defined in the implementation.
 
-```
-
+```js
 var GrowInstance = require('grow.js');
 
 var grow = new GrowInstance({
@@ -147,7 +148,7 @@ The host is where the device will be looking for a CommonGarden-IoT instance. By
 #### Connecting over wifi
 Set the `host` to your computer's IP address where the Grow-IoT instance is running. Simply specify it in your grow.json file.
 
-```
+```json
     "host": "YOUR_IP_HERE",
     "thing": {...}
 ```
@@ -157,12 +158,15 @@ Likewise if you are hosting in the cloud, it should be set to the instance IP ad
 #### Connecting over SSL
 SSL is supported though will require a bit more setup. If you are hosting your instance off a computer with a dedicated IP address include the following info in your grow.json file.
 
+```json
     "host": "YOUR_IP_HERE",
     "port": 443,
     "ssl": true,
+```
 
 If you are hosting on a cloud instance, you might need specify the servername. The example below shows you how to connect securely to the instance at [grow.commongarden.org](https://grow.commongarden.org):
 
+```json
     "host": "grow.commongarden.org",
     "tlsOpts": {
         "tls": {
@@ -172,9 +176,10 @@ If you are hosting on a cloud instance, you might need specify the servername. T
     "port": 443,
     "ssl": true,
     "thing": { ... }
+```
 
 # Developing
-```
+```bash
 git clone https://github.com/CommonGarden/grow.js
 cd grow.js
 npm install
