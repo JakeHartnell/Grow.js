@@ -57,7 +57,7 @@ GROWJS.prototype.emitEvent = function (eventMessage, callback) {
 GROWJS.prototype.updateProperty = function (componentName, propertyKey, value, callback) {
   var self = this;
 
-  var thing = self.growFile.thing;
+  var thing = self.config;
 
   // This is implemented on the server as well
 

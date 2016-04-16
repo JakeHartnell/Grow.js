@@ -14,45 +14,36 @@ var later = require('later');
 later.date.localTime();
 
 /**
- * Constructs a new grow instance, connects to the Grow-IoT server specified in the growFile,
-   registers the device with the Server (if it's the first time connecting it saves a new
+ * Constructs a new grow instance, connects to the Grow-IoT server specified in the config
+   (default localhost:3000), registers the device with the Server (if it's the first time connecting it saves a new
    uuid and token), and sets up readable and writable streams.
  * @constructor
- * @param {Object} implementation  An object that contains keys and functions that fullfill
- * the api described in the growFile.
- * @param {Object} growFile  A JSON object which describes the device and it's API
+ * @param {Object} config  
  * @param {Function} callback  An optional callback.
  * @return     A new grow instance.
  */
-function GROWJS(implementation, growFile, callback) {
+function GROWJS(config, callback) {
   var self = this;
 
-  if (!implementation) {
-    throw new Error("Grow.js requires an implementation.");
+  if (!config) {
+    throw new Error("Grow.js requires an config object.");
   }
 
   if (!(self instanceof GROWJS)) {
-    return new GROWJS(implementation, growFile, callback);
+    return new GROWJS(config, callback);
   }
 
-  console.log(JSON.stringify(implementation));
-
-  // TODO: maybe rethink this part. If you have to pass in a growfile, we need to make sure 
-  // That things always write to the same place...
-  // The grow file is needed to maintain state in case our IoT device looses power or resets.
-  if (typeof growFile === "object") {
-    // TODO: validate and check this.
-    self.growFile = growFile;
-  } else {
-    // self.growFile = require('../../grow.json');
-    self.growFile = _.clone(implementation || {});
+  // Check for state.json, if it exists, this device has already been configured.
+  try {
+    // Note, this won't have functions, so we need to add actions...
+    self.config = require('./state.json');
+    console.log("Existing state configuration found.");
+  }
+  catch (error) {
+    self.config = _.clone(config || {});
   }
 
-  if (!self.growFile) {
-    throw new Error("Grow.js requires a grow.json file.");
-  }
-
-  self.options = _.clone(self.growFile || {});
+  self.options = _.clone(self.config || {});
 
   if ((!self.options.uuid || !self.options.token) && (self.options.uuid || self.options.token)) {
     throw new Error("UUID and token are or both required or should be omitted and they will be generated.");
@@ -73,9 +64,6 @@ function GROWJS(implementation, growFile, callback) {
     maintainCollections: false
   }));
 
-  // TODO: this library is doing to many things. Break it up into seperate dependencies?
-  // For example: connecting to the Grow-IoT over DDP could be it's own library?
-
   // TODO: test to make sure actions are registered even when there is no connection.
   self.connect(function(error, data) {
     if (error) {
@@ -89,7 +77,7 @@ function GROWJS(implementation, growFile, callback) {
     // These should register reguardless of whether device connects.
     var actionsRegistered = new RSVP.Promise(function(resolve, reject) {
       try {
-        resolve(self.registerActions(implementation));
+        resolve(self.registerActions(config));
       }
       catch (error) {
         reject(error);
@@ -106,5 +94,4 @@ function GROWJS(implementation, growFile, callback) {
   });
 }
 
-// TODO: figure out what this does...
 util.inherits(GROWJS, Duplex);

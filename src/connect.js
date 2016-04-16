@@ -19,9 +19,11 @@ GROWJS.prototype.connect = function (callback) {
       });
     }
 
+    // console.log(JSON.stringify(self.config));
+
     self.ddpclient.call(
       'Device.register',
-      [self.thing],
+      [self.config],
       function (error, result) {
         if (error) return callback(error);
 
@@ -66,9 +68,9 @@ GROWJS.prototype._afterConnect = function (callback, result) {
 
   // Now check to see if we have a stored UUID.
   // If no UUID is specified, store a new UUID.
-  if (_.isUndefined(self.growFile.uuid) || _.isUndefined(self.growFile.token)) {
-    self.growFile.uuid = result.uuid;
-    self.growFile.token = result.token;
+  if (_.isUndefined(self.config.uuid) || _.isUndefined(self.config.token)) {
+    self.config.uuid = result.uuid;
+    self.config.token = result.token;
 
     self.writeChangesToGrowFile();
   }
