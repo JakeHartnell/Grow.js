@@ -35,8 +35,9 @@ function GROWJS(config, callback) {
 
   // Check for state.json, if it exists, this device has already been configured.
   try {
-    // Note, this won't have functions, so we need to add actions...
-    self.config = require('./state.json');
+    // NOTE: we need the methods defined in the config, so we extend the object
+    // in state.json.
+    self.config = _.extend(require('./state.json'), config);
     console.log("Existing state configuration found.");
   }
   catch (error) {
