@@ -100,10 +100,11 @@ GROWJS.prototype.startScheduledActions = function () {
   }
 
   for (var action in self.actions) {
-    var meta = self.getActionByID(action);
+    var actionId = self.actions[action].id
+    var meta = self.getActionByID(actionId);
 
     if (!_.isUndefined(meta)) {
-      self.startAction(action);
+      self.startAction(actionId);
     }
   }
 };

@@ -38,7 +38,7 @@ function GROWJS(config, callback) {
     // Note, this won't have functions, so we need to add actions...
     self.config = require('./state.json');
     console.log("Existing state configuration found.");
-  } 
+  }
   catch (error) {
     self.config = _.clone(config || {});
   }
@@ -318,10 +318,11 @@ GROWJS.prototype.startScheduledActions = function () {
   }
 
   for (var action in self.actions) {
-    var meta = self.getActionByID(action);
+    var actionId = self.actions[action].id
+    var meta = self.getActionByID(actionId);
 
     if (!_.isUndefined(meta)) {
-      self.startAction(action);
+      self.startAction(actionId);
     }
   }
 };
