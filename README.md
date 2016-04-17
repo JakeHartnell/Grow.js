@@ -1,37 +1,56 @@
 # Grow.js
+### The free, extensible, document-based, interoperable IoT framework
 An npm packagle for creating and connecting devices to a [Grow-IoT](https://github.com/CommonGarden/Grow-IoT) instance. It works with most devices that can run node, and plays very well with the [Johnny-Five robotics library](http://johnny-five.io/).
 
 Install with:
 
-    npm install grow.js
-
-## Describing Devices
-Grow.js uses a `grow.json` file by default to describe itself and its api. This basic data model means that you can connect many different kinds of devices and even build your own. You will need to create a `grow.json` file to connect to a Common Garden Grow app instance (local or in the cloud).
-
-Here is an example for a simple Ph sensor:
-
-```json
-{
-    "thing": {
-        "name": "Ph sensor",
-        "description": "An ph sensor.",
-        "type": "ph",
-        "owner": "jake@commongarden.org",
-        "actions": [
-            {
-                "name": "Log ph data",
-                "call": "log_ph",
-                "schedule": "every 1 minute",
-            }
-        ]
-    }
-}
+```bash
+npm install grow.js
 ```
 
-The grow file is also used for state. In case the device looses internet connnection or power and needs to reset, the grow file contains the instructions such as schedules, where the device is supposed to connect to.
+You will need an instance of Grow-IoT running. Luckily it's pretty easy to get started. Install Meteor if you haven't already:
 
-### The 'thing' object
-A 'thing' in the Grow-IoT sense is a simple data model for describing an IoT device. Things can have the following properties:
+```bash
+git clone https://github.com/CommonGarden/Grow-IoT
+cd Grow-IoT
+meteor
+```
+
+# Example
+Using grow.js is as simple as passing in a configuration object to the constructor. You can optionally include a callback function.
+
+```javascript
+// Import the grow.js library.
+var GrowInstance = require('grow.js');
+
+// Create a new grow instance.
+var grow = new GrowInstance({
+    "name": "Widget",
+    "version": "0.1.1",
+    "description": "A basic device example.",
+    "owner": "jake@commongarden.org",
+    "actions": [
+        {
+            "name": "Log widget",
+            "id": "log_widget",
+            "schedule": "every 5 seconds",
+            "function": function () {
+                // This is the implementation of the action.
+                // Device specific code can go here, but for
+                // the sake of an easy to try example:
+                console.log("widget");
+            }
+        }
+    ]
+}, function() {
+    // Callback. Make sure light is off on start.
+    grow.callAction("log_widget")
+});
+```
+
+From this we're able to generate a bit of UI using meteor-iot: [TODO: insert image]
+
+The following properties are supported:
 
 **name**: *(required)* The name of the thing. Must not be shared with any components or actions in the grow.json file.
 
@@ -47,50 +66,11 @@ A 'thing' in the Grow-IoT sense is a simple data model for describing an IoT dev
 
 **events**: A list of event objects.
 
+**template**: EXPERIMENTAL -- A web component to use as a template for the ui.
+
 The cool thing is that things can contain other things! The `components` property takes list of thing objects.
 
 **components**: A list of thing objects.
-
-For example: 
-
-```json
-"thing": {
-        "name": "Plant waterer",
-        "description": "Waters a plant and logs moisture data.",
-        "components": [
-            {
-                "name": "Moisture sensor",
-                "type": "moisture",
-                "template": "sensor",
-                "actions": [
-                    {
-                        "name": "Log moisture data",
-                        "call": "log_moisture",
-                        "sechedule": "every 1 second"
-                    }
-                ]
-            },
-            {
-                "name": "Water pump",
-                "type": "water-pump",
-                "class": "actuator",
-                "state": "off",
-                "actions": [
-                    {
-                        "name": "Water plant",
-                        "call": "waterPlant",
-                        "options": {
-                            "duration": "20 seconds"
-                        },
-                        "schedule": "at 10:15am",
-                        "event": "Watered plant for 20 seconds"
-                    }
-                ]
-            }
-        ]
-    }
-}
-```
 
 Currently, we don't allow components to have a `components` property.
 
@@ -107,38 +87,9 @@ The `actions` property of a thing or component has it's own structure.
 
 **event**: setting this logs an event when the action is called.
 
-## Implementation
+### state.json
 
-In addition to the `grow.json` file you will need an implementation. **This is where you define the functions that are referenced in the `grow.json` file.** Take for example this simple ph sensor:
-
-```json
-    "thing": {
-        "name": "Ph sensor",
-        "description": "An ph sensor.",
-        "type": "ph",
-        "owner": "jake@commongarden.org",
-        "actions": [
-            {
-                "name": "Log ph data",
-                "call": "log_ph",
-                "schedule": "every 1 minute",
-            }
-        ],
-    }
-```
-
-In the above example, in the list of actions, `log_ph` is the call for the action. Grow.js will expect that function to be defined in the implementation.
-
-```js
-var GrowInstance = require('grow.js');
-
-var grow = new GrowInstance({
-  log_ph: function () {
-    // Code to get ph and log it
-  }
-});
-
-```
+The state.json file is also used for state. In case the device looses internet connnection or power and needs to reset, the grow file contains the instructions such as schedules, where the device is supposed to connect to.
 
 Check out the driver examples for more code.
 
@@ -156,7 +107,7 @@ Set the `host` to your computer's IP address where the Grow-IoT instance is runn
 Likewise if you are hosting in the cloud, it should be set to the instance IP address, you can also override the default port by specifiying the `port` option.
 
 #### Connecting over SSL
-SSL is supported though will require a bit more setup. If you are hosting your instance off a computer with a dedicated IP address include the following info in your grow.json file.
+SSL is supported though will require a bit more setup. If you are hosting your instance off a computer with a dedicated IP address include the following info in your configuration object.
 
 ```json
     "host": "YOUR_IP_HERE",

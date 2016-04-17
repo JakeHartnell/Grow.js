@@ -1,9 +1,20 @@
 var GrowInstance = require('.././grow.js');
 
-// I think this is a simpler model to understand because the 
-// implementation and document are blended.
+/* 
+   * Add the following options to the configuration objecct if you 
+   * want to connect to the Grow-IoT Alpha instance:
 
-// Connects by default to localhost:3000
+   "host": "grow.commongarden.org",
+   "tlsOpts": {
+        "tls": {
+            "servername": "galaxy.meteor.com"
+        }
+    },
+    "port": 443,
+    "ssl": true,
+
+    * Grow.js connects to localhost:3000 using the ddp protocol by default.
+*/
 var grow = new GrowInstance({
     "name": "Light and light sensor",
     "version": "0.1.1",
