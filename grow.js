@@ -14,40 +14,37 @@ var later = require('later');
 later.date.localTime();
 
 /**
- * Constructs a new grow instance, connects to the Grow-IoT server specified in the growFile,
-   registers the device with the Server (if it's the first time connecting it saves a new
+ * Constructs a new grow instance, connects to the Grow-IoT server specified in the config
+   (default localhost:3000), registers the device with the Server (if it's the first time connecting it saves a new
    uuid and token), and sets up readable and writable streams.
  * @constructor
- * @param {Object} implementation  An object that contains keys and functions that fullfill
- * the api described in the growFile.
- * @param {Object} growFile  A JSON object which describes the device and it's API
+ * @param {Object} config  
  * @param {Function} callback  An optional callback.
  * @return     A new grow instance.
  */
-function GROWJS(implementation, growFile, callback) {
+function GROWJS(config, callback) {
   var self = this;
 
-  if (!implementation) {
-    throw new Error("Grow.js requires an implementation.");
+  if (!config) {
+    throw new Error("Grow.js requires an config object.");
   }
 
   if (!(self instanceof GROWJS)) {
-    return new GROWJS(implementation, growFile, callback);
+    return new GROWJS(config, callback);
   }
 
-  // The grow file is needed to maintain state in case our IoT device looses power or resets.
-  if (typeof growFile === "object") {
-    // TODO: validate and check this.
-    self.growFile = growFile;
-  } else {
-    self.growFile = require('../../grow.json');
+  // Check for state.json, if it exists, this device has already been configured.
+  try {
+    // self.config = _.clone(config || {});
+    self.config = _.extend(require('./state.json'), config);
+    console.log("Existing state configuration found.");
+    console.log(self.config);
+  }
+  catch (error) {
+    self.config = _.clone(config || {});
   }
 
-  if (!self.growFile) {
-    throw new Error("Grow.js requires a grow.json file.");
-  }
-
-  self.options = _.clone(self.growFile || {});
+  self.options = _.clone(self.config || {});
 
   if ((!self.options.uuid || !self.options.token) && (self.options.uuid || self.options.token)) {
     throw new Error("UUID and token are or both required or should be omitted and they will be generated.");
@@ -68,6 +65,7 @@ function GROWJS(implementation, growFile, callback) {
     maintainCollections: false
   }));
 
+  // TODO: test to make sure actions are registered even when there is no connection.
   self.connect(function(error, data) {
     if (error) {
       console.log(error);
@@ -80,7 +78,7 @@ function GROWJS(implementation, growFile, callback) {
     // These should register reguardless of whether device connects.
     var actionsRegistered = new RSVP.Promise(function(resolve, reject) {
       try {
-        resolve(self.registerActions(implementation));
+        resolve(self.registerActions(config));
       }
       catch (error) {
         reject(error);
@@ -120,9 +118,11 @@ GROWJS.prototype.connect = function (callback) {
       });
     }
 
+    // console.log(JSON.stringify(self.config));
+
     self.ddpclient.call(
       'Device.register',
-      [self.thing],
+      [self.config],
       function (error, result) {
         if (error) return callback(error);
 
@@ -167,9 +167,9 @@ GROWJS.prototype._afterConnect = function (callback, result) {
 
   // Now check to see if we have a stored UUID.
   // If no UUID is specified, store a new UUID.
-  if (_.isUndefined(self.growFile.uuid) || _.isUndefined(self.growFile.token)) {
-    self.growFile.uuid = result.uuid;
-    self.growFile.token = result.token;
+  if (_.isUndefined(self.config.uuid) || _.isUndefined(self.config.token)) {
+    self.config.uuid = result.uuid;
+    self.config.token = result.token;
 
     self.writeChangesToGrowFile();
   }
@@ -221,48 +221,48 @@ GROWJS.prototype._read = function (size) {
  * Calls a registered action, emits event if the the action has an 'event'
  * property defined. Updates the state if the action has an 'updateState'
  * property specified.
- * @param      {String}  functionName The name of the function to call.
+ * @param      {String}  actionId The name of the function to call.
  * @param      {Object}  options Any options to call with the function.
  */
-GROWJS.prototype.callAction = function (functionName, options) {
+GROWJS.prototype.callAction = function (actionId, options) {
   var self = this;
 
-  var meta = self.getActionMetaByCall(functionName);
+  var action = self.getActionByID(actionId);
 
   // If the actions "event" property is set to null or is undefined,
   // No event is logged. This is used for sensors which are posting data
   // and events would be redundant.
-  if (meta.event === null || _.isUndefined(meta.event)) {
+  if (action.event === null || _.isUndefined(action.event)) {
     if (options) {
-      self.actions[functionName](options);
+      action.function(options);
     }
     else {
-      self.actions[functionName]();
+      action.function();
     }
   }
   // Otherwise we log an event.
   else {
     if (options) {
-      self.actions[functionName](options);
+      action.function(options);
       self.emitEvent({
-        name: meta.name,
-        message: meta.event,
+        name: action.name,
+        message: action.event,
         options: options
       });
     }
     else {
-      self.actions[functionName]();
+      action.function();
       self.emitEvent({
-        name: meta.name,
-        message: meta.event
+        name: action.name,
+        message: action.event
       });
     }
   }
 
-  var component = self.getComponentByActionCall(functionName);
+  var component = self.getComponentByActionID(actionId);
 
-  if (meta.updateState) {
-    self.updateProperty(component.name, "state", meta.updateState);
+  if (action.updateState) {
+    self.updateProperty(component.name, "state", action.updateState);
   }
 };
 
@@ -271,14 +271,18 @@ GROWJS.prototype.callAction = function (functionName, options) {
  * the writeable stream to listen for commands.
  * @param {Object}  implementation  
  */
-GROWJS.prototype.registerActions = function (implementation) {
+GROWJS.prototype.registerActions = function () {
   var self = this;
-  self.actions = _.clone(implementation || {});
+  // This needs to change...
+  // self.actions = _.clone(implementation || {});
+
+  self.actions = self.getActionsList();
 
   // TODO: make sure the implementation matches the growfile.
   // If not, we throw some helpful errors.
+  // VALIDATE THIS SHIT.
 
-  // Bug actions fail to start properly if there are functions not
+  // BUG: actions fail to start properly if there are functions not
   // mentioned in grow file.
 
   // Start actions that have a schedule property.
@@ -286,13 +290,15 @@ GROWJS.prototype.registerActions = function (implementation) {
 
   // Sets up listening for actions on the writeable stream.
   self.writableStream._write = function (command, encoding, callback) {
+    // console.log(command);
     for (var action in self.actions) {
-      if (command.type === action) {
+      var actionId = self.actions[action].id;
+      if (command.type === actionId) {
         if (command.options) {
-          self.callAction(action, command.options);
+          self.callAction(actionId, command.options);
 
         } else {
-          self.callAction(action);
+          self.callAction(actionId);
         }
       }
     }
@@ -313,10 +319,11 @@ GROWJS.prototype.startScheduledActions = function () {
   }
 
   for (var action in self.actions) {
-    var meta = self.getActionMetaByCall(action);
+    var actionId = self.actions[action].id
+    var meta = self.getActionByID(actionId);
 
     if (!_.isUndefined(meta)) {
-      self.startAction(action);
+      self.startAction(actionId);
     }
   }
 };
@@ -328,7 +335,7 @@ GROWJS.prototype.startScheduledActions = function () {
  */
 GROWJS.prototype.startAction = function (action) {
   var self = this;
-  var meta = self.getActionMetaByCall(action);
+  var meta = self.getActionByID(action);
   if (!_.isUndefined(meta.schedule)) {
     var schedule = later.parse.text(meta.schedule);
     var scheduledAction = later.setInterval(function() {self.callAction(action);}, schedule);
@@ -340,9 +347,9 @@ GROWJS.prototype.startAction = function (action) {
 /**
  * Gets the a component by the action it calls.
  */
-GROWJS.prototype.getComponentByActionCall = function (functionName) {
+GROWJS.prototype.getComponentByActionID = function (actionId) {
   var self = this;
-  var thing = self.growFile.thing;
+  var thing = self.config;
 
   var actionComponent = {};
 
@@ -355,8 +362,8 @@ GROWJS.prototype.getComponentByActionCall = function (functionName) {
           if (property === "actions") {
             // Loop through actions list
             for (var action in component[property]) {
-              // Check the action call to see if it is the same, return component
-              if (component[property][action].call === functionName) {
+              // Check the action id to see if it is the same, return component
+              if (component[property][action].id === actionId) {
                 actionComponent = component;
               }
             }
@@ -368,7 +375,7 @@ GROWJS.prototype.getComponentByActionCall = function (functionName) {
     // The top level thing object can also have actions, we check that here.
     if (key === "actions") {
       for (var actionItem in thing[key]) {
-        if (thing[key][actionItem].call === functionName) {
+        if (thing[key][actionItem].id === actionId) {
           actionComponent = thing;
         }
       }
@@ -379,26 +386,27 @@ GROWJS.prototype.getComponentByActionCall = function (functionName) {
 };
 
 /**
- * Get action metadata based on the function name
- * @param {String} functionName  The name of the function you want metadata for.
+ * Get action metadata based on the action id
+ * @param {String} actionId  The id of the action you want metadata for.
  * @returns {Object}
  */
-GROWJS.prototype.getActionMetaByCall = function (functionName) {
+GROWJS.prototype.getActionByID = function (actionId) {
   var self = this;
   var actionsMeta = self.getActionsList();
   for (var i = actionsMeta.length - 1; i >= 0; i--) {
-    if (actionsMeta[i].call === functionName) {
+    if (actionsMeta[i].id === actionId) {
       return actionsMeta[i];
     }
   }
 };
 
 /**
- * Get list of action objects in growFile.
+ * Get list of action objects in config.
  * @returns {List}
- */GROWJS.prototype.getActionsList = function () {
+ */
+GROWJS.prototype.getActionsList = function () {
   var self = this;
-  var thing = self.growFile.thing;
+  var thing = self.config;
   var actionMetaData = [];
 
   for (var key in thing) {
@@ -488,7 +496,7 @@ GROWJS.prototype.emitEvent = function (eventMessage, callback) {
 GROWJS.prototype.updateProperty = function (componentName, propertyKey, value, callback) {
   var self = this;
 
-  var thing = self.growFile.thing;
+  var thing = self.config;
 
   // This is implemented on the server as well
 
@@ -522,12 +530,12 @@ GROWJS.prototype.updateProperty = function (componentName, propertyKey, value, c
 };
 
 /**
- * Writes any changes to the grow.json file.
+ * Writes any changes to the state.json file.
  */
 GROWJS.prototype.writeChangesToGrowFile = function () {
   var self = this;
 
-  fs.writeFile('./grow.json', JSON.stringify(self.growFile, null, 4), function (error) {
+  fs.writeFile('./state.json', JSON.stringify(self.config, null, 4), function (error) {
     if (error) return console.log("Error", error);
   });
 };
