@@ -33,7 +33,6 @@ var grow = new GrowInstance({
         {
             "name": "Log widget",
             "id": "log_widget",
-            "schedule": "every 5 seconds",
             "function": function () {
                 // This is the implementation of the action.
                 // Device specific code can go here, but for
@@ -43,7 +42,7 @@ var grow = new GrowInstance({
         }
     ]
 }, function() {
-    // Callback. Make sure light is off on start.
+    // Optional Callback. Calls log_widget function on start.
     grow.callAction("log_widget")
 });
 ```
@@ -52,9 +51,11 @@ From this we're able to generate a bit of UI using meteor-iot: [TODO: insert ima
 
 The following properties are supported:
 
-**name**: *(required)* The name of the thing. Must not be shared with any components or actions in the grow.json file.
+**name**: *(required)* The name of the thing.
 
-**owner**: *(required)* The email address of the account the device will be added to when it connects. Note: this is temporary as we're going to working on UI for connecting and confirguring devices over bluetooth or wifi.
+**id**: *(required)* Must not be shared with any components or actions in the thing.json file. Maybe this could be auto generated?
+
+**owner**: *(currently required)* Currently the email address of the account the device will be added to when it connects. Public devices will not have an owner... but that's a work in progress.
 
 **state**: the current state of the thing. For example, 'on' or 'off'.
 
@@ -79,13 +80,18 @@ The `actions` property of a thing or component has it's own structure.
 
 **name**: *(required)* the name of the action. For example, "water plant".
 
-**call**: *(required)* the name of the function to call. This much match what is in the implementation.
+**id**: *(required)* the name of the function to call. This much match what is in the implementation.
 
 **options**: an additional arguments or parameters for the function.
 
 **schedule**: a valid later.js text experession that sets up a recurring action, see the [later.js documentation](http://bunkat.github.io/later/) for more info.
 
-**event**: setting this logs an event when the action is called.
+**event**: setting this emits an event when the action is called.
+
+**function**: the actual implmentation of the action, this code is run when the action is called, and is not exchanged in any communications.
+
+### Events
+Coming soon: *a way to subscribe to device events.*
 
 ### state.json
 
