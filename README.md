@@ -25,29 +25,39 @@ var GrowInstance = require('grow.js');
 
 // Create a new grow instance.
 var grow = new GrowInstance({
-    "name": "Widget",
-    "version": "0.1.1",
-    "description": "A basic device example.",
-    "owner": "jake@commongarden.org",
+    "name": "Light",
+    "desription": "An LED light with a basic on/off api.",
+    "state": "off",
     "actions": [
         {
-            "name": "Log widget",
-            "id": "log_widget",
+            "name": "On",
+            "id": "turn_light_on",
+            "updateState": "on",
+            "schedule": "at 9:00am",
+            "event": "Light turned on",
             "function": function () {
-                // This is the implementation of the action.
-                // Device specific code can go here, but for
-                // the sake of an easy to try example:
-                console.log("widget");
+                console.log("Light on.");
+            }
+        },
+        {
+            "name": "off",
+            "id": "turn_light_off",
+            "updateState": "off",
+            "schedule": "at 8:30pm",
+            "event": "Light turned off",
+            "function": function () {
+                console.log("Light off.");
             }
         }
     ]
-}, function() {
-    // Optional Callback. Calls log_widget function on start.
-    grow.callAction("log_widget")
+}, function start () {
+    // Optional Callback. Calls turn_light_off function on start.
+    grow.callAction("turn_light_off")
 });
 ```
 
 From this we're able to generate a bit of UI using meteor-iot: [TODO: insert image]
+
 
 The following properties are supported:
 
