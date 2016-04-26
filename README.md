@@ -1,6 +1,7 @@
-# Grow.js
-### The free, extensible, document-based, interoperable IoT framework
-An npm packagle for creating and connecting devices to a [Grow-IoT](https://github.com/CommonGarden/Grow-IoT) instance. It works with most devices that can run node, and plays very well with the [Johnny-Five robotics library](http://johnny-five.io/).
+# Getting started
+Grow.js is an npm packagle for creating and connecting devices to a [Grow-IoT](https://github.com/CommonGarden/Grow-IoT) instance. It is loosely based off of some of the work happening on the W3C web-of-things community group. [Full grow.js documentation can be found here](http://commongarden.github.io/grow.js/).
+
+You will need a microcontroller (such as arduino or raspberry pi). Grow.js works with most devices that can run node, and plays very well with the [Johnny-Five robotics library](http://johnny-five.io/), which has plugins for [a large number of devices](http://johnny-five.io/#platform-support).
 
 Install with:
 
@@ -8,15 +9,12 @@ Install with:
 npm install grow.js
 ```
 
-You will need an instance of Grow-IoT running. Luckily it's pretty easy to get started. Install Meteor if you haven't already:
+You can connect to our Grow-IoT alpha instance on https://grow.commongarden.org, or see the [Grow-IoT repo](https://github.com/CommonGarden/Grow-IoT) to easily start your own private IoT network. 
 
-```bash
-git clone https://github.com/CommonGarden/Grow-IoT
-cd Grow-IoT
-meteor
-```
+## Wiring LED light example
+For this example we will switch on an LED connected to an arduino like so:
+![Arduino wired with LED light](https://www.google.com/url?sa=i&rct=j&q=&esrc=s&source=images&cd=&cad=rja&uact=8&ved=0ahUKEwif68vOhK3MAhUTzGMKHYVDBQIQjRwIBw&url=https%3A%2F%2Fwww.safaribooksonline.com%2Fblog%2F2013%2F07%2F16%2Fjavascript-powered-arduino-with-johnny-five%2F&bvm=bv.120552933,d.cGc&psig=AFQjCNFDhgoZjnlZkQve5ppkzsCpmW3gGg&ust=1461785262945630)
 
-# Example
 Using grow.js is as simple as passing in a configuration object to the constructor. You can optionally include a callback function.
 
 ```javascript
@@ -57,7 +55,6 @@ var grow = new GrowInstance({
 ```
 
 From this we're able to generate a bit of UI using meteor-iot: [TODO: insert image]
-
 
 The following properties are supported:
 
