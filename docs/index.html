@@ -54,7 +54,7 @@
   <body data-spy="scroll" data-target=".scrollspy">
     <div class="navbar navbar-inverse navbar-fixed-top">
       <div class="navbar-inner">
-        <div class="container"><a class="brand">Doxx</a>
+        <div class="container"><a href="http://commongarden.org" class="brand">Common Garden</a>
           <div class="nav-collapse collapse">
             <ul class="nav pull-right sponsored"></ul>
           </div>
@@ -80,42 +80,74 @@
           </div>
         </div>
         <div class="span9">
-          <section id="Main"><h1>Grow.js</h1>
-<h3>The free, extensible, document-based, interoperable IoT framework</h3>
-<p>An npm packagle for creating and connecting devices to a <a href="https://github.com/CommonGarden/Grow-IoT">Grow-IoT</a> instance. It works with most devices that can run node, and plays very well with the <a href="http://johnny-five.io/">Johnny-Five robotics library</a>.</p><p>Install with:</p><pre><code class="lang-bash">npm install grow.js
+          <section id="Main"><h1>Getting started</h1>
+<p>Grow.js is an npm packagle for creating and connecting devices to a <a href="https://github.com/CommonGarden/Grow-IoT">Grow-IoT</a> instance. It is loosely based off of some of the work happening on the W3C web-of-things community group. <a href="http://commongarden.github.io/grow.js/">Full grow.js documentation can be found here</a>.</p><p>You will need a microcontroller (such as arduino or raspberry pi). Grow.js works with most devices that can run node, and plays very well with the <a href="http://johnny-five.io/">Johnny-Five robotics library</a>, which has plugins for <a href="http://johnny-five.io/#platform-support">a large number of devices</a>.</p><p>Install with:</p><pre><code class="lang-bash">npm install grow.js
 </code></pre>
-<p>You will need an instance of Grow-IoT running. Luckily it&#39;s pretty easy to get started. Install Meteor if you haven&#39;t already:</p><pre><code class="lang-bash">git clone https://github.com/CommonGarden/Grow-IoT
-cd Grow-IoT
-meteor
-</code></pre>
-<h1>Example</h1>
-<p>Using grow.js is as simple as passing in a configuration object to the constructor. You can optionally include a callback function.</p><pre><code class="lang-javascript">// Import the grow.js library.
+<p>You can connect to our Grow-IoT alpha instance on <a href="https://grow.commongarden.org">https://grow.commongarden.org</a>, or see the <a href="https://github.com/CommonGarden/Grow-IoT">Grow-IoT repo</a> to easily start your own IoT network locally or hosted on <a href="https://galaxy.meteor.com">Meteor Galaxy</a>.</p><h1>Example</h1>
+<p>Using grow.js is as simple as passing in a configuration object to the constructor.</p><p>Create a file called <code>example.js</code>. And insert the following:</p><pre><code class="lang-javascript">// Import the grow.js library.
 var GrowInstance = require(&#39;grow.js&#39;);
 
 // Create a new grow instance.
 var grow = new GrowInstance({
-    &quot;name&quot;: &quot;Widget&quot;,
-    &quot;version&quot;: &quot;0.1.1&quot;,
-    &quot;description&quot;: &quot;A basic device example.&quot;,
-    &quot;owner&quot;: &quot;jake@commongarden.org&quot;,
-    &quot;actions&quot;: [
+    &quot;host&quot;: &quot;grow.commongarden.org&quot;, // Where the device will be connecting to.
+    // The following are connection options for connecting to a meteor galaxy instance.
+    &quot;tlsOpts&quot;: {
+        &quot;tls&quot;: {
+            &quot;servername&quot;: &quot;galaxy.meteor.com&quot;
+        }
+    },
+    &quot;port&quot;: 443, // The port to connect to 
+    &quot;ssl&quot;: true, // Set to true when connecting over SSL.
+    &quot;name&quot;: &quot;Light&quot;, // The display name for the thing.
+    &quot;desription&quot;: &quot;An LED light with a basic on/off api.&quot;,
+    &quot;state&quot;: &quot;off&quot;, // The current state of the thing.
+    &quot;owner&quot;: &quot;youremailhere@example.com&quot;, // The email of the account you want this device to be added to.
+    &quot;actions&quot;: [ // A list of action objects
         {
-            &quot;name&quot;: &quot;Log widget&quot;,
-            &quot;id&quot;: &quot;log_widget&quot;,
+            &quot;name&quot;: &quot;On&quot;, // Display name for the action
+            &quot;description&quot;: &quot;Turns the light on.&quot;, // Optional description
+            &quot;id&quot;: &quot;turn_light_on&quot;, // A unique id
+            &quot;updateState&quot;: &quot;on&quot;, // Updates state on function call
+            &quot;schedule&quot;: &quot;at 9:00am&quot;, // Optional scheduling using later.js
+            &quot;event&quot;: &quot;Light turned on&quot;, // Optional event to emit when called.
             &quot;function&quot;: function () {
-                // This is the implementation of the action.
-                // Device specific code can go here, but for
-                // the sake of an easy to try example:
-                console.log(&quot;widget&quot;);
+                // The implementation of the action.
+                // Here we simply log &quot;Light on.&quot; See links to hardware
+                // examples below to begin using microcontrollers
+                console.log(&quot;Light on.&quot;); 
+            }
+        },
+        {
+            &quot;name&quot;: &quot;off&quot;,
+            &quot;id&quot;: &quot;turn_light_off&quot;,
+            &quot;updateState&quot;: &quot;off&quot;,
+            &quot;schedule&quot;: &quot;at 8:30pm&quot;,
+            &quot;event&quot;: &quot;Light turned off&quot;,
+            &quot;function&quot;: function () {
+                console.log(&quot;Light off.&quot;);
             }
         }
     ]
-}, function() {
-    // Optional Callback. Calls log_widget function on start.
-    grow.callAction(&quot;log_widget&quot;)
+}, function start () {
+    // Optional Callback. Calls turn_light_off function on start.
+    grow.callAction(&quot;turn_light_off&quot;);
 });
 </code></pre>
-<p>From this we&#39;re able to generate a bit of UI using meteor-iot: [TODO: insert image]</p><p>The following properties are supported:</p><p><strong>name</strong>: <em>(required)</em> The name of the thing.</p><p><strong>id</strong>: <em>(required)</em> Must not be shared with any components or actions in the thing.json file. Maybe this could be auto generated?</p><p><strong>owner</strong>: <em>(currently required)</em> Currently the email address of the account the device will be added to when it connects. Public devices will not have an owner... but that&#39;s a work in progress.</p><p><strong>state</strong>: the current state of the thing. For example, &#39;on&#39; or &#39;off&#39;.</p><p><strong>type</strong>: The type of thing, eventually we are going to fine tune the UI for common components like temperature sensors, etc.</p><p><strong>description</strong>: A description for the thing.</p><p><strong>actions</strong>: A list of action objects.</p><p><strong>events</strong>: A list of event objects.</p><p><strong>template</strong>: EXPERIMENTAL -- A web component to use as a template for the ui.</p><p>The cool thing is that things can contain other things! The <code>components</code> property takes list of thing objects.</p><p><strong>components</strong>: A list of thing objects.</p><p>Currently, we don&#39;t allow components to have a <code>components</code> property.</p><h3>Actions</h3>
+<p>Run the new <code>example.js</code> file with:</p><pre><code class="lang-bash">node example.js
+</code></pre>
+<p>This does a couple of things:</p><ol>
+<li>Connects to the host over the ddp protocol.</li>
+<li>Registers the device with host server. The information in config object is used to create a UI and API.</li>
+<li>Sets up streams and listens for commands.</li>
+</ol>
+<p>On the grow app the device looks like so:</p><h2>Using the Grow App.</h2>
+<ol>
+<li><p>Create an acount by visiting <a href="https://grow.commongarden.org">https://grow.commongarden.org</a> or <a href="http://localhost:3000">http://localhost:3000</a> if running <a href="">Grow-IoT</a> locally.</p></li>
+<li></li>
+</ol>
+<p>From this we&#39;re able to generate a bit of UI using meteor-iot: [TODO: insert image]</p><h1>Hardware examples</h1>
+<p>You will need a microcontroller (such as arduino or raspberry pi). Grow.js works with most devices that can run node, and plays very well with the <a href="http://johnny-five.io/">Johnny-Five robotics library</a>, which has plugins for <a href="http://johnny-five.io/#platform-support">a large number of devices</a>. Note, with boards like the Tessel 2, Johnny-five is not required.</p><h2>The configuration object</h2>
+<p>The following properties are supported:</p><p><strong>name</strong>: <em>(required)</em> The name of the thing.</p><p><strong>id</strong>: <em>(required)</em> Must not be shared with any components or actions in the thing.json file. Maybe this could be auto generated?</p><p><strong>owner</strong>: <em>(currently required)</em> Currently the email address of the account the device will be added to when it connects. Public devices will not have an owner... but that&#39;s a work in progress.</p><p><strong>state</strong>: the current state of the thing. For example, &#39;on&#39; or &#39;off&#39;.</p><p><strong>type</strong>: The type of thing, eventually we are going to fine tune the UI for common components like temperature sensors, etc.</p><p><strong>description</strong>: A description for the thing.</p><p><strong>actions</strong>: A list of action objects.</p><p><strong>events</strong>: A list of event objects.</p><p><strong>template</strong>: EXPERIMENTAL -- A web component to use as a template for the ui.</p><p>The cool thing is that things can contain other things! The <code>components</code> property takes list of thing objects.</p><p><strong>components</strong>: A list of thing objects.</p><p>Currently, we don&#39;t allow components to have a <code>components</code> property.</p><h3>Actions</h3>
 <p>The <code>actions</code> property of a thing or component has it&#39;s own structure.</p><p><strong>name</strong>: <em>(required)</em> the name of the action. For example, &quot;water plant&quot;.</p><p><strong>id</strong>: <em>(required)</em> the name of the function to call. This much match what is in the implementation.</p><p><strong>options</strong>: an additional arguments or parameters for the function.</p><p><strong>schedule</strong>: a valid later.js text experession that sets up a recurring action, see the <a href="http://bunkat.github.io/later/">later.js documentation</a> for more info.</p><p><strong>event</strong>: setting this emits an event when the action is called.</p><p><strong>function</strong>: the actual implmentation of the action, this code is run when the action is called, and is not exchanged in any communications.</p><h3>Events</h3>
 <p>Coming soon: <em>a way to subscribe to device events.</em></p><h3>state.json</h3>
 <p>The state.json file is also used for state. In case the device looses internet connnection or power and needs to reset, the grow file contains the instructions such as schedules, where the device is supposed to connect to.</p><p>Check out the driver examples for more code.</p><h3>Host / Port</h3>
