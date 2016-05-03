@@ -53,17 +53,7 @@ GROWJS.prototype.callAction = function (actionId, options) {
  */
 GROWJS.prototype.registerActions = function () {
   var self = this;
-  // This needs to change...
-  // self.actions = _.clone(implementation || {});
-
   self.actions = self.getActionsList();
-
-  // TODO: make sure the implementation matches the growfile.
-  // If not, we throw some helpful errors.
-  // VALIDATE THIS SHIT.
-
-  // BUG: actions fail to start properly if there are functions not
-  // mentioned in grow file.
 
   // Start actions that have a schedule property.
   self.startScheduledActions();
@@ -193,7 +183,7 @@ GROWJS.prototype.getActionsList = function () {
     // Check top level thing model for actions.
     if (key === "actions") {
       for (var action in thing[key]) {
-        actionMetaData.push(action);
+        actionMetaData.push(thing[key][action]);
       }
     }
 

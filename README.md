@@ -9,13 +9,13 @@ Install with:
 npm install grow.js
 ```
 
-You can connect to our Grow-IoT alpha instance on https://grow.commongarden.org, or see the [Grow-IoT repo](https://github.com/CommonGarden/Grow-IoT) to easily start your own private IoT network. 
+You can connect to our Grow-IoT alpha instance on https://grow.commongarden.org, or see the [Grow-IoT repo](https://github.com/CommonGarden/Grow-IoT) to easily start your own IoT network locally or hosted on [Meteor Galaxy](https://galaxy.meteor.com).
 
-## Wiring LED light example
-For this example we will switch on an LED connected to an arduino like so:
-![Arduino wired with LED light](https://www.google.com/url?sa=i&rct=j&q=&esrc=s&source=images&cd=&cad=rja&uact=8&ved=0ahUKEwif68vOhK3MAhUTzGMKHYVDBQIQjRwIBw&url=https%3A%2F%2Fwww.safaribooksonline.com%2Fblog%2F2013%2F07%2F16%2Fjavascript-powered-arduino-with-johnny-five%2F&bvm=bv.120552933,d.cGc&psig=AFQjCNFDhgoZjnlZkQve5ppkzsCpmW3gGg&ust=1461785262945630)
+# Example
 
-Using grow.js is as simple as passing in a configuration object to the constructor. You can optionally include a callback function.
+Using grow.js is as simple as passing in a configuration object to the constructor.
+
+Create a file called `example.js`. And insert the following:
 
 ```javascript
 // Import the grow.js library.
@@ -23,18 +23,32 @@ var GrowInstance = require('grow.js');
 
 // Create a new grow instance.
 var grow = new GrowInstance({
-    "name": "Light",
+    "host": "grow.commongarden.org", // Where the device will be connecting to.
+    // The following are connection options for connecting to a meteor galaxy instance.
+    "tlsOpts": {
+        "tls": {
+            "servername": "galaxy.meteor.com"
+        }
+    },
+    "port": 443, // The port to connect to 
+    "ssl": true, // Set to true when connecting over SSL.
+    "name": "Light", // The display name for the thing.
     "desription": "An LED light with a basic on/off api.",
-    "state": "off",
-    "actions": [
+    "state": "off", // The current state of the thing.
+    "owner": "youremailhere@example.com", // The email of the account you want this device to be added to.
+    "actions": [ // A list of action objects
         {
-            "name": "On",
-            "id": "turn_light_on",
-            "updateState": "on",
-            "schedule": "at 9:00am",
-            "event": "Light turned on",
+            "name": "On", // Display name for the action
+            "description": "Turns the light on.", // Optional description
+            "id": "turn_light_on", // A unique id
+            "updateState": "on", // Updates state on function call
+            "schedule": "at 9:00am", // Optional scheduling using later.js
+            "event": "Light turned on", // Optional event to emit when called.
             "function": function () {
-                console.log("Light on.");
+                // The implementation of the action.
+                // Here we simply log "Light on." See links to hardware
+                // examples below to begin using microcontrollers
+                console.log("Light on."); 
             }
         },
         {
@@ -50,11 +64,39 @@ var grow = new GrowInstance({
     ]
 }, function start () {
     // Optional Callback. Calls turn_light_off function on start.
-    grow.callAction("turn_light_off")
+    grow.callAction("turn_light_off");
 });
 ```
 
+Run the new `example.js` file with:
+
+```bash
+node example.js
+```
+
+This does a couple of things:
+1. Connects to the host over the ddp protocol.
+2. Registers the device with host server. The information in config object is used to create a UI and API.
+2. Sets up streams and listens for commands.
+
+On the grow app the device looks like so:
+
+
+
+## Using the Grow App.
+1. Create an acount by visiting https://grow.commongarden.org or http://localhost:3000 if running [Grow-IoT]() locally.
+
+2. 
+
+
 From this we're able to generate a bit of UI using meteor-iot: [TODO: insert image]
+
+# Hardware examples
+You will need a microcontroller (such as arduino or raspberry pi). Grow.js works with most devices that can run node, and plays very well with the [Johnny-Five robotics library](http://johnny-five.io/), which has plugins for [a large number of devices](http://johnny-five.io/#platform-support). Note, with boards like the Tessel 2, Johnny-five is not required.
+
+
+
+## The configuration object
 
 The following properties are supported:
 

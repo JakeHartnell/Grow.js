@@ -59,8 +59,6 @@ GROWJS.prototype.updateProperty = function (componentName, propertyKey, value, c
 
   var thing = self.config;
 
-  // This is implemented on the server as well
-
   // Find properties in top level thing object
   for (var key in thing) {
     // Find properties in components 
@@ -71,14 +69,12 @@ GROWJS.prototype.updateProperty = function (componentName, propertyKey, value, c
         }
       }
     } else if (thing[key] === componentName) {
-      thing[key] = value;
+      thing[propertyKey] = value;
     }
   }
 
   self.writeChangesToGrowFile();
 
-  // Maybe this should be a callback of write changes?
-  // Otherwise we have instances when state is out of sync.
   self.ddpclient.call(
     'Device.udpateProperty',
     [{uuid: self.uuid, token: self.token}, componentName, propertyKey, value],

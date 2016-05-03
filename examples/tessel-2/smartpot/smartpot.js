@@ -1,8 +1,5 @@
-var GrowInstance = require('.././grow.js');
-var tessel = require('tessel');
-
-// I think this is a simpler model to understand because the 
-// implementation and document are blended.
+var GrowInstance = require('../../.././grow.js');
+// var tessel = require('tessel');s
 
 // Connects by default to localhost:3000
 var grow = new GrowInstance({
