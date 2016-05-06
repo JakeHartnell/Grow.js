@@ -1,7 +1,11 @@
-# Getting started
+## Status: Alpha / untested
+Not recommended for use in production, if you like the direction this library is heading in, help us get there.
+
 Grow.js is an npm packagle for creating and connecting devices to a [Grow-IoT](https://github.com/CommonGarden/Grow-IoT) instance. It is loosely based off of some of the work happening on the W3C web-of-things community group. [Full grow.js documentation can be found here](http://commongarden.github.io/grow.js/).
 
-You will need a microcontroller (such as arduino or raspberry pi). Grow.js works with most devices that can run node, and plays very well with the [Johnny-Five robotics library](http://johnny-five.io/), which has plugins for [a large number of devices](http://johnny-five.io/#platform-support).
+# Quickstart
+
+If you don't have a microcontroller (such as arduino or raspberry pi), or just want to try out the library, this is where to start. If you have a microcontroller, skip to the [working with hardware section]().
 
 Install with:
 
@@ -9,29 +13,16 @@ Install with:
 npm install grow.js
 ```
 
-You can connect to our Grow-IoT alpha instance on https://grow.commongarden.org, or see the [Grow-IoT repo](https://github.com/CommonGarden/Grow-IoT) to easily start your own IoT network locally or hosted on [Meteor Galaxy](https://galaxy.meteor.com).
+If you haven't already, [install and start the Grow-IoT meteor application](). Visit http:localhost:3000/ and create an account.
 
-# Example
-
-Using grow.js is as simple as passing in a configuration object to the constructor.
-
-Create a file called `example.js`. And insert the following:
+Create a new file called, `widget.js` and enter the following Javascript code. **Be sure to set the 'owner' property to the email you created an account with.**
 
 ```javascript
 // Import the grow.js library.
 var GrowInstance = require('grow.js');
 
-// Create a new grow instance.
+// Create a new grow instance by passing in a configuration object to the constructor.
 var grow = new GrowInstance({
-    "host": "grow.commongarden.org", // Where the device will be connecting to.
-    // The following are connection options for connecting to a meteor galaxy instance.
-    "tlsOpts": {
-        "tls": {
-            "servername": "galaxy.meteor.com"
-        }
-    },
-    "port": 443, // The port to connect to 
-    "ssl": true, // Set to true when connecting over SSL.
     "name": "Light", // The display name for the thing.
     "desription": "An LED light with a basic on/off api.",
     "state": "off", // The current state of the thing.
@@ -68,10 +59,10 @@ var grow = new GrowInstance({
 });
 ```
 
-Run the new `example.js` file with:
+Run the script with:
 
 ```bash
-node example.js
+node widget.js
 ```
 
 This does a couple of things:
@@ -79,21 +70,84 @@ This does a couple of things:
 2. Registers the device with host server. The information in config object is used to create a UI and API.
 2. Sets up streams and listens for commands.
 
-On the grow app the device looks like so:
+Now in http://localhost:3000, create a new environment and you should see the device, click on it to add it to the environment.
 
+You will see a generated UI based on the configuration object you passed in.
 
+[Insert screenshot]
 
-## Using the Grow App.
-1. Create an acount by visiting https://grow.commongarden.org or http://localhost:3000 if running [Grow-IoT]() locally.
+If you click on one of the buttons, you should see the appropriate log message in the terminal where you are running `widget.js`.
 
-2. 
+# Working with hardware.
 
+See the [examples folder]() for more examples for working with various boards.
 
-From this we're able to generate a bit of UI using meteor-iot: [TODO: insert image]
+Grow.js works with most devices that can run node, and plays very well with the [Johnny-Five robotics library](http://johnny-five.io/), which has plugins for [a large number of devices](http://johnny-five.io/#platform-support). Note, with boards like the Tessel 2, Johnny-five is not required, but we're including it to make it easier to get started.
 
-# Hardware examples
-You will need a microcontroller (such as arduino or raspberry pi). Grow.js works with most devices that can run node, and plays very well with the [Johnny-Five robotics library](http://johnny-five.io/), which has plugins for [a large number of devices](http://johnny-five.io/#platform-support). Note, with boards like the Tessel 2, Johnny-five is not required.
+Install johnny-five with:
 
+```bash
+npm install johnny-five
+```
+
+Create a file called `LED.js`. And insert the following:
+
+```javascript
+// Import the grow.js library.
+var GrowInstance = require('grow.js');
+
+// Create a new grow instance.
+var grow = new GrowInstance({
+    "host": "grow.commongarden.org", // Where the device will be connecting to.
+    // The following are connection options for connecting to a meteor galaxy instance.
+    "tlsOpts": {
+        "tls": {
+            "servername": "galaxy.meteor.com"
+        }
+    },
+    "port": 443, // The port to connect to
+    "ssl": true, // Set to true when connecting over SSL.
+    "name": "Light", // The display name for the thing.
+    "desription": "An LED light with a basic on/off api.",
+    "state": "off", // The current state of the thing.
+    "owner": "youremailhere@example.com", // The email of the account you want this device to be added to.
+    "actions": [ // A list of action objects
+        {
+            "name": "On", // Display name for the action
+            "description": "Turns the light on.", // Optional description
+            "id": "turn_light_on", // A unique id
+            "updateState": "on", // Updates state on function call
+            "schedule": "at 9:00am", // Optional scheduling using later.js
+            "event": "Light turned on", // Optional event to emit when called.
+            "function": function () {
+                // The implementation of the action.
+                // Here we simply log "Light on." See links to hardware
+                // examples below to begin using microcontrollers
+                console.log("Light on.");
+            }
+        },
+        {
+            "name": "off",
+            "id": "turn_light_off",
+            "updateState": "off",
+            "schedule": "at 8:30pm",
+            "event": "Light turned off",
+            "function": function () {
+                console.log("Light off.");
+            }
+        }
+    ]
+}, function start () {
+    // Optional Callback. Calls turn_light_off function on start.
+    grow.callAction("turn_light_off");
+});
+```
+
+Run the new `example.js` file with:
+
+```bash
+node example.js
+```
 
 
 ## The configuration object
@@ -162,6 +216,8 @@ Set the `host` to your computer's IP address where the Grow-IoT instance is runn
 Likewise if you are hosting in the cloud, it should be set to the instance IP address, you can also override the default port by specifiying the `port` option.
 
 #### Connecting over SSL
+You can connect to our Grow-IoT alpha instance on https://grow.commongarden.org, or see the [Grow-IoT repo](https://github.com/CommonGarden/Grow-IoT) to easily start your own IoT network locally or hosted on [Meteor Galaxy](https://galaxy.meteor.com).
+
 SSL is supported though will require a bit more setup. If you are hosting your instance off a computer with a dedicated IP address include the following info in your configuration object.
 
 ```json
@@ -170,7 +226,7 @@ SSL is supported though will require a bit more setup. If you are hosting your i
     "ssl": true,
 ```
 
-If you are hosting on a cloud instance, you might need specify the servername. The example below shows you how to connect securely to the instance at [grow.commongarden.org](https://grow.commongarden.org):
+If you are hosting on a cloud instance such as [Meteor Galaxy](https://galaxy.meteor.com), you might need specify the servername. The example below shows you how to connect securely to the instance at [grow.commongarden.org](https://grow.commongarden.org):
 
 ```json
     "host": "grow.commongarden.org",
@@ -197,7 +253,7 @@ We use [gulp](http://gulpjs.com/) as our task runner. We use it to run tests, bu
 
 `gulp test` runs tests in the test folder.
 
-`gulp docs` builds the documentation in the docs folder.
+`gulp docs` builds the documentation in the docs folder. These are published to the web on the gh-pages branch.
 
 
 ## Contributing
