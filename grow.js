@@ -35,10 +35,10 @@ function GROWJS(config, callback) {
 
   // Check for state.json, if it exists, this device has already been configured.
   try {
-    // self.config = _.clone(config || {});
+    // NOTE: we need the methods defined in the config, so we extend the object
+    // in state.json.
     self.config = _.extend(require('./state.json'), config);
     console.log("Existing state configuration found.");
-    console.log(self.config);
   }
   catch (error) {
     self.config = _.clone(config || {});
@@ -221,7 +221,7 @@ GROWJS.prototype._read = function (size) {
  * Calls a registered action, emits event if the the action has an 'event'
  * property defined. Updates the state if the action has an 'updateState'
  * property specified.
- * @param      {String}  actionId The name of the function to call.
+ * @param      {String}  actionId The id of the action to call.
  * @param      {Object}  options Any options to call with the function.
  */
 GROWJS.prototype.callAction = function (actionId, options) {
@@ -268,22 +268,11 @@ GROWJS.prototype.callAction = function (actionId, options) {
 
 /**
  * Registers the implmentation, starts any scheduled actions and sets up 
- * the writeable stream to listen for commands.
- * @param {Object}  implementation  
+ * the writeable stream to listen for commands.  
  */
 GROWJS.prototype.registerActions = function () {
   var self = this;
-  // This needs to change...
-  // self.actions = _.clone(implementation || {});
-
   self.actions = self.getActionsList();
-
-  // TODO: make sure the implementation matches the growfile.
-  // If not, we throw some helpful errors.
-  // VALIDATE THIS SHIT.
-
-  // BUG: actions fail to start properly if there are functions not
-  // mentioned in grow file.
 
   // Start actions that have a schedule property.
   self.startScheduledActions();
@@ -413,7 +402,7 @@ GROWJS.prototype.getActionsList = function () {
     // Check top level thing model for actions.
     if (key === "actions") {
       for (var action in thing[key]) {
-        actionMetaData.push(action);
+        actionMetaData.push(thing[key][action]);
       }
     }
 
@@ -498,8 +487,6 @@ GROWJS.prototype.updateProperty = function (componentName, propertyKey, value, c
 
   var thing = self.config;
 
-  // This is implemented on the server as well
-
   // Find properties in top level thing object
   for (var key in thing) {
     // Find properties in components 
@@ -510,14 +497,12 @@ GROWJS.prototype.updateProperty = function (componentName, propertyKey, value, c
         }
       }
     } else if (thing[key] === componentName) {
-      thing[key] = value;
+      thing[propertyKey] = value;
     }
   }
 
   self.writeChangesToGrowFile();
 
-  // Maybe this should be a callback of write changes?
-  // Otherwise we have instances when state is out of sync.
   self.ddpclient.call(
     'Device.udpateProperty',
     [{uuid: self.uuid, token: self.token}, componentName, propertyKey, value],

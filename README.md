@@ -1,118 +1,199 @@
-# Grow.js
-### The free, extensible, document-based, interoperable IoT framework
-An npm packagle for creating and connecting devices to a [Grow-IoT](https://github.com/CommonGarden/Grow-IoT) instance. It works with most devices that can run node, and plays very well with the [Johnny-Five robotics library](http://johnny-five.io/).
+## Status: Alpha / untested
+Not recommended for use in production, if you like the direction this library is heading in, help us get there.
 
-Install with:
+Grow.js is an npm packagle for creating and connecting devices to a [Grow-IoT](https://github.com/CommonGarden/Grow-IoT) instance. It is loosely based off of some of the work happening on the W3C web-of-things community group. [Full grow.js documentation can be found here](http://commongarden.github.io/grow.js/).
+
+It is meant to be an opinionated frame work in that it does a lot of things for you, but also be light weight. All that is needed for interoperability is adherence to the core document model, and a protocol such as ddp, MQTT, or COAP. This means that a wide variety of devices from 
+
+## Documentation
+The full grow.js documentation is [here](http://commongarden.github.io/grow.js/) for those who want to cut straight to the code and examples.
+
+# Quickstart
+If you don't have a microcontroller (such as arduino or raspberry pi or a chip or a raspberry pi), or just want to try out the library, then this is where to start. Keep reading. :party:
+
+If you have a microcontroller, skip to the [working with hardware section]().
+
+If you haven't installed npm and node.js, please follow the [instructions to do so on the nodejs.org website](https://nodejs.org/en/).
+
+Make an example folder called `firstIoTDevice`:
+```bash
+mkdir firstIoTDevice
+cd firstIoTDevice
+```
+
+Install grow.js with:
 
 ```bash
 npm install grow.js
 ```
 
-You will need an instance of Grow-IoT running. Luckily it's pretty easy to get started. Install Meteor if you haven't already:
+If you haven't already, [install and start the Grow-IoT meteor application](https://github.com/CommonGarden/Grow-IoT). Visit [http:localhost:3000/](http:localhost:3000/) and create an account.
 
-```bash
-git clone https://github.com/CommonGarden/Grow-IoT
-cd Grow-IoT
-meteor
-```
-
-# Example
-Using grow.js is as simple as passing in a configuration object to the constructor. You can optionally include a callback function.
+Create a new file called, `light.js` and enter the following Javascript code. **Be sure to set the 'owner' property to the email you created an account with.**
 
 ```javascript
 // Import the grow.js library.
 var GrowInstance = require('grow.js');
 
-// Create a new grow instance.
+// Create a new grow instance by passing in a configuration object to the constructor.
 var grow = new GrowInstance({
-    "name": "Widget",
-    "version": "0.1.1",
-    "description": "A basic device example.",
-    "owner": "jake@commongarden.org",
-    "actions": [
+    "name": "Light", // The display name for the thing.
+    "desription": "An LED light with a basic on/off api.",
+    "state": "off", // The current state of the thing.
+    "owner": "youremailhere@example.com", // The email of the account you want this device to be added to.
+    "actions": [ // A list of action objects
         {
-            "name": "Log widget",
-            "id": "log_widget",
+            "name": "On", // Display name for the action
+            "description": "Turns the light on.", // Optional description
+            "id": "turn_light_on", // A unique id
+            "updateState": "on", // Updates state on function call
+            "schedule": "at 9:00am", // Optional scheduling using later.js
+            "event": "Light turned on", // Optional event to emit when called.
             "function": function () {
-                // This is the implementation of the action.
-                // Device specific code can go here, but for
-                // the sake of an easy to try example:
-                console.log("widget");
+                // The implementation of the action.
+                // Here we simply log "Light on." See links to hardware
+                // examples below to begin using microcontrollers.
+                console.log("Light on."); 
+            }
+        },
+        {
+            "name": "off",
+            "id": "turn_light_off",
+            "updateState": "off",
+            "schedule": "at 8:30pm",
+            "event": "Light turned off",
+            "function": function () {
+                console.log("Light off.");
             }
         }
     ]
-}, function() {
-    // Optional Callback. Calls log_widget function on start.
-    grow.callAction("log_widget")
+}, function start () {
+    // Optional Callback. Calls turn_light_off function on start.
+    grow.callAction("turn_light_off");
 });
 ```
 
-From this we're able to generate a bit of UI using meteor-iot: [TODO: insert image]
+Run the script with:
 
-The following properties are supported:
+```bash
+node light.js
+```
 
-**name**: *(required)* The name of the thing.
+This does a couple of things:
 
-**id**: *(required)* Must not be shared with any components or actions in the thing.json file. Maybe this could be auto generated?
+1. Connects to the host over the ddp protocol.
 
-**owner**: *(currently required)* Currently the email address of the account the device will be added to when it connects. Public devices will not have an owner... but that's a work in progress.
+2. Registers the device with host server. The information in config object is used to create a UI and API.
 
-**state**: the current state of the thing. For example, 'on' or 'off'.
+3. Saves state to state.json so if the device powers off or resets, it resumes it's last configuration.
 
-**type**: The type of thing, eventually we are going to fine tune the UI for common components like temperature sensors, etc.
+4. Sets up streams and listens for commands.
 
-**description**: A description for the thing.
+Next, visit [http://localhost:3000](http://localhost:3000) in your browser.
 
-**actions**: A list of action objects.
+Create a new environment and you should see the device, click on it to add it to the environment.
 
-**events**: A list of event objects.
+You will see a generated UI based on the configuration object you passed in.
 
-**template**: EXPERIMENTAL -- A web component to use as a template for the ui.
+[Insert screenshot]
 
-The cool thing is that things can contain other things! The `components` property takes list of thing objects.
+If you click on one of the buttons, you should see the appropriate log message in the terminal where you are running `light.js`.
 
-**components**: A list of thing objects.
+# Working with hardware.
 
-Currently, we don't allow components to have a `components` property.
+See the [examples folder](https://github.com/CommonGarden/grow.js/tree/master/examples) for hardware examples with various boards. 
 
-### Actions
-The `actions` property of a thing or component has it's own structure.
+Please feel free to create your own and share it on the [forum](http://forum.commongarden.org/).
 
-**name**: *(required)* the name of the action. For example, "water plant".
+Grow.js works with most devices that can run node, and plays very well with the [Johnny-Five robotics library](http://johnny-five.io/), which has plugins for [a large number of devices](http://johnny-five.io/#platform-support). Note, with boards like the Tessel 2, Johnny-five is not required, but we're including it to make it easier to get started and support a wide variety of devices, sensors, and actuators.
 
-**id**: *(required)* the name of the function to call. This much match what is in the implementation.
+Install johnny-five with:
 
-**options**: an additional arguments or parameters for the function.
+```bash
+npm install johnny-five
+```
 
-**schedule**: a valid later.js text experession that sets up a recurring action, see the [later.js documentation](http://bunkat.github.io/later/) for more info.
+### Wire up photo-resitor and led to arduino
+Wire up your photo resistor and LED light like so:
 
-**event**: setting this emits an event when the action is called.
+![Wiring diagram](https://raw.githubusercontent.com/CommonGarden/grow.js/development/img/Arduino-light-detector-circuit.png)
 
-**function**: the actual implmentation of the action, this code is run when the action is called, and is not exchanged in any communications.
+To use [Johnny-Five](http://johnny-five.io/), you need to make sure that your arduino is flashed with Standard Firmata. Instructions for doing so can be found [here](https://github.com/rwaldron/johnny-five/wiki/Getting-Started#trouble-shooting). Once that's done you're ready for the next step!
 
-### Events
-Coming soon: *a way to subscribe to device events.*
+Create a file called `LED.js`. And insert the following:
 
-### state.json
+```javascript
+// Require the grow.js and johnny-five libraries.
+var GrowInstance = require('grow.js');
+var five = require('johnny-five');
 
-The state.json file is also used for state. In case the device looses internet connnection or power and needs to reset, the grow file contains the instructions such as schedules, where the device is supposed to connect to.
+// Create a new board object
+var board = new five.Board();
 
-Check out the driver examples for more code.
+// When board is ready run this start function.
+board.on("ready", function start() {
+    // Define variables
+    // Note: if you wire the device slightly differently you may need to
+    // change the pin numbers below.
+    var LED = new five.Pin(13),
+        lightSensor = new five.Sensor("A0");
 
+    // Create a new grow instance.
+    var grow = new GrowInstance({
+        "name": "Light", // The display name for the thing.
+        "desription": "An LED light with a basic on/off api.",
+        "state": "off", // The current state of the thing.
+        "owner": "youremailhere@example.com", // The email of the account you want this device to be added to.
+        "actions": [ // A list of action objects
+            {
+                "name": "On", // Display name for the action
+                "description": "Turns the light on.", // Optional description
+                "id": "turn_light_on", // A unique id
+                "updateState": "on", // Updates state on function call
+                "schedule": "at 9:00am", // Optional scheduling using later.js
+                "event": "Light turned on", // Optional event to emit when called.
+                "function": function () {
+                    // The implementation of the action.
+                    // Here we simply log "Light on." See links to hardware
+                    // examples below to begin using microcontrollers
+                    console.log("Light on.");
+                }
+            },
+            {
+                "name": "off",
+                "id": "turn_light_off",
+                "updateState": "off",
+                "schedule": "at 8:30pm",
+                "event": "Light turned off",
+                "function": function () {
+                    console.log("Light off.");
+                }
+            }
+        ]
+    });
+});
+```
+
+Run the new `example.js` file with:
+
+```bash
+node example.js
+```
+
+# Connecting devices
 ### Host / Port
 The host is where the device will be looking for a CommonGarden-IoT instance. By default the host is set to `localhost` and the port is set to Meteor's standard of `3000`. This will work nicely for usb devices like Arduino.
 
-#### Connecting over wifi
-Set the `host` to your computer's IP address where the Grow-IoT instance is running. Simply specify it in your grow.json file.
+For connecting over wifi, connect your device to wifi and set the `host` to the IP address where the Grow-IoT instance is running. Simply specify it in your grow.json file.
 
 ```json
     "host": "YOUR_IP_HERE",
     "thing": {...}
 ```
 
-Likewise if you are hosting in the cloud, it should be set to the instance IP address, you can also override the default port by specifiying the `port` option.
-
 #### Connecting over SSL
+You can connect securely to our Grow-IoT alpha instance on https://grow.commongarden.org, or see the [Grow-IoT repo](https://github.com/CommonGarden/Grow-IoT) to easily start your own IoT network locally or hosted on [Meteor Galaxy](https://galaxy.meteor.com).
+
 SSL is supported though will require a bit more setup. If you are hosting your instance off a computer with a dedicated IP address include the following info in your configuration object.
 
 ```json
@@ -121,7 +202,7 @@ SSL is supported though will require a bit more setup. If you are hosting your i
     "ssl": true,
 ```
 
-If you are hosting on a cloud instance, you might need specify the servername. The example below shows you how to connect securely to the instance at [grow.commongarden.org](https://grow.commongarden.org):
+If you are hosting on a cloud instance such as [Meteor Galaxy](https://galaxy.meteor.com), you might need specify the servername. The example below shows you how to connect securely to the instance at [grow.commongarden.org](https://grow.commongarden.org):
 
 ```json
     "host": "grow.commongarden.org",
@@ -136,6 +217,10 @@ If you are hosting on a cloud instance, you might need specify the servername. T
 ```
 
 # Developing
+Eventually we'll be making libraries for other languages, but for now we're starting with Javascript.
+
+Code will eventually be ported to ES6, anyone who wants to help re-write and test things, please open a PR. 
+
 ```bash
 git clone https://github.com/CommonGarden/grow.js
 cd grow.js
@@ -148,10 +233,10 @@ We use [gulp](http://gulpjs.com/) as our task runner. We use it to run tests, bu
 
 `gulp test` runs tests in the test folder.
 
-`gulp docs` builds the documentation in the docs folder.
+`gulp docs` builds the documentation in the docs folder. These are published to the web on the gh-pages branch.
 
 
-## Contributing
+# Contributing
 
 Please read:
 * [Code of Conduct](https://github.com/CommonGarden/Organization/blob/master/code-of-conduct.md)
@@ -160,7 +245,7 @@ Please read:
 ### Reach out
 Get involved with our community in any way you are interested:
 
-* [Join us on Slack](http://slack.commongarden.org) — Collaboration and real time discussions.
+<!-- * [Join us on Slack](http://slack.commongarden.org) — Collaboration and real time discussions. -->
 * [Forum](http://forum.commongarden.org/) — General discussion and support by the Common Garden community.
 
 ### Acknowledgements

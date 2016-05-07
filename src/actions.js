@@ -2,7 +2,7 @@
  * Calls a registered action, emits event if the the action has an 'event'
  * property defined. Updates the state if the action has an 'updateState'
  * property specified.
- * @param      {String}  actionId The name of the function to call.
+ * @param      {String}  actionId The id of the action to call.
  * @param      {Object}  options Any options to call with the function.
  */
 GROWJS.prototype.callAction = function (actionId, options) {
@@ -49,22 +49,11 @@ GROWJS.prototype.callAction = function (actionId, options) {
 
 /**
  * Registers the implmentation, starts any scheduled actions and sets up 
- * the writeable stream to listen for commands.
- * @param {Object}  implementation  
+ * the writeable stream to listen for commands.  
  */
 GROWJS.prototype.registerActions = function () {
   var self = this;
-  // This needs to change...
-  // self.actions = _.clone(implementation || {});
-
   self.actions = self.getActionsList();
-
-  // TODO: make sure the implementation matches the growfile.
-  // If not, we throw some helpful errors.
-  // VALIDATE THIS SHIT.
-
-  // BUG: actions fail to start properly if there are functions not
-  // mentioned in grow file.
 
   // Start actions that have a schedule property.
   self.startScheduledActions();
@@ -194,7 +183,7 @@ GROWJS.prototype.getActionsList = function () {
     // Check top level thing model for actions.
     if (key === "actions") {
       for (var action in thing[key]) {
-        actionMetaData.push(action);
+        actionMetaData.push(thing[key][action]);
       }
     }
 

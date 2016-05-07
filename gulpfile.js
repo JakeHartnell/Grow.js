@@ -45,7 +45,8 @@ gulp.task('docs', function() {
   gulp.src(['grow.js', 'README.md'], {base: '.'})
     .pipe(gulpDoxx({
       title: 'Grow.js',
-      urlPrefix: '/docs'
+      urlPrefix: '/docs',
+      template: 'docs/template.jade'
     }))
     .pipe(gulp.dest('docs'));
 
