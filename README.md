@@ -1,4 +1,4 @@
-## Status: Alpha / untested
+## Status: pre-Alpha / untested
 Not recommended for use in production, if you like the direction this library is heading in, help us get there.
 
 Grow.js is an npm packagle for creating and connecting devices to a [Grow-IoT](https://github.com/CommonGarden/Grow-IoT) instance. It is loosely based off of some of the work happening on the W3C web-of-things community group. [Full grow.js documentation can be found here](http://commongarden.github.io/grow.js/).
