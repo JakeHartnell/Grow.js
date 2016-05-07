@@ -111,7 +111,7 @@ npm install johnny-five
 ### Wire up photo-resitor and led to arduino
 Wire up your photo resistor and LED light like so:
 
-![Wiring diagram]()
+![Wiring diagram](https://raw.githubusercontent.com/CommonGarden/grow.js/development/img/Arduino-light-detector-circuit.png)
 
 To use [Johnny-Five](http://johnny-five.io/), you need to make sure that your arduino is flashed with Standard Firmata. Instructions for doing so can be found [here](https://github.com/rwaldron/johnny-five/wiki/Getting-Started#trouble-shooting). Once that's done you're ready for the next step!
 
@@ -175,25 +175,27 @@ Run the new `example.js` file with:
 node example.js
 ```
 
+# Document model
+
 ## The configuration object
 
 The following properties are supported:
 
-    **name**: *(required)* The name of the thing.
+**name**: *(required)* The name of the thing.
 
-    **id**: *(required)* Must not be shared with any components or actions in the thing.json file. Maybe this could be auto generated?
+**id**: *(required)* Must not be shared with any components or actions in the thing.json file. Maybe this could be auto generated?
 
-    **owner**: *(currently required as a hack)* Currently the email address of the account the device will be added to when it connects.
+**owner**: *(currently required as a hack)* Currently the email address of the account the device will be added to when it connects.
 
-    **state**: the current state of the thing. For example, 'on' or 'off'.
+**state**: the current state of the thing. For example, 'on' or 'off'.
 
-    **type**: The type of thing, eventually we are going to have templates for common components like temperature sensors, etc.
+**type**: The type of thing, eventually we are going to have templates for common components like temperature sensors, etc.
 
-    **description**: A description for the thing.
+**description**: A description for the thing.
 
-    **actions**: A list of action objects. [See below]().
+**actions**: A list of action objects. [See below]().
 
-    **events**: A list of event objects.
+**events**: A list of event objects.
 
 ### Actions
 The `actions` property of a thing or component has it's own structure.
