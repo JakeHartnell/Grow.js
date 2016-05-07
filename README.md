@@ -5,9 +5,10 @@ Grow.js is an npm packagle for creating and connecting devices to a [Grow-IoT](h
 
 It is meant to be an opinionated frame work in that it does a lot of things for you, but also be light weight. All that is needed for interoperability is adherence to the core document model, and a protocol such as ddp, MQTT, or COAP. This means that a wide variety of devices from 
 
-# Quickstart
+## Documentation
 The full grow.js documentation is [here](http://commongarden.github.io/grow.js/) for those who want to cut straight to the code and examples.
 
+# Quickstart
 If you don't have a microcontroller (such as arduino or raspberry pi or a chip or a raspberry pi), or just want to try out the library, then this is where to start. Keep reading. :party:
 
 If you have a microcontroller, skip to the [working with hardware section]().
@@ -26,7 +27,7 @@ Install grow.js with:
 npm install grow.js
 ```
 
-If you haven't already, [install and start the Grow-IoT meteor application](). Visit http:localhost:3000/ and create an account.
+If you haven't already, [install and start the Grow-IoT meteor application](https://github.com/CommonGarden/Grow-IoT). Visit [http:localhost:3000/](http:localhost:3000/) and create an account.
 
 Create a new file called, `light.js` and enter the following Javascript code. **Be sure to set the 'owner' property to the email you created an account with.**
 
@@ -79,9 +80,13 @@ node light.js
 ```
 
 This does a couple of things:
+
 1. Connects to the host over the ddp protocol.
+
 2. Registers the device with host server. The information in config object is used to create a UI and API.
+
 3. Saves state to state.json so if the device powers off or resets, it resumes it's last configuration.
+
 4. Sets up streams and listens for commands.
 
 Next, visit [http://localhost:3000](http://localhost:3000) in your browser.
@@ -96,9 +101,9 @@ If you click on one of the buttons, you should see the appropriate log message i
 
 # Working with hardware.
 
-See the [examples folder]() for hardware examples with various boards. 
+See the [examples folder](https://github.com/CommonGarden/grow.js/tree/master/examples) for hardware examples with various boards. 
 
-Please feel free to create your own and share it on the [forum]().
+Please feel free to create your own and share it on the [forum](http://forum.commongarden.org/).
 
 Grow.js works with most devices that can run node, and plays very well with the [Johnny-Five robotics library](http://johnny-five.io/), which has plugins for [a large number of devices](http://johnny-five.io/#platform-support). Note, with boards like the Tessel 2, Johnny-five is not required, but we're including it to make it easier to get started and support a wide variety of devices, sensors, and actuators.
 
@@ -174,61 +179,6 @@ Run the new `example.js` file with:
 ```bash
 node example.js
 ```
-
-# Document model
-
-## The configuration object
-
-The following properties are supported:
-
-**name**: *(required)* The name of the thing.
-
-**id**: *(required)* Must not be shared with any components or actions in the thing.json file. Maybe this could be auto generated?
-
-**owner**: *(currently required as a hack)* Currently the email address of the account the device will be added to when it connects.
-
-**state**: the current state of the thing. For example, 'on' or 'off'.
-
-**type**: The type of thing, eventually we are going to have templates for common components like temperature sensors, etc.
-
-**description**: A description for the thing.
-
-**actions**: A list of action objects. [See below]().
-
-**events**: A list of event objects.
-
-### Actions
-The `actions` property of a thing or component has it's own structure.
-
-    **name**: *(required)* the name of the action. For example, "water plant".
-
-    **id**: *(required)* the name of the function to call. This much match what is in the implementation.
-
-    **options**: an additional arguments or parameters for the function.
-
-    **schedule**: a valid later.js text experession that sets up a recurring action, see the [later.js documentation](http://bunkat.github.io/later/) for more info.
-
-    **event**: setting this emits an event when the action is called.
-
-    **function**: the actual implmentation of the action, this code is run when the action is called, and is not exchanged in any communications.
-
-### Events
-Coming soon: *a way to subscribe to device events.*
-
-
-### Things within things
-The `components` property takes list of thing objects. 
-
-    **components**: A list of thing objects.
-
-Currently, we don't allow components to have a `components` property.
-
-### state.json
-
-The state.json file is also used for state. In case the device looses internet connnection or power and needs to reset, the grow file contains the instructions such as schedules, where the device is supposed to connect to.
-
-Check out the driver examples for more code.
-
 
 # Connecting devices
 ### Host / Port
