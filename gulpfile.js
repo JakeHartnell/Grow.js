@@ -42,7 +42,7 @@ gulp.task('lint', function() {
 // https://github.com/mr-doc/mr-doc
 gulp.task('docs', function() {
 
-  gulp.src(['grow.js', 'README.md'], {base: '.'})
+  gulp.src(['README.md', 'grow.js'], {base: '.'})
     .pipe(gulpDoxx({
       title: 'Grow.js',
       urlPrefix: '/docs',

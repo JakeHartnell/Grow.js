@@ -97,6 +97,30 @@ function GROWJS(config, callback) {
 
 util.inherits(GROWJS, Duplex);
 
+/*
+SSL is supported though will require a bit more setup. If you are hosting your instance off a computer with a dedicated IP address include the following info in your configuration object.
+
+```json
+    "host": "YOUR_IP_HERE",
+    "port": 443,
+    "ssl": true,
+```
+
+If you are hosting on a cloud instance such as [Meteor Galaxy](https://galaxy.meteor.com), you might need specify the servername. The example below shows you how to connect securely to the instance at [grow.commongarden.org](https://grow.commongarden.org):
+
+```json
+    "host": "grow.commongarden.org",
+    "tlsOpts": {
+        "tls": {
+            "servername": "galaxy.meteor.com"
+        }
+    },
+    "port": 443,
+    "ssl": true,
+    "thing": { ... }
+```
+*/
+
 // Connects to the Grow-IoT server over DDP.
 GROWJS.prototype.connect = function (callback) {
   var self = this;
@@ -475,6 +499,7 @@ GROWJS.prototype.emitEvent = function (eventMessage, callback) {
 };
 
 
+// TODO: split this into two functions.
 /**
  * Update device property on Grow-IoT server.
  * @param {String} componentName  Name of the component you want to update.
@@ -515,7 +540,8 @@ GROWJS.prototype.updateProperty = function (componentName, propertyKey, value, c
 };
 
 /**
- * Writes any changes to the state.json file.
+ * Writes any changes to the state.json file. The state.json file is used for state. 
+ * In case the device looses internet connnection or power and needs to reset, the grow file contains the instructions such as schedules, where the device is supposed to connect to.
  */
 GROWJS.prototype.writeChangesToGrowFile = function () {
   var self = this;

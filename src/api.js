@@ -47,6 +47,7 @@ GROWJS.prototype.emitEvent = function (eventMessage, callback) {
 };
 
 
+// TODO: split this into two functions.
 /**
  * Update device property on Grow-IoT server.
  * @param {String} componentName  Name of the component you want to update.

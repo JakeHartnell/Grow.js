@@ -1,3 +1,5 @@
+// TODO: break this out into seperate code.
+
 var schema = require('validate');
 
 /*
@@ -21,6 +23,81 @@ The following properties are supported:
 
 **events**: A list of event objects.
 
+*/
+ 
+// Validates grow file.
+GROWJS.prototype.validateThing = function (growFile) {
+	var self = this;
+
+	var thing = schema({
+	  thing: {
+	  	name: {
+		  type: 'string',
+		  required: true,
+          message: 'thing.name is required.'
+    	},
+    	id: {
+		  type: 'string',
+		  required: true,
+          message: 'thing.id is required.'
+    	},
+		owner: {
+		  type: 'string',
+		  required: true,
+		  match: /+\@.+\..+/,
+		  message: 'Owner must be valid email, with an account on the host Grow-IoT server.'
+		},
+		components: {
+			type: 'list',
+			required: false
+			each: function () {
+				// Each component should be it's own valid thing object.
+				self.validateThing();
+			}
+		}
+	  }
+	});
+
+	var errors = thing.validate(obj);
+
+};
+
+// Should validate a component.
+/*
+
+### Things within things
+The `components` property takes list of thing objects. 
+
+    **components**: A list of thing objects.
+
+Currently, we don't allow components to have a `components` property.
+*/
+GROWJS.prototype.validateComponent = function (component) {
+	var self = this;
+
+	var component = schema({
+	  	name: {
+		  type: 'string',
+		  required: true,
+          message: 'thing.name is required.'
+    	},
+    	type: {
+    		type: 'string',
+    		required: true,
+    		message: "Component type is required."
+    	}
+		actions: {
+			type: 'list',
+			required: false
+			each: function () {
+				self.validateAction();
+			}
+		}
+	  }
+	});
+};
+
+/*
 ### Actions
 The `actions` property of a thing or component has it's own structure.
 
@@ -35,73 +112,16 @@ The `actions` property of a thing or component has it's own structure.
     **event**: setting this emits an event when the action is called.
 
     **function**: the actual implmentation of the action, this code is run when the action is called, and is not exchanged in any communications.
-
-### Events
-Coming soon: *a way to subscribe to device events.*
-
-
-### Things within things
-The `components` property takes list of thing objects. 
-
-    **components**: A list of thing objects.
-
-Currently, we don't allow components to have a `components` property.
-
 */
- 
-// Validates grow file.
-GROWJS.prototype.validateGrowFile = function (growFile) {
-
-	var thing = schema({
-	  thing: {
-	  	name: {
-		  type: 'string',
-		  required: true,
-          message: 'thing.name is required.'
-    	},
-		owner: {
-		  type: 'string',
-		  required: true,
-		  match: /+\@.+\..+/,
-		  message: 'Owner must be valid email, with an account on the host Grow-IoT server.'
-		},
-		components: {
-			type: 'list',
-			required: true
-		}
-	  }
-	});
-
-	var errors = thing.validate(obj);
-
-};
-
-// Should validate a component.
-GROWJS.prototype.validateComponent = function (component) {
-	var component = schema({
-	  	name: {
-		  type: 'string',
-		  required: true,
-          message: 'thing.name is required.'
-    	},
-    	type: {
-    		type: 'string',
-    		required: true,
-    		message: "Component type is required."
-    	}
-		actions: {
-			type: 'list',
-			required: true
-		}
-	  }
-	});
-};
-
 GROWJS.prototype.validateAction = function () {
 	return;
 };
 
-// A valid grow file should be valid JSON.
-
-// A valid grow file should have at least a name and a type.
+/*
+### Events
+Coming soon: *a way to subscribe to device events.*
+*/
+GROWJS.prototype.validateEvent = function () {
+	return;
+};
 
