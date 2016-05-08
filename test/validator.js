@@ -1,8 +1,64 @@
-{
-    "host":"grow.commongarden.org",
-    "port": 443,
-    "ssl": "true",
-    "thing": {
+var validator = require('../src/validate.js');
+var assert = require("assert");
+
+describe('These things should validate correctly', function() {
+    describe('Thing 1', function() {
+        it('should validate', function() {
+            var thing1 = {
+                "name": "Light", // The display name for the thing.
+                "desription": "An LED light with a basic on/off api.",
+                "state": "off", // The current state of the thing.
+                "owner": "youremailhere@example.com", // The email of the account you want this device to be added to.
+                "actions": [ // A list of action objects
+                    {
+                        "name": "On", // Display name for the action
+                        "description": "Turns the light on.", // Optional description
+                        "id": "turn_light_on", // A unique id
+                        "updateState": "on", // Updates state on function call
+                        "schedule": "at 9:00am", // Optional scheduling using later.js
+                        "event": "Light turned on", // Optional event to emit when called.
+                        "function": function () {
+                            // The implementation of the action.
+                            LED.high();
+                            console.log("Light on.");
+                        }
+                    },
+                    {
+                        "name": "off",
+                        "id": "turn_light_off",
+                        "updateState": "off",
+                        "schedule": "at 8:30pm",
+                        "event": "Light turned off",
+                        "function": function () {
+                            LED.low();
+                            console.log("Light off.");
+                        }
+                    },
+                ],
+                "events": [
+                    {
+                        "name": "Light data",
+                        "id": "light_data",
+                        "schedule": "every 1 second",
+                        "function": function () {
+                            lightSensor.read(function(error, value) {
+                              console.log(value);
+                            });
+                        }
+                    }
+                ]
+            }
+
+            validator.validateThing(thing1);
+
+        })
+    })
+});
+
+
+
+/*
+"thing": {
         "name": "value",
         "version": "0.1.5",
         "owner": "Jake@commongarden.org",
@@ -121,7 +177,6 @@
                 ]
             }
         ]
-    },
-    "uuid": "1f6d03dc-5cad-4b52-a19f-bc8eb64ec361",
-    "token": "Jq86kG2yRPT4HwaZyiWWirg2ZDG8wpnk"
-}
+    }
+
+*/

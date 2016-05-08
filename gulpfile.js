@@ -74,8 +74,7 @@ gulp.task('test', ['build'], function () {
 		.pipe(mocha({reporter: 'nyan'}));
 });
  
-// EXPERIMENTAL... don't use, unless you're good with ES6 and can help
-// convert this library over to it.
+// EXPERIMENTAL... help convert this library to ES6.
 gulp.task('es6', function () {
   return gulp.src([
     './src/base.js',
@@ -83,8 +82,6 @@ gulp.task('es6', function () {
     './src/growfile.js',
     './src/actions.js',
     './src/grow-api.js',
-    // './src/sensors/ph.js',
-    // './src/sensors/sensor.js',
     './src/export.js'
   ])
     // eslint() attaches the lint output to the "eslint" property
