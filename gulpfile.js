@@ -22,8 +22,9 @@ gulp.task('build', function() {
   	'./src/base.js',
   	'./src/connect.js', 
   	'./src/actions.js',
+    './src/events.js',
     './src/api.js',
-    './src/growfile.js',
+    './src/state.js',
   	'./src/export.js'
   ])
     .pipe(concat('grow.js'))

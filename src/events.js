@@ -38,10 +38,18 @@ GROWJS.prototype.registerEvents = function () {
  */
 GROWJS.prototype.startEvent = function (event) {
   var self = this;
-  var meta = self.getEventByID(event);
-  if (!_.isUndefined(meta.schedule)) {
-    var schedule = later.parse.text(meta.schedule);
-    var scheduledEvent = later.setInterval(function() {self.callEvent(event);}, schedule);
+  var event = self.getEventByID(event);
+  if (!_.isUndefined(event.schedule)) {
+    var schedule = later.parse.text(event.schedule);
+    var scheduledEvent = later.setInterval(function() {
+      // This is a hack.
+      if (event.type) {
+        self.readableStream.push({
+          type: event.type,
+          value: event.function()
+        });
+      }
+    }, schedule);
     self.scheduledEvents.push(scheduledEvent);
     return scheduledEvent;
   }

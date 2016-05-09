@@ -85,6 +85,17 @@ function GROWJS(config, callback) {
       }
     });
 
+    // These should register reguardless of whether device connects.
+    var eventsRegistered = new RSVP.Promise(function(resolve, reject) {
+      try {
+        resolve(self.registerEvents(config));
+      }
+      catch (error) {
+        reject(error);
+      }
+    });
+
+
     actionsRegistered.then(function(value) {
       self.pipeInstance();
 
