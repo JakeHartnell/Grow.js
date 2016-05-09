@@ -58,7 +58,9 @@ describe('These things should validate correctly', function() {
 
 
 /*
-"thing": {
+// This thing contains components.
+
+var thing2 = {
         "name": "value",
         "version": "0.1.5",
         "owner": "Jake@commongarden.org",

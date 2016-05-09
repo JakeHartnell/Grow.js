@@ -80,7 +80,6 @@ node light.js
 ```
 
 This does a couple of things:
-
 1. Connects to the host over the ddp protocol.
 
 2. Registers the device with host server. The information in config object is used to create a UI and API.
@@ -217,9 +216,9 @@ If you are hosting on a cloud instance such as [Meteor Galaxy](https://galaxy.me
 ```
 
 # Developing
-Eventually we'll be making libraries for other languages, but for now we're starting with Javascript.
+Eventually we'll be making libraries for other languages (not everything can or should run a highlevel language like Javascript).
 
-Code will eventually be ported to ES6, anyone who wants to help re-write and test things, please open a PR. 
+Code will soon be ported to ES6 (a good excuse to rewrite the code), anyone who wants to help re-write and test things, please open a PR. 
 
 ```bash
 git clone https://github.com/CommonGarden/grow.js
@@ -238,15 +237,24 @@ We use [gulp](http://gulpjs.com/) as our task runner. We use it to run tests, bu
 
 # Contributing
 
+There are a couple ways to contribute!
+
+This community is just getting started, so please [introduce yourself on the forum]().
+
+If you would like to really spur the project along we are currently taking bitcoin donations and gittip. Funds will be used to pay developers as contractors to work more open source Common Garden modules!
+
+If you want to contribute code, please submit PRs!
+
+
 Please read:
 * [Code of Conduct](https://github.com/CommonGarden/Organization/blob/master/code-of-conduct.md)
 * [Contributing info](https://github.com/CommonGarden/Organization/blob/master/contributing.md)
 
-### Reach out
-Get involved with our community in any way you are interested:
+<!-- ### Reach out
+Get involved with our community in any way you are interested: -->
 
 <!-- * [Join us on Slack](http://slack.commongarden.org) — Collaboration and real time discussions. -->
-* [Forum](http://forum.commongarden.org/) — General discussion and support by the Common Garden community.
+<!-- * [Forum](http://forum.commongarden.org/) — General discussion and support by the Common Garden community. -->
 
 ### Acknowledgements
 Special thanks to @Mitar for contributing the starting point for this library. This work was also inspired by work the [W3C interest group on the internet of things](https://github.com/w3c/web-of-things-framework).
