@@ -1,4 +1,14 @@
 /**
+ * # Actions
+ * 
+ *
+ *
+ *
+
+ */
+
+
+/**
  * Calls a registered action, emits event if the the action has an 'event'
  * property defined. Updates the state if the action has an 'updateState'
  * property specified.

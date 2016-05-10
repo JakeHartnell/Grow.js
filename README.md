@@ -1,14 +1,9 @@
-## Status: pre-Alpha / untested
-Not recommended for use in production, if you like the direction this library is heading in, help us get there.
+### Status: Prototype
+Please open issues or PRs with suggestions for improvements. Let's make something useful!
 
 Grow.js is an npm packagle for creating and connecting devices to a [Grow-IoT](https://github.com/CommonGarden/Grow-IoT) instance. It is loosely based off of some of the work happening on the W3C web-of-things community group. [Full grow.js documentation can be found here](http://commongarden.github.io/grow.js/).
 
-It is meant to be an opinionated frame work in that it does a lot of things for you, but also be light weight. All that is needed for interoperability is adherence to the core document model, and a protocol such as ddp, MQTT, or COAP. This means that a wide variety of devices from 
-
-## Documentation
-The full grow.js documentation is [here](http://commongarden.github.io/grow.js/) for those who want to cut straight to the code and examples.
-
-# Quickstart
+# Quickstart - no hardware or wiring required
 **If you haven't already, [install and start the Grow-IoT meteor application](https://github.com/CommonGarden/Grow-IoT). Note, you will have to run this in a new terminal window.**
 
 Be sure to visit [http:localhost:3000/](http:localhost:3000/) and create an account, you will need it to add your device.
@@ -75,7 +70,7 @@ var grow = new GrowInstance({
         {
             "name": "Light data", // Events get a display name like actions
             "id": "light_data", // An id that is unique to this device
-            "type": "light", // Data type.
+            "type": "light", // Data type. There might be different kinds of events?
             "schedule": "every 1 second", // Currently required
             "function": function () {
                 // function should return the event to emit when it should be emited.
@@ -96,21 +91,22 @@ node example.js
 ```
 
 This does a couple of things:
+
 1. Connects to the host over the ddp protocol.
 
 2. Registers the device with host server. The information in config object is used to create a UI and API.
 
 3. Saves state to state.json so if the device powers off or resets, it resumes it's last configuration.
 
-4. Sets up streams and listens for commands.
+4. Sets up readable and writable streams and listens for commands.
 
 Next, visit [http://localhost:3000](http://localhost:3000) in your browser.
 
 Create a new environment and you should see the device, click on it to add it to the environment.
 
-You will see a generated UI based on the configuration object you passed in.
+Like magic, you will see a generated UI based on the configuration object you passed in.
 
-[Insert screenshot]
+![Example screenshot](https://raw.githubusercontent.com/CommonGarden/Grow-IoT/master/public/example.png)
 
 If you click on one of the buttons, you should see the appropriate log message in the terminal where you are running `example.js`.
 
@@ -135,11 +131,11 @@ Wire up your photo resistor and LED light like so:
 
 To use [Johnny-Five](http://johnny-five.io/), you need to make sure that your arduino is flashed with Standard Firmata. Instructions for doing so can be found [here](https://github.com/rwaldron/johnny-five/wiki/Getting-Started#trouble-shooting). Once that's done you're ready for the next step!
 
-Create a file called `LED.js`. And insert the following:
+Take a look at the [led-and-photoresistor arduino example]() in the `examples/arduino/` folder. **Be sure to set the 'owner' property to the email you created an account with.**
 
 ```javascript
 // Require the grow.js and johnny-five libraries.
-var GrowInstance = require('grow.js');
+var GrowInstance = require('../../.././grow.js'); // Path to latest build
 var five = require('johnny-five');
 
 // Create a new board object
@@ -147,9 +143,8 @@ var board = new five.Board();
 
 // When board is ready run this start function.
 board.on("ready", function start() {
-    // Define variables
-    // Note: if you wire the device slightly differently you may need to
-    // change the pin numbers below.
+    // Define variables using Johnny-five classes
+    // Note: if you wire the device slightly differently you may need to change the pin numbers.
     var LED = new five.Pin(13),
         lightSensor = new five.Sensor("A0");
 
@@ -158,7 +153,7 @@ board.on("ready", function start() {
         "name": "Light", // The display name for the thing.
         "desription": "An LED light with a basic on/off api.",
         "state": "off", // The current state of the thing.
-        "owner": "youremailhere@example.com", // The email of the account you want this device to be added to.
+        "owner": "jake@commongarden.org", // The email of the account you want this device to be added to.
         "actions": [ // A list of action objects
             {
                 "name": "On", // Display name for the action
@@ -169,9 +164,7 @@ board.on("ready", function start() {
                 "event": "Light turned on", // Optional event to emit when called.
                 "function": function () {
                     // The implementation of the action.
-                    // Here we simply log "Light on." See links to hardware
-                    // examples below to begin using microcontrollers
-                    console.log("Light on.");
+                    LED.high();
                 }
             },
             {
@@ -181,7 +174,19 @@ board.on("ready", function start() {
                 "schedule": "at 8:30pm",
                 "event": "Light turned off",
                 "function": function () {
-                    console.log("Light off.");
+                    LED.low();
+                }
+            }
+        ],
+        "events": [
+            {
+                "name": "Light data", // Events get a display name like actions
+                "id": "light_data", // Events also get an id that is unique to the device
+                "type": "light", // Data type.
+                "schedule": "every 1 second", // Events should have a schedule option that determines how often to check for conditions.
+                "function": function () {
+                    // function should return the event to emit
+                    return lightSensor.value;
                 }
             }
         ]
@@ -192,8 +197,12 @@ board.on("ready", function start() {
 Run the new `example.js` file with:
 
 ```bash
-node example.js
+node examples/arduino/example.js
 ```
+
+Note: on certain opperating systems you may need to prefix that command with `sudo` to allow the script access to USB.
+
+[Full grow.js documentation and examples can be found here](http://commongarden.github.io/grow.js/).
 
 # Connecting devices
 ### Host / Port
@@ -232,15 +241,10 @@ If you are hosting on a cloud instance such as [Meteor Galaxy](https://galaxy.me
 ```
 
 # Developing
-Eventually we'll be making libraries for other languages (not everything can or should run a highlevel language like Javascript).
 
-Code will soon be ported to ES6 (a good excuse to rewrite the code), anyone who wants to help re-write and test things, please open a PR. 
+Eventually we'll be making libraries for other languages (not everything can or should run a highlevel language like Javascript) like Lua and python.
 
-```bash
-git clone https://github.com/CommonGarden/grow.js
-cd grow.js
-npm install
-```
+Code will soon be ported to ES6 (a good excuse to rewrite the code and add tests). 
 
 We use [gulp](http://gulpjs.com/) as our task runner. We use it to run tests, build docs, minify the code, lint things, etc.
 
@@ -252,15 +256,6 @@ We use [gulp](http://gulpjs.com/) as our task runner. We use it to run tests, bu
 
 
 # Contributing
-
-There are a couple ways to contribute!
-
-This community is just getting started, so please [introduce yourself on the forum]().
-
-If you would like to really spur the project along we are currently taking bitcoin donations and gittip. Funds will be used to pay developers as contractors to work more open source Common Garden modules!
-
-If you want to contribute code, please submit PRs!
-
 
 Please read:
 * [Code of Conduct](https://github.com/CommonGarden/Organization/blob/master/code-of-conduct.md)
