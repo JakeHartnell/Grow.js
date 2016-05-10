@@ -205,4 +205,3 @@ GROWJS.prototype.getActionsList = function () {
 
   return actionMetaData;
 };
-

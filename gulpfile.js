@@ -22,8 +22,9 @@ gulp.task('build', function() {
   	'./src/base.js',
   	'./src/connect.js', 
   	'./src/actions.js',
+    './src/events.js',
     './src/api.js',
-    './src/growfile.js',
+    './src/state.js',
   	'./src/export.js'
   ])
     .pipe(concat('grow.js'))
@@ -42,7 +43,7 @@ gulp.task('lint', function() {
 // https://github.com/mr-doc/mr-doc
 gulp.task('docs', function() {
 
-  gulp.src(['grow.js', 'README.md'], {base: '.'})
+  gulp.src(['README.md', 'grow.js'], {base: '.'})
     .pipe(gulpDoxx({
       title: 'Grow.js',
       urlPrefix: '/docs',
@@ -74,8 +75,7 @@ gulp.task('test', ['build'], function () {
 		.pipe(mocha({reporter: 'nyan'}));
 });
  
-// EXPERIMENTAL... don't use, unless you're good with ES6 and can help
-// convert this library over to it.
+// EXPERIMENTAL... help convert this library to ES6.
 gulp.task('es6', function () {
   return gulp.src([
     './src/base.js',
@@ -83,8 +83,6 @@ gulp.task('es6', function () {
     './src/growfile.js',
     './src/actions.js',
     './src/grow-api.js',
-    // './src/sensors/ph.js',
-    // './src/sensors/sensor.js',
     './src/export.js'
   ])
     // eslint() attaches the lint output to the "eslint" property

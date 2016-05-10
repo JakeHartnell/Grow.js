@@ -9,38 +9,42 @@ It is meant to be an opinionated frame work in that it does a lot of things for 
 The full grow.js documentation is [here](http://commongarden.github.io/grow.js/) for those who want to cut straight to the code and examples.
 
 # Quickstart
-If you don't have a microcontroller (such as arduino or raspberry pi or a chip or a raspberry pi), or just want to try out the library, then this is where to start. Keep reading. :party:
+**If you haven't already, [install and start the Grow-IoT meteor application](https://github.com/CommonGarden/Grow-IoT). Note, you will have to run this in a new terminal window.**
 
-If you have a microcontroller, skip to the [working with hardware section]().
+Be sure to visit [http:localhost:3000/](http:localhost:3000/) and create an account, you will need it to add your device.
 
 If you haven't installed npm and node.js, please follow the [instructions to do so on the nodejs.org website](https://nodejs.org/en/).
 
-Make an example folder called `firstIoTDevice`:
+Clone the repo and enter the new directory:
 ```bash
-mkdir firstIoTDevice
-cd firstIoTDevice
+git clone https://github.com/CommonGarden/grow.js
+cd grow.js
 ```
 
-Install grow.js with:
+Install the needed software dependencies with:
 
 ```bash
-npm install grow.js
+npm install
 ```
 
-If you haven't already, [install and start the Grow-IoT meteor application](https://github.com/CommonGarden/Grow-IoT). Visit [http:localhost:3000/](http:localhost:3000/) and create an account.
+Now you are ready to run `example.js`!
 
-Create a new file called, `light.js` and enter the following Javascript code. **Be sure to set the 'owner' property to the email you created an account with.**
+### Example.js
+
+Take a look at the file called, `example.js` copied below. **Be sure to set the 'owner' property to the email you created an account with.**
 
 ```javascript
 // Import the grow.js library.
-var GrowInstance = require('grow.js');
+var GrowInstance = require('./grow.js');
 
-// Create a new grow instance by passing in a configuration object to the constructor.
+// Create a new grow instance. Connects by default to localhost:3000
 var grow = new GrowInstance({
     "name": "Light", // The display name for the thing.
-    "desription": "An LED light with a basic on/off api.",
+    "description": "An LED light with a basic on/off api.",
     "state": "off", // The current state of the thing.
-    "owner": "youremailhere@example.com", // The email of the account you want this device to be added to.
+
+    // SET THIS TO THE EMAIL OF THE ACCOUNT YOU CREATED ON THE GROW-IOT APP.
+    "owner": "jake@commongarden.org",
     "actions": [ // A list of action objects
         {
             "name": "On", // Display name for the action
@@ -52,7 +56,7 @@ var grow = new GrowInstance({
             "function": function () {
                 // The implementation of the action.
                 // Here we simply log "Light on." See links to hardware
-                // examples below to begin using microcontrollers.
+                // examples below to begin using microcontrollers
                 console.log("Light on."); 
             }
         },
@@ -66,9 +70,21 @@ var grow = new GrowInstance({
                 console.log("Light off.");
             }
         }
+    ],
+    "events": [
+        {
+            "name": "Light data", // Events get a display name like actions
+            "id": "light_data", // An id that is unique to this device
+            "type": "light", // Data type.
+            "schedule": "every 1 second", // Currently required
+            "function": function () {
+                // function should return the event to emit when it should be emited.
+                return Math.random();
+            }
+        }
     ]
 }, function start () {
-    // Optional Callback. Calls turn_light_off function on start.
+    // Optional Callback function. Calls turn_light_off function on start.
     grow.callAction("turn_light_off");
 });
 ```
@@ -76,11 +92,10 @@ var grow = new GrowInstance({
 Run the script with:
 
 ```bash
-node light.js
+node example.js
 ```
 
 This does a couple of things:
-
 1. Connects to the host over the ddp protocol.
 
 2. Registers the device with host server. The information in config object is used to create a UI and API.
@@ -97,7 +112,7 @@ You will see a generated UI based on the configuration object you passed in.
 
 [Insert screenshot]
 
-If you click on one of the buttons, you should see the appropriate log message in the terminal where you are running `light.js`.
+If you click on one of the buttons, you should see the appropriate log message in the terminal where you are running `example.js`.
 
 # Working with hardware.
 
@@ -217,9 +232,9 @@ If you are hosting on a cloud instance such as [Meteor Galaxy](https://galaxy.me
 ```
 
 # Developing
-Eventually we'll be making libraries for other languages, but for now we're starting with Javascript.
+Eventually we'll be making libraries for other languages (not everything can or should run a highlevel language like Javascript).
 
-Code will eventually be ported to ES6, anyone who wants to help re-write and test things, please open a PR. 
+Code will soon be ported to ES6 (a good excuse to rewrite the code), anyone who wants to help re-write and test things, please open a PR. 
 
 ```bash
 git clone https://github.com/CommonGarden/grow.js
@@ -238,15 +253,24 @@ We use [gulp](http://gulpjs.com/) as our task runner. We use it to run tests, bu
 
 # Contributing
 
+There are a couple ways to contribute!
+
+This community is just getting started, so please [introduce yourself on the forum]().
+
+If you would like to really spur the project along we are currently taking bitcoin donations and gittip. Funds will be used to pay developers as contractors to work more open source Common Garden modules!
+
+If you want to contribute code, please submit PRs!
+
+
 Please read:
 * [Code of Conduct](https://github.com/CommonGarden/Organization/blob/master/code-of-conduct.md)
 * [Contributing info](https://github.com/CommonGarden/Organization/blob/master/contributing.md)
 
-### Reach out
-Get involved with our community in any way you are interested:
+<!-- ### Reach out
+Get involved with our community in any way you are interested: -->
 
 <!-- * [Join us on Slack](http://slack.commongarden.org) — Collaboration and real time discussions. -->
-* [Forum](http://forum.commongarden.org/) — General discussion and support by the Common Garden community.
+<!-- * [Forum](http://forum.commongarden.org/) — General discussion and support by the Common Garden community. -->
 
 ### Acknowledgements
 Special thanks to @Mitar for contributing the starting point for this library. This work was also inspired by work the [W3C interest group on the internet of things](https://github.com/w3c/web-of-things-framework).

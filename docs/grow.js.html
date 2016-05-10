@@ -211,9 +211,23 @@
   });
 }
 
-util.inherits(GROWJS, Duplex);
-
-// Connects to the Grow-IoT server over DDP.
+util.inherits(GROWJS, Duplex);</code></pre>
+          <div class="description"><p>SSL is supported though will require a bit more setup. If you are hosting your instance off a computer with a dedicated IP address include the following info in your configuration object.</p><pre><code class="lang-json">    &quot;host&quot;: &quot;YOUR_IP_HERE&quot;,
+    &quot;port&quot;: 443,
+    &quot;ssl&quot;: true,
+</code></pre>
+<p>If you are hosting on a cloud instance such as <a href="https://galaxy.meteor.com">Meteor Galaxy</a>, you might need specify the servername. The example below shows you how to connect securely to the instance at <a href="https://grow.commongarden.org">grow.commongarden.org</a>:</p><pre><code class="lang-json">    &quot;host&quot;: &quot;grow.commongarden.org&quot;,
+    &quot;tlsOpts&quot;: {
+        &quot;tls&quot;: {
+            &quot;servername&quot;: &quot;galaxy.meteor.com&quot;
+        }
+    },
+    &quot;port&quot;: 443,
+    &quot;ssl&quot;: true,
+    &quot;thing&quot;: { ... }
+</code></pre>
+ </div>
+          <pre><code class="language-javascript">// Connects to the Grow-IoT server over DDP.
 GROWJS.prototype.connect = function (callback) {
   var self = this;
 
@@ -704,7 +718,10 @@ GROWJS.prototype._read = function (size) {
       }
     }
   );
-};</code></pre>
+};
+
+
+// TODO: split this into two functions.</code></pre>
           <section id="updateProperty">
             <h1>updateProperty</h1>
             <h5 class="subheader"></h5>
@@ -782,7 +799,7 @@ GROWJS.prototype._read = function (size) {
               <div class="label label-info radius ctx-type">method</div><span>GROWJS.prototype.writeChangesToGrowFile()</span>
             </p>
           </section>
-          <div class="description"><p>Writes any changes to the state.json file.</p> </div>
+          <div class="description"><p>Writes any changes to the state.json file. The state.json file is used for state.<br />In case the device looses internet connnection or power and needs to reset, the grow file contains the instructions such as schedules, where the device is supposed to connect to.</p> </div>
           <pre><code class="language-javascript">GROWJS.prototype.writeChangesToGrowFile = function () {
   var self = this;
 

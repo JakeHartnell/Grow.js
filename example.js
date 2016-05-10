@@ -32,6 +32,18 @@ var grow = new GrowInstance({
                 console.log("Light off.");
             }
         }
+    ],
+    "events": [
+        {
+            "name": "Light data", // Events get a display name like actions
+            "id": "light_data", // Events also get an id that is unique to the device
+            "type": "light", // Data type.
+            "schedule": "every 1 second", // Events should have a schedule option that determines how often to check for conditions.
+            "function": function () {
+                // function should return the event to emit when it should be emited.
+                return Math.random();
+            }
+        }
     ]
 }, function start () {
     // Optional Callback function. Calls turn_light_off function on start.
