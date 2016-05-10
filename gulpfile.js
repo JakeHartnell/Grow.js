@@ -43,11 +43,21 @@ gulp.task('lint', function() {
 // https://github.com/mr-doc/mr-doc
 gulp.task('docs', function() {
 
-  gulp.src(['README.md', 'grow.js'], {base: '.'})
+  gulp.src([
+    'README.md',
+    './src/base.js',
+    './src/connect.js',
+    './src/api.js',
+    './src/actions.js',
+    './src/events.js',
+    './src/properties.js',
+    './src/state.js',
+    'designprinciples.md'
+  ], {base: '.'})
     .pipe(gulpDoxx({
       title: 'Grow.js',
-      urlPrefix: '/docs',
-      template: 'docs/template.jade'
+      urlPrefix: 'docs/',
+      template: 'docstemplate.jade'
     }))
     .pipe(gulp.dest('docs'));
 
