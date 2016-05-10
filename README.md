@@ -252,8 +252,7 @@ We use [gulp](http://gulpjs.com/) as our task runner. We use it to run tests, bu
 
 `gulp test` runs tests in the test folder.
 
-`gulp docs` builds the documentation in the docs folder. These are published to the web on the gh-pages branch.
-
+The documentation is written in jsdoc, built using [Mr-Doc](https://mr-doc.github.io/), and kept on the gh-pages branch of this repo.
 
 # Contributing
 

@@ -253,6 +253,30 @@ GROWJS.prototype._read = function (size) {
 };
 
 /**
+ * # Actions
+ * 
+ * Example:
+ * ```
+ *  "actions": [ // A list of action objects
+ *     {
+ *         "name": "On", // Display name for the action
+ *         "description": "Turns the light on.", // Optional description
+ *         "id": "turn_light_on", // A unique id
+ *         "updateState": "on", // Updates state on function call
+ *         "schedule": "at 9:00am", // Optional scheduling using later.js
+ *         "event": "Light turned on", // Optional event to emit when called.
+ *         "function": function () {
+ *             // The implementation of the action.
+ *             LED.high();
+ *             console.log("Light on.");
+ *         }
+ *     }
+ *   ]
+ * ```
+ */
+
+
+/**
  * Calls a registered action, emits event if the the action has an 'event'
  * property defined. Updates the state if the action has an 'updateState'
  * property specified.
@@ -685,7 +709,7 @@ GROWJS.prototype.updateProperty = function (componentName, propertyKey, value, c
  * Writes any changes to the state.json file. The state.json file is used for state. 
  * In case the device looses internet connnection or power and needs to reset, the grow file contains the instructions such as schedules, where the device is supposed to connect to.
  */
- 
+
 GROWJS.prototype.writeChangesToGrowFile = function () {
   var self = this;
 

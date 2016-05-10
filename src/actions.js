@@ -1,10 +1,24 @@
 /**
  * # Actions
  * 
- *
- *
- *
-
+ * Example:
+ * ```
+ *  "actions": [ // A list of action objects
+ *     {
+ *         "name": "On", // Display name for the action
+ *         "description": "Turns the light on.", // Optional description
+ *         "id": "turn_light_on", // A unique id
+ *         "updateState": "on", // Updates state on function call
+ *         "schedule": "at 9:00am", // Optional scheduling using later.js
+ *         "event": "Light turned on", // Optional event to emit when called.
+ *         "function": function () {
+ *             // The implementation of the action.
+ *             LED.high();
+ *             console.log("Light on.");
+ *         }
+ *     }
+ *   ]
+ * ```
  */
 
 
