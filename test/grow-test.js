@@ -109,7 +109,7 @@ describe('Grow test', () => {
 
     it('should emit an event when an action is called', () => {
       var event = false;
-      testThing.on('turn_light_on', () => {
+      testThing.thing.on('turn_light_on', () => {
         return event = true;
       });
       testThing.call('turn_light_on');
@@ -144,7 +144,7 @@ describe('Grow test', () => {
 
     it('should emit an event when a property is set', () => {
       var event = false;
-      testThing.on('property-updated', () => {
+      testThing.thing.on('property-updated', () => {
         return event = true;
       });
       testThing.set('lightconditions', 'light');
