@@ -92,6 +92,13 @@ describe('Grow test', () => {
     expect(testThing.thing.username).to.equal('YourUsernameHere');
   });
 
+  // describe('STATE', () => {
+  //   // TODO
+  //   it('should load correctly from state', () => {
+  //     expect(false).to.equal(true);
+  //   });
+  // });
+
   describe('ACTIONS', () => {
     it('should be able to call a registered action.', () => {
       console.log(testThing.call('turn_light_on'));
@@ -151,7 +158,6 @@ describe('Grow test', () => {
       expect(testThing.get('lightconditions')).to.equal('light');
       expect(event).to.equal(true);
     });
-
   });
 
   afterEach(() => {
