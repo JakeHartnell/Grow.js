@@ -1,6 +1,6 @@
 # Grow.js
 
-[![Join the chat at https://gitter.im/CommonGarden/Grow.js](https://badges.gitter.im/CommonGarden/Grow.js.svg)](https://gitter.im/CommonGarden/Grow.js?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Build Status](https://travis-ci.org/CommonGarden/Grow.js.svg?branch=development)](https://travis-ci.org/CommonGarden/Grow.js) [![Code Climate](https://codeclimate.com/github/CommonGarden/Grow.js/badges/gpa.svg)](https://codeclimate.com/github/CommonGarden/Grow.js) [![Test Coverage](https://codeclimate.com/github/CommonGarden/Grow.js/badges/coverage.svg)](https://codeclimate.com/github/CommonGarden/Grow.js/coverage) [![Join the chat at https://gitter.im/CommonGarden/Grow.js](https://badges.gitter.im/CommonGarden/Grow.js.svg)](https://gitter.im/CommonGarden/Grow.js?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 Grow.js helps you connect things to a [Grow-IoT](https://github.com/CommonGarden/Grow-IoT) instance.
 
@@ -25,11 +25,14 @@ var thing = new GrowInstance({
         name: "Bob"
     },
 
-    method: function () {
-        console.log('Current name is ' + thing.get('name'));
+    method: function (name) {
+        let name = name || thing.get('name');
+        console.log('Current name is ' + name);
     }
 });
 ```
+
+<!-- TODO: call a method with options -->
 
 To `call` a method:
 ``` javascript

@@ -11,19 +11,19 @@ var emit_and_analyze;
 board.on('ready', function start() {
     // Define variables
     var LED = new five.Pin(13),
-        lightSensor = new five.Sensor('A0');
+        lightSensor = new five.Sensor('A1');
 
     // Create a new thing.
     var light = new Thing({
-        uuid: '8be2d928-326e-4aaa-a545-49efcf2d3dd8',
-        token: 'woiWKNXv9Bo8JerYvshjkRTRutiRD9xf',
+        uuid: '35b9e367-5a0c-48b8-b11c-4b0b92390632',
+        token: 'FJPkgSnv5LmM7JPcQeSvfayo6KWfnRYw',
 
         component: 'smart-light',
 
         properties: {
             state: 'off',
             threshold: 300,
-            interval: 1000,
+            interval: 3000,
             lightconditions: null
         },
 
@@ -31,16 +31,14 @@ board.on('ready', function start() {
             var interval = this.get('interval');
             
             emit_and_analyze = setInterval(function () {
-                light.call('light_data');
-                light.call('check_light_data');
+                light.light_data();
+                light.check_light_data();
             }, interval);
-
-            // Todo: implement clear interval function so we can adjust
-            // the rate at which data is logged.
         },
 
         stop: function () {
             clearInterval(emit_and_analyze);
+            light.removeAllListeners();
         },
 
         turn_on: function () {
@@ -68,11 +66,24 @@ board.on('ready', function start() {
             var threshold = light.get('threshold');
             if ((lightSensor.value < threshold) && (light.get('lightconditions') != 'dark')) {
                 light.set('lightconditions', 'dark');
+                light.call('turn_on');
             } else if ((lightSensor.value >= threshold) && (light.get('lightconditions') != 'light')) {
                 light.set('lightconditions', 'light');
+                light.call('turn_off');
             }
         }
     });
 
-    light.connect();
+    light.connect(
+    {
+        host: "grow.commongarden.org",
+        tlsOpts: {
+          tls: {
+            servername: "galaxy.meteor.com"
+          }
+        },
+        port: 443,
+        ssl: true
+    }
+    );
 });
